@@ -19,9 +19,11 @@ import (
 
 func init() {
 	gaba.Init(gaba.Options{
-		WindowTitle:    "Grout",
-		ShowBackground: true,
-		LogFilename:    "grout.log",
+		WindowTitle:          "Grout",
+		PrimaryThemeColorHex: 0x007C77,
+		ShowBackground:       true,
+		IsNextUI:             utils.GetCFW() == models.NEXTUI,
+		LogFilename:          "grout.log",
 	})
 
 	if !utils.IsConnectedToInternet() {

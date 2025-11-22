@@ -101,6 +101,7 @@ func (gl GameList) Draw() (game interface{}, exitCode int, e error) {
 	}
 
 	options := gaba.DefaultListOptions(title, itemEntries)
+	options.SmallTitle = true
 	options.EnableAction = true
 	options.EnableMultiSelect = true
 	options.FooterHelpItems = []gaba.FooterHelpItem{

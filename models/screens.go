@@ -6,6 +6,7 @@ type ScreenName struct {
 	Login,
 	MainMenu,
 	Settings,
+	SettingsPlatformMapping,
 	PlatformSelection,
 	GameList,
 	SearchBox,
