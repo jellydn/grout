@@ -42,7 +42,7 @@ func HandleLogin(existing models.Host) *models.Config {
 		os.Exit(1)
 	}
 
-	rc := client.NewRomMClient(host.(models.Host))
+	rc := client.NewRomMClient(host.(models.Host), time.Second*15)
 
 	loginRe, _ := gabagool.ProcessMessage("Logging in...", gabagool.ProcessMessageOptions{}, func() (interface{}, error) {
 		if !rc.Heartbeat() {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"grout/client"
 	"grout/models"
+	"grout/state"
 	"grout/utils"
 	"path/filepath"
 	"slices"
@@ -32,9 +33,9 @@ func (p PlatformMappingScreen) Name() sum.Int[models.ScreenName] {
 
 func (p PlatformMappingScreen) Draw() (interface{}, int, error) {
 	logger := gaba.GetLogger()
-	//appState := state.GetAppState()
+	config := state.GetAppState().Config
 
-	c := client.NewRomMClient(p.Host)
+	c := client.NewRomMClient(p.Host, config.ApiTimeout)
 
 	rommPlatforms, err := c.GetPlatforms()
 	if err != nil {

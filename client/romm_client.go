@@ -191,8 +191,8 @@ type RomMRom struct {
 
 const RomsEndpoint = "/api/roms/"
 
-func NewRomMClient(host models.Host) *RomMClient {
-	client := &http.Client{Timeout: 1750 * time.Millisecond}
+func NewRomMClient(host models.Host, timeout time.Duration) *RomMClient {
+	client := &http.Client{Timeout: timeout}
 	return &RomMClient{
 		Hostname:   host.RootURI,
 		Port:       host.Port,

@@ -112,7 +112,7 @@ func BuildDownload(platform models.Platform, games shared.Items) []gaba.Download
 
 		var sourceURL string
 
-		rc := client.NewRomMClient(platform.Host)
+		rc := client.NewRomMClient(platform.Host, config.DownloadTimeout)
 		sourceURL, _ = rc.BuildDownloadURL(g.RomID, g.Filename)
 
 		downloads = append(downloads, gaba.Download{

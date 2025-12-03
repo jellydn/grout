@@ -148,6 +148,8 @@ func SaveConfig(config *models.Config) error {
 	viper.Set("directory_mappings", config.DirectoryMappings)
 	viper.Set("download_art", config.DownloadArt)
 	viper.Set("use_title_as_filename", config.UseTitleAsFilename)
+	viper.Set("api_timeout", config.ApiTimeout)
+	viper.Set("download_timeout", config.DownloadTimeout)
 	viper.Set("unzip_downloads", config.UnzipDownloads)
 	viper.Set("group_bin_cue", config.GroupBinCue)
 	viper.Set("group_multi_disc", config.GroupMultiDisc)
@@ -175,7 +177,7 @@ func SaveConfig(config *models.Config) error {
 }
 
 func GetMappedPlatforms(host models.Host, mappings map[string]models.DirectoryMapping) []models.Platform {
-	c := client.NewRomMClient(host)
+	c := client.NewRomMClient(host, time.Second*30)
 
 	rommPlatforms, err := c.GetPlatforms()
 	if err != nil {
@@ -553,9 +555,10 @@ func GroupMultiDisk(platform models.Platform, game shared.Item) error {
 }
 
 func FindArt(platform models.Platform, game shared.Item) string {
+	config := state.GetAppState().Config
 	artDirectory := filepath.Join(GetPlatformRomDirectory(platform), ".media")
 
-	c := client.NewRomMClient(platform.Host)
+	c := client.NewRomMClient(platform.Host, config.DownloadTimeout)
 
 	if game.ArtURL == "" {
 		return ""

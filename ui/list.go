@@ -3,6 +3,7 @@ package ui
 import (
 	"grout/client"
 	"grout/models"
+	"grout/state"
 	"slices"
 	"strings"
 
@@ -12,20 +13,21 @@ import (
 
 func FetchListStateless(platform models.Platform) (shared.Items, error) {
 	logger := gaba.GetLogger()
+	config := state.GetAppState().Config
 
 	logger.Debug("Fetching Item List",
 		"host", platform.Host)
 
-	client := client.NewRomMClient(platform.Host)
+	c := client.NewRomMClient(platform.Host, config.ApiTimeout)
 
 	defer func(client shared.Client) {
 		err := client.Close()
 		if err != nil {
 			logger.Error("Unable to close client", "error", err)
 		}
-	}(client)
+	}(c)
 
-	items, err := client.ListDirectory(platform.RomMPlatformID)
+	items, err := c.ListDirectory(platform.RomMPlatformID)
 	if err != nil {
 		return nil, err
 	}
