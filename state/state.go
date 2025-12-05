@@ -4,7 +4,6 @@ import (
 	"grout/models"
 	"sync"
 
-	shared "github.com/UncleJunVIP/nextui-pak-shared-functions/models"
 	"go.uber.org/atomic"
 )
 
@@ -34,7 +33,7 @@ func SetConfig(config *models.Config) {
 	UpdateAppState(temp)
 }
 
-func SetCurrentFullGamesList(games shared.Items) {
+func SetCurrentFullGamesList(games models.Items) {
 	temp := GetAppState()
 	temp.CurrentFullGamesList = games
 	UpdateAppState(temp)

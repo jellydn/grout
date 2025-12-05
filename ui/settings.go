@@ -7,7 +7,7 @@ import (
 	"grout/utils"
 	"time"
 
-	"github.com/UncleJunVIP/gabagool/pkg/gabagool"
+	"github.com/UncleJunVIP/gabagool/v2/pkg/gabagool"
 	"qlova.tech/sum"
 )
 
@@ -30,7 +30,7 @@ func (s SettingsScreen) Draw() (settings interface{}, exitCode int, e error) {
 	items := []gabagool.ItemWithOptions{
 		{
 			Item: gabagool.MenuItem{
-				Text: "Directory Mappings",
+				Text: "Edit Directory Mappings",
 			},
 			Options: []gabagool.Option{
 				{
@@ -38,6 +38,21 @@ func (s SettingsScreen) Draw() (settings interface{}, exitCode int, e error) {
 				},
 			},
 			SelectedOption: 0,
+		},
+		{
+			Item: gabagool.MenuItem{
+				Text: "Use Title As Filename",
+			},
+			Options: []gabagool.Option{
+				{DisplayName: "True", Value: true},
+				{DisplayName: "False", Value: false},
+			},
+			SelectedOption: func() int {
+				if appState.Config.UseTitleAsFilename {
+					return 0
+				}
+				return 1
+			}(),
 		},
 		{
 			Item: gabagool.MenuItem{
@@ -54,7 +69,6 @@ func (s SettingsScreen) Draw() (settings interface{}, exitCode int, e error) {
 				return 1
 			}(),
 		},
-
 		{
 			Item: gabagool.MenuItem{
 				Text: "API Timeout",
@@ -137,68 +151,51 @@ func (s SettingsScreen) Draw() (settings interface{}, exitCode int, e error) {
 				}
 			}(),
 		},
-
-		{
-			Item: gabagool.MenuItem{
-				Text: "Use Title As Filename",
-			},
-			Options: []gabagool.Option{
-				{DisplayName: "True", Value: true},
-				{DisplayName: "False", Value: false},
-			},
-			SelectedOption: func() int {
-				if appState.Config.UseTitleAsFilename {
-					return 0
-				}
-				return 1
-			}(),
-		},
-
-		{
-			Item: gabagool.MenuItem{
-				Text: "Unzip Downloads",
-			},
-			Options: []gabagool.Option{
-				{DisplayName: "True", Value: true},
-				{DisplayName: "False", Value: false},
-			},
-			SelectedOption: func() int {
-				if appState.Config.UnzipDownloads {
-					return 0
-				}
-				return 1
-			}(),
-		},
-		{
-			Item: gabagool.MenuItem{
-				Text: "Group BIN / CUE",
-			},
-			Options: []gabagool.Option{
-				{DisplayName: "True", Value: true},
-				{DisplayName: "False", Value: false},
-			},
-			SelectedOption: func() int {
-				if appState.Config.GroupBinCue {
-					return 0
-				}
-				return 1
-			}(),
-		},
-		{
-			Item: gabagool.MenuItem{
-				Text: "Group Multi-Disc",
-			},
-			Options: []gabagool.Option{
-				{DisplayName: "True", Value: true},
-				{DisplayName: "False", Value: false},
-			},
-			SelectedOption: func() int {
-				if appState.Config.GroupMultiDisc {
-					return 0
-				}
-				return 1
-			}(),
-		},
+		//{
+		//	Item: gabagool.MenuItem{
+		//		Text: "Unzip Downloads",
+		//	},
+		//	Options: []gabagool.Option{
+		//		{DisplayName: "True", Value: true},
+		//		{DisplayName: "False", Value: false},
+		//	},
+		//	SelectedOption: func() int {
+		//		if appState.Config.UnzipDownloads {
+		//			return 0
+		//		}
+		//		return 1
+		//	}(),
+		//},
+		//{
+		//	Item: gabagool.MenuItem{
+		//		Text: "Group BIN / CUE",
+		//	},
+		//	Options: []gabagool.Option{
+		//		{DisplayName: "True", Value: true},
+		//		{DisplayName: "False", Value: false},
+		//	},
+		//	SelectedOption: func() int {
+		//		if appState.Config.GroupBinCue {
+		//			return 0
+		//		}
+		//		return 1
+		//	}(),
+		//},
+		//{
+		//	Item: gabagool.MenuItem{
+		//		Text: "Group Multi-Disc",
+		//	},
+		//	Options: []gabagool.Option{
+		//		{DisplayName: "True", Value: true},
+		//		{DisplayName: "False", Value: false},
+		//	},
+		//	SelectedOption: func() int {
+		//		if appState.Config.GroupMultiDisc {
+		//			return 0
+		//		}
+		//		return 1
+		//	}(),
+		//},
 		{
 			Item: gabagool.MenuItem{
 				Text: "Log Level",
@@ -232,79 +229,73 @@ func (s SettingsScreen) Draw() (settings interface{}, exitCode int, e error) {
 	if err != nil {
 		fmt.Println("Error showing options list:", err)
 		return
-	}
-
-	if result.IsSome() {
-		newSettingOptions := result.Unwrap().Items
-
-		for _, option := range newSettingOptions {
-			switch option.Item.Text {
-			case "Directory Mappings":
-				pms := InitPlatformMappingScreen(appState.Config.Hosts[0], false)
-				mappings, code, err := pms.Draw()
-				if err != nil {
-					return
-				}
-
-				if code == 0 {
-					appState.Config.DirectoryMappings = mappings.(map[string]models.DirectoryMapping)
-					appState.Config.Hosts[0].Platforms = utils.GetMappedPlatforms(appState.Config.Hosts[0], appState.Config.DirectoryMappings)
-					utils.SaveConfig(appState.Config)
-					state.SetConfig(appState.Config)
-				}
-				return result, 404, nil
-			case "Download Art":
-				appState.Config.DownloadArt = option.SelectedOption == 0
-			case "API Timeout":
-				timeoutValues := []time.Duration{
-					15 * time.Second,
-					30 * time.Second,
-					45 * time.Second,
-					60 * time.Second,
-					75 * time.Second,
-					90 * time.Second,
-					120 * time.Second,
-					180 * time.Second,
-					240 * time.Second,
-					300 * time.Second,
-				}
-				appState.Config.ApiTimeout = timeoutValues[option.SelectedOption]
-			case "Download Timeout":
-				timeoutValues := []time.Duration{
-					15 * time.Minute,
-					30 * time.Minute,
-					45 * time.Minute,
-					60 * time.Minute,
-					75 * time.Minute,
-					90 * time.Minute,
-					105 * time.Minute,
-					120 * time.Minute,
-				}
-				appState.Config.DownloadTimeout = timeoutValues[option.SelectedOption]
-			case "Use Title As Filename":
-				appState.Config.UseTitleAsFilename = option.SelectedOption == 0
-			case "Unzip Downloads":
-				appState.Config.UnzipDownloads = option.SelectedOption == 0
-			case "Group BIN / CUE":
-				appState.Config.GroupBinCue = option.SelectedOption == 0
-			case "Group Multi-Disc":
-				appState.Config.GroupMultiDisc = option.SelectedOption == 0
-			case "Log Level":
-				logLevelValue := option.Options[option.SelectedOption].Value.(string)
-				appState.Config.LogLevel = logLevelValue
-			}
-		}
-
-		err := utils.SaveConfig(appState.Config)
+	} else if result.Selected == 0 {
+		pms := InitPlatformMappingScreen(appState.Config.Hosts[0], false)
+		mappings, code, err := pms.Draw()
 		if err != nil {
-			logger.Error("Error saving config", "error", err)
-			return nil, 0, err
+			return
 		}
 
-		state.UpdateAppState(appState)
-
-		return result, 0, nil
+		if code == 0 {
+			appState.Config.DirectoryMappings = mappings.(map[string]models.DirectoryMapping)
+			appState.Config.Hosts[0].Platforms = utils.GetMappedPlatforms(appState.Config.Hosts[0], appState.Config.DirectoryMappings)
+			utils.SaveConfig(appState.Config)
+			state.SetConfig(appState.Config)
+		}
+		return result, 404, nil
 	}
 
-	return nil, 2, nil
+	for _, option := range result.Items {
+		switch option.Item.Text {
+		case "Download Art":
+			appState.Config.DownloadArt = option.SelectedOption == 0
+		case "API Timeout":
+			timeoutValues := []time.Duration{
+				15 * time.Second,
+				30 * time.Second,
+				45 * time.Second,
+				60 * time.Second,
+				75 * time.Second,
+				90 * time.Second,
+				120 * time.Second,
+				180 * time.Second,
+				240 * time.Second,
+				300 * time.Second,
+			}
+			appState.Config.ApiTimeout = timeoutValues[option.SelectedOption]
+		case "Download Timeout":
+			timeoutValues := []time.Duration{
+				15 * time.Minute,
+				30 * time.Minute,
+				45 * time.Minute,
+				60 * time.Minute,
+				75 * time.Minute,
+				90 * time.Minute,
+				105 * time.Minute,
+				120 * time.Minute,
+			}
+			appState.Config.DownloadTimeout = timeoutValues[option.SelectedOption]
+		case "Use Title As Filename":
+			appState.Config.UseTitleAsFilename = option.SelectedOption == 0
+		case "Unzip Downloads":
+			appState.Config.UnzipDownloads = option.SelectedOption == 0
+		case "Group BIN / CUE":
+			appState.Config.GroupBinCue = option.SelectedOption == 0
+		case "Group Multi-Disc":
+			appState.Config.GroupMultiDisc = option.SelectedOption == 0
+		case "Log Level":
+			logLevelValue := option.Options[option.SelectedOption].Value.(string)
+			appState.Config.LogLevel = logLevelValue
+		}
+	}
+
+	err = utils.SaveConfig(appState.Config)
+	if err != nil {
+		logger.Error("Error saving config", "error", err)
+		return nil, 0, err
+	}
+
+	state.UpdateAppState(appState)
+
+	return result, 0, nil
 }

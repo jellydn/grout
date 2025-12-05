@@ -1,7 +1,6 @@
 package models
 
 import (
-	"strings"
 	"time"
 )
 
@@ -21,14 +20,7 @@ type Config struct {
 func (c Config) ToLoggable() any {
 	safeHosts := make([]map[string]any, len(c.Hosts))
 	for i, host := range c.Hosts {
-		safeHosts[i] = map[string]any{
-			"display_name": host.DisplayName,
-			"root_uri":     host.RootURI,
-			"port":         host.Port,
-			"username":     host.Username,
-			"password":     strings.Repeat("*", len(host.Password)),
-			"platforms":    host.Platforms,
-		}
+		safeHosts[i] = host.ToLoggable()
 	}
 
 	return map[string]any{

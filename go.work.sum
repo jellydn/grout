@@ -1,5 +1,6 @@
 github.com/UncleJunVIP/gabagool v0.0.48/go.mod h1:EPPgmkQllHgR2jY8DcmwhL9+d+Viw752HOug4IusHxI=
 github.com/UncleJunVIP/gabagool v0.0.51/go.mod h1:EPPgmkQllHgR2jY8DcmwhL9+d+Viw752HOug4IusHxI=
+github.com/UncleJunVIP/gabagool/v2 v2.0.0/go.mod h1:FgQc2sMVQLBA/A6nE1nfcluMJp9Rn+rP9qWQ1k8UJsA=
 github.com/kr/pty v1.1.1 h1:VkoXIwSboBpnk99O/KFauAEILuNHv5DVFKZMBN/gUgw=
 github.com/sourcegraph/conc v0.3.1-0.20240121214520-5f936abd7ae8 h1:+jumHNA0Wrelhe64i8F6HNlS8pkoyMv5sreGx2Ry5Rw=
 github.com/sourcegraph/conc v0.3.1-0.20240121214520-5f936abd7ae8/go.mod h1:3n1Cwaq1E1/1lhQhtRK2ts/ZwZEhjcQeJQ1RuC6Q/8U=
@@ -66,4 +67,3 @@ golang.org/x/tools v0.37.0/go.mod h1:MBN5QPQtLMHVdvsbtarmTNukZDdgwdwlO5qGacAzF0w
 golang.org/x/tools v0.38.0 h1:Hx2Xv8hISq8Lm16jvBZ2VQf+RLmbd7wVUsALibYI/IQ=
 golang.org/x/tools v0.38.0/go.mod h1:yEsQ/d/YK8cjh0L6rZlY8tgtlKiBNTL14pGDJPJpYQs=
 golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7 h1:9zdDQZ7Thm29KFXgAX/+yaf3eVbP7djjWp/dXAppNCc=
-gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c h1:Hei/4ADfdWqJk1ZMxUNpqntNwaWcugrBjAiHlqqRiVk=

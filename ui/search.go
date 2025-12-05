@@ -1,9 +1,10 @@
 package ui
 
 import (
+	"errors"
 	"grout/models"
 
-	gaba "github.com/UncleJunVIP/gabagool/pkg/gabagool"
+	gaba "github.com/UncleJunVIP/gabagool/v2/pkg/gabagool"
 	"qlova.tech/sum"
 )
 
@@ -24,17 +25,13 @@ func (s Search) Name() sum.Int[models.ScreenName] {
 }
 
 func (s Search) Draw() (value interface{}, exitCode int, e error) {
-	logger := gaba.GetLogger()
-
 	res, err := gaba.Keyboard(s.InitialText)
 	if err != nil {
-		logger.Error("Error with blocking keyboard", "error", err)
-		return nil, -1, err
+		if !errors.Is(err, gaba.ErrCancelled) {
+			gaba.GetLogger().Error("Error with keyboard", "error", err)
+		}
+		return nil, 2, err
 	}
 
-	if res.IsSome() {
-		return res.Unwrap(), 0, nil
-	}
-
-	return nil, -1, nil
+	return res.Text, 0, nil
 }

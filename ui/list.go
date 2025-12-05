@@ -7,32 +7,31 @@ import (
 	"slices"
 	"strings"
 
-	gaba "github.com/UncleJunVIP/gabagool/pkg/gabagool"
-	shared "github.com/UncleJunVIP/nextui-pak-shared-functions/models"
+	gaba "github.com/UncleJunVIP/gabagool/v2/pkg/gabagool"
 )
 
-func FetchListStateless(platform models.Platform) (shared.Items, error) {
+func FetchListStateless(platform models.Platform) (models.Items, error) {
 	logger := gaba.GetLogger()
 	config := state.GetAppState().Config
 
 	logger.Debug("Fetching Item List",
-		"host", platform.Host)
+		"host", platform.Host.ToLoggable())
 
 	c := client.NewRomMClient(platform.Host, config.ApiTimeout)
 
-	defer func(client shared.Client) {
+	defer func(client client.RomMClient) {
 		err := client.Close()
 		if err != nil {
 			logger.Error("Unable to close client", "error", err)
 		}
-	}(c)
+	}(*c)
 
-	items, err := c.ListDirectory(platform.RomMPlatformID)
+	items, err := c.ListDirectory(platform.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	filtered := make([]shared.Item, 0, len(items))
+	filtered := make([]models.Item, 0, len(items))
 	for _, item := range items {
 		if !strings.HasPrefix(item.Filename, ".") {
 			filtered = append(filtered, item)
@@ -42,8 +41,8 @@ func FetchListStateless(platform models.Platform) (shared.Items, error) {
 	return filtered, nil
 }
 
-func filterList(itemList []shared.Item, filter string) []shared.Item {
-	var result []shared.Item
+func filterList(itemList []models.Item, filter string) []models.Item {
+	var result []models.Item
 
 	for _, item := range itemList {
 		if strings.Contains(strings.ToLower(item.DisplayName), strings.ToLower(filter)) {
@@ -51,7 +50,7 @@ func filterList(itemList []shared.Item, filter string) []shared.Item {
 		}
 	}
 
-	slices.SortFunc(result, func(a, b shared.Item) int {
+	slices.SortFunc(result, func(a, b models.Item) int {
 		return strings.Compare(strings.ToLower(a.DisplayName), strings.ToLower(b.DisplayName))
 	})
 

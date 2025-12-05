@@ -11,9 +11,7 @@ import (
 	"time"
 
 	_ "github.com/UncleJunVIP/certifiable"
-	gaba "github.com/UncleJunVIP/gabagool/pkg/gabagool"
-	"github.com/UncleJunVIP/nextui-pak-shared-functions/common"
-	shared "github.com/UncleJunVIP/nextui-pak-shared-functions/models"
+	gaba "github.com/UncleJunVIP/gabagool/v2/pkg/gabagool"
 )
 
 func init() {
@@ -30,7 +28,7 @@ func init() {
 			{ButtonName: "B", HelpText: "Quit"},
 		}, gaba.MessageOptions{})
 		defer cleanup()
-		common.LogStandardFatal("No Internet Connection", err)
+		utils.LogStandardFatal("No Internet Connection", err)
 	}
 
 	gaba.ProcessMessage("", gaba.ProcessMessageOptions{
@@ -122,7 +120,7 @@ func main() {
 			switch code {
 			case 0:
 				platform := res.(models.Platform)
-				screen = ui.InitGamesList(platform, shared.Items{}, "")
+				screen = ui.InitGamesList(platform, models.Items{}, "")
 			case 1, 2:
 				if quitOnBack {
 					os.Exit(0)
@@ -140,7 +138,7 @@ func main() {
 
 			switch code {
 			case 0:
-				games := res.(shared.Items)
+				games := res.(models.Items)
 				screen = ui.InitDownloadScreen(gl.Platform, gl.Games, games, gl.SearchFilter)
 			case 2:
 				if gl.SearchFilter != "" {
@@ -173,7 +171,7 @@ func main() {
 			ds := screen.(ui.DownloadScreen)
 			switch code {
 			case 0:
-				downloadedGames := res.([]shared.Item)
+				downloadedGames := res.([]models.Item)
 
 				for _, game := range downloadedGames {
 					isMultiDisc := utils.IsMultiDisc(ds.Platform, game)
@@ -197,7 +195,7 @@ func main() {
 					seenBaseNames := make(map[string]bool)
 
 					// Create a pruned list for art downloads that only includes one instance of each multi-disk game
-					prunedGamesForArt := make([]shared.Item, 0, len(downloadedGames))
+					prunedGamesForArt := make([]models.Item, 0, len(downloadedGames))
 
 					for _, game := range downloadedGames {
 						// Get base name by trimming at "(Disk" or "(Disc"

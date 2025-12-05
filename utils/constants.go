@@ -1,5 +1,7 @@
 package utils
 
+import "regexp"
+
 const muOSRomsFolderUnion = "/mnt/union/ROMS" // TODO see if this has RW
 
 const nextUIRomsFolder = "/mnt/SDCARD/Roms/"
@@ -138,3 +140,6 @@ var nextUIPlatforms = map[string][]string{
 	"VB":     {"virtualboy"},
 	"WSC":    {"wonderswan", "wonderswan-color"},
 }
+
+var TagRegex = regexp.MustCompile(`\((.*?)\)`)
+var OrderedFolderRegex = regexp.MustCompile(`\d+\)\s`)

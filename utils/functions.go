@@ -9,16 +9,16 @@ import (
 	"grout/models"
 	"grout/state"
 	"io"
+	"log"
 	"net"
 	"os"
+	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 
-	gaba "github.com/UncleJunVIP/gabagool/pkg/gabagool"
-	"github.com/UncleJunVIP/nextui-pak-shared-functions/common"
-	shared "github.com/UncleJunVIP/nextui-pak-shared-functions/models"
+	gaba "github.com/UncleJunVIP/gabagool/v2/pkg/gabagool"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
 )
@@ -33,7 +33,7 @@ func GetCFW() models.CFW {
 	case "nextui":
 		return models.NEXTUI
 	default:
-		common.LogStandardFatal(fmt.Sprintf("Unsupported CFW: %s", cfw), nil)
+		LogStandardFatal(fmt.Sprintf("Unsupported CFW: %s", cfw), nil)
 	}
 	return ""
 }
@@ -57,7 +57,7 @@ func GetRomDirectory() string {
 
 func GetPlatformRomDirectory(platform models.Platform) string {
 	config := state.GetAppState().Config
-	return filepath.Join(GetRomDirectory(), config.DirectoryMappings[platform.RomMPlatformSlug].RelativePath)
+	return filepath.Join(GetRomDirectory(), config.DirectoryMappings[platform.Slug].RelativePath)
 }
 
 func LoadConfig() (*models.Config, error) {
@@ -178,7 +178,7 @@ func GetMappedPlatforms(host models.Host, mappings map[string]models.DirectoryMa
 
 	rommPlatforms, err := c.GetPlatforms()
 	if err != nil {
-		common.LogStandardFatal(fmt.Sprintf("Failed to get platforms from RomM: %s", err), nil)
+		LogStandardFatal(fmt.Sprintf("Failed to get platforms from RomM: %s", err), nil)
 	}
 
 	var platforms models.Platforms
@@ -187,10 +187,10 @@ func GetMappedPlatforms(host models.Host, mappings map[string]models.DirectoryMa
 		_, exists := mappings[platform.Slug]
 		if exists {
 			platforms = append(platforms, models.Platform{
-				Name:             platform.DisplayName,
-				RomMPlatformID:   strconv.Itoa(platform.ID),
-				RomMPlatformSlug: platform.Slug,
-				Host:             host,
+				Name: platform.DisplayName,
+				ID:   strconv.Itoa(platform.ID),
+				Slug: platform.Slug,
+				Host: host,
 			})
 		}
 	}
@@ -217,7 +217,7 @@ func RomMSlugToCFW(slug string) string {
 	}
 }
 
-func UnzipGame(platform models.Platform, game shared.Item) ([]string, error) {
+func UnzipGame(platform models.Platform, game models.Item) ([]string, error) {
 	logger := gaba.GetLogger()
 
 	zipPath := filepath.Join(GetPlatformRomDirectory(platform), game.Filename)
@@ -242,13 +242,13 @@ func UnzipGame(platform models.Platform, game shared.Item) ([]string, error) {
 		logger.Error("Unable to unzip pak", "error", err)
 		return nil, err
 	} else {
-		deleted := common.DeleteFile(zipPath)
+		deleted := DeleteFile(zipPath)
 		if !deleted {
 			return nil, errors.New("unable to delete zip file")
 		}
 	}
 
-	return extractedFiles.Result.([]string), nil
+	return extractedFiles.([]string), nil
 }
 
 func Unzip(src, dest string) ([]string, error) {
@@ -307,14 +307,14 @@ func Unzip(src, dest string) ([]string, error) {
 			tempFile.Close() // Close the file before attempting to rename it
 
 			if err != nil {
-				common.DeleteFile(tempPath)
+				DeleteFile(tempPath)
 				return err
 			}
 
 			// Now rename the temporary file to the target path
 			err = os.Rename(tempPath, path)
 			if err != nil {
-				common.DeleteFile(tempPath)
+				DeleteFile(tempPath)
 				return err
 			}
 
@@ -333,7 +333,7 @@ func Unzip(src, dest string) ([]string, error) {
 	return extractedFiles, nil
 }
 
-func ListZipContents(platform models.Platform, game shared.Item) ([]string, error) {
+func ListZipContents(platform models.Platform, game models.Item) ([]string, error) {
 	zipPath := filepath.Join(GetPlatformRomDirectory(platform), game.Filename)
 
 	reader, err := zip.OpenReader(zipPath)
@@ -351,7 +351,22 @@ func ListZipContents(platform models.Platform, game shared.Item) ([]string, erro
 	return filenames, nil
 }
 
-func HasBinCue(platform models.Platform, game shared.Item) bool {
+func DeleteFile(path string) bool {
+	logger := gaba.GetLogger()
+
+	err := os.Remove(path)
+	if err != nil {
+		logger.Error("Issue removing file",
+			"path", path,
+			"error", err)
+		return false
+	} else {
+		logger.Debug("Removed file", "path", path)
+		return true
+	}
+}
+
+func HasBinCue(platform models.Platform, game models.Item) bool {
 	filenames, err := ListZipContents(platform, game)
 	if err != nil {
 		return false
@@ -365,7 +380,7 @@ func HasBinCue(platform models.Platform, game shared.Item) bool {
 	return false
 }
 
-func IsMultiDisc(platform models.Platform, game shared.Item) bool {
+func IsMultiDisc(platform models.Platform, game models.Item) bool {
 	if filepath.Ext(game.Filename) == ".zip" {
 		filenames, err := ListZipContents(platform, game)
 		if err != nil {
@@ -384,7 +399,7 @@ func IsMultiDisc(platform models.Platform, game shared.Item) bool {
 	return strings.Contains(game.Filename, "(Disc") || strings.Contains(game.Filename, "(Disk")
 }
 
-func GroupBinCue(platform models.Platform, game shared.Item) {
+func GroupBinCue(platform models.Platform, game models.Item) {
 	logger := gaba.GetLogger()
 
 	unzipped, err := UnzipGame(platform, game)
@@ -447,7 +462,7 @@ func GroupBinCue(platform models.Platform, game shared.Item) {
 	}
 }
 
-func GroupMultiDisk(platform models.Platform, game shared.Item) error {
+func GroupMultiDisk(platform models.Platform, game models.Item) error {
 	logger := gaba.GetLogger()
 
 	gameFolderName := game.DisplayName
@@ -562,7 +577,7 @@ func GroupMultiDisk(platform models.Platform, game shared.Item) error {
 	return err
 }
 
-func FindArt(platform models.Platform, game shared.Item) string {
+func FindArt(platform models.Platform, game models.Item) string {
 	config := state.GetAppState().Config
 	artDirectory := filepath.Join(GetPlatformRomDirectory(platform), ".media")
 
@@ -587,13 +602,51 @@ func FindArt(platform models.Platform, game shared.Item) string {
 	return LastSavedArtPath
 }
 
-func FolderExists(path string) bool {
-	_, err := os.Stat(path)
-	return err == nil || os.IsExist(err)
+func ItemNameCleaner(filename string, stripTag bool) (string, string) {
+	cleaned := filepath.Clean(filename)
+
+	tags := TagRegex.FindAllStringSubmatch(cleaned, -1)
+
+	var foundTags []string
+	foundTag := ""
+
+	if len(tags) > 0 {
+		for _, tagPair := range tags {
+			foundTags = append(foundTags, tagPair[0])
+		}
+
+		foundTag = strings.Join(foundTags, " ")
+	}
+
+	if stripTag {
+		for _, tag := range foundTags {
+			cleaned = strings.ReplaceAll(cleaned, tag, "")
+		}
+	}
+
+	orderedFolderRegex := OrderedFolderRegex.FindStringSubmatch(cleaned)
+
+	if len(orderedFolderRegex) > 0 {
+		cleaned = strings.ReplaceAll(cleaned, orderedFolderRegex[0], "")
+	}
+
+	cleaned = strings.ReplaceAll(cleaned, path.Ext(cleaned), "")
+
+	cleaned = strings.TrimSpace(cleaned)
+
+	foundTag = strings.ReplaceAll(foundTag, "(", "")
+	foundTag = strings.ReplaceAll(foundTag, ")", "")
+
+	return cleaned, foundTag
 }
 
 func IsConnectedToInternet() bool {
 	timeout := 5 * time.Second
 	_, err := net.DialTimeout("tcp", "8.8.8.8:53", timeout)
 	return err == nil
+}
+
+func LogStandardFatal(msg string, err error) {
+	log.SetOutput(os.Stderr)
+	log.Fatalf("%s: %v", msg, err)
 }

@@ -3,7 +3,7 @@ package ui
 import (
 	"grout/models"
 
-	"github.com/UncleJunVIP/gabagool/pkg/gabagool"
+	"github.com/UncleJunVIP/gabagool/v2/pkg/gabagool"
 	"qlova.tech/sum"
 )
 
@@ -49,13 +49,13 @@ func (m MainMenu) Draw() (host interface{}, exitCode int, e error) {
 
 	selection, err := gabagool.List(options)
 	if err != nil {
-		return models.Host{}, -1, err
+		return models.Host{}, 2, err
 	}
 
-	if selection.IsSome() && selection.Unwrap().ActionTriggered {
+	if selection.Action == gabagool.ListActionTriggered {
 		return models.Host{}, 4, nil
-	} else if selection.IsSome() && !selection.Unwrap().ActionTriggered && selection.Unwrap().SelectedIndex != -1 {
-		return selection.Unwrap().SelectedItem.Metadata.(models.Host), 0, nil
+	} else if selection.Action == gabagool.ListActionSelected {
+		return selection.Items[selection.Selected[0]].Metadata.(models.Host), 0, nil
 	}
 
 	return models.Host{}, 2, nil

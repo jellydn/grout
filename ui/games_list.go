@@ -9,19 +9,18 @@ import (
 	"strings"
 	"time"
 
-	gaba "github.com/UncleJunVIP/gabagool/pkg/gabagool"
-	shared "github.com/UncleJunVIP/nextui-pak-shared-functions/models"
+	gaba "github.com/UncleJunVIP/gabagool/v2/pkg/gabagool"
 	"qlova.tech/sum"
 )
 
 type GameList struct {
 	Platform     models.Platform
-	Games        shared.Items
+	Games        models.Items
 	SearchFilter string
 }
 
-func InitGamesList(platform models.Platform, games shared.Items, searchFilter string) GameList {
-	var g shared.Items
+func InitGamesList(platform models.Platform, games models.Items, searchFilter string) GameList {
+	var g models.Items
 
 	if len(games) > 0 {
 		g = games
@@ -35,7 +34,7 @@ func InitGamesList(platform models.Platform, games shared.Items, searchFilter st
 			return GameList{}
 		}
 
-		g = process.Result.(shared.Items)
+		g = process.(models.Items)
 	}
 
 	state.SetCurrentFullGamesList(g)
@@ -62,12 +61,12 @@ func (gl GameList) Draw() (game interface{}, exitCode int, e error) {
 		}
 	}
 
-	slices.SortFunc(itemList, func(a, b shared.Item) int {
+	slices.SortFunc(itemList, func(a, b models.Item) int {
 		return strings.Compare(strings.ToLower(a.DisplayName), strings.ToLower(b.DisplayName))
 	})
 
 	if gl.SearchFilter != "" {
-		title = "[Search: \"" + gl.SearchFilter + "\"]"
+		title = fmt.Sprintf("[Search: \"%s\"] | %s", gl.SearchFilter, gl.Platform.Name)
 		itemList = filterList(itemList, gl.SearchFilter)
 	}
 
@@ -117,29 +116,29 @@ func (gl GameList) Draw() (game interface{}, exitCode int, e error) {
 	options.SelectedIndex = state.GetAppState().LastSelectedIndex
 	options.VisibleStartIndex = max(0, state.GetAppState().LastSelectedIndex-state.GetAppState().LastSelectedPosition)
 
-	selection, err := gaba.List(options)
+	res, err := gaba.List(options)
 	if err != nil {
-		return nil, -1, err
+		return nil, 2, err
 	}
 
-	if selection.IsSome() && !selection.Unwrap().ActionTriggered && selection.Unwrap().SelectedIndex != -1 {
+	if res.Action == gaba.ListActionSelected {
 
-		var selections shared.Items
-		for _, item := range selection.Unwrap().SelectedItems {
-			selections = append(selections, item.Metadata.(shared.Item))
+		var selections models.Items
+		for _, idx := range res.Selected {
+			selections = append(selections, res.Items[idx].Metadata.(models.Item))
 		}
 
-		state.SetLastSelectedPosition(selection.Unwrap().SelectedIndex, selection.Unwrap().VisiblePosition)
+		state.SetLastSelectedPosition(res.Selected[0], res.VisiblePosition)
 
 		return selections, 0, nil
-	} else if selection.IsSome() && selection.Unwrap().ActionTriggered {
+	} else if res.Action == gaba.ListActionTriggered {
 		return nil, 4, nil
 	}
 
 	return nil, 2, err
 }
 
-func loadGamesList(platform models.Platform) (games shared.Items, e error) {
+func loadGamesList(platform models.Platform) (games models.Items, e error) {
 	logger := gaba.GetLogger()
 
 	items, err := FetchListStateless(platform)
@@ -151,7 +150,7 @@ func loadGamesList(platform models.Platform) (games shared.Items, e error) {
 		return nil, nil
 	}
 
-	slices.SortFunc(items, func(a, b shared.Item) int {
+	slices.SortFunc(items, func(a, b models.Item) int {
 		return strings.Compare(strings.ToLower(a.Filename), strings.ToLower(b.Filename))
 	})
 

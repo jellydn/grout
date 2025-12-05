@@ -9,9 +9,7 @@ import (
 	"path/filepath"
 	"slices"
 
-	gaba "github.com/UncleJunVIP/gabagool/pkg/gabagool"
-	"github.com/UncleJunVIP/nextui-pak-shared-functions/filebrowser"
-	shared "github.com/UncleJunVIP/nextui-pak-shared-functions/models"
+	gaba "github.com/UncleJunVIP/gabagool/v2/pkg/gabagool"
 	"qlova.tech/sum"
 )
 
@@ -43,7 +41,7 @@ func (p PlatformMappingScreen) Draw() (interface{}, int, error) {
 		return nil, 0, err
 	}
 
-	fb := filebrowser.NewFileBrowser(logger)
+	fb := utils.NewFileBrowser(logger)
 	err = fb.CWD(utils.GetRomDirectory(), false)
 	if err != nil {
 		logger.Error("Error loading fetching ROM directories", "error", err)
@@ -60,7 +58,7 @@ func (p PlatformMappingScreen) Draw() (interface{}, int, error) {
 	for _, platform := range rommPlatforms {
 		options := []gaba.Option{unmapped}
 
-		rdi := slices.IndexFunc(fb.Items, func(item shared.Item) bool {
+		rdi := slices.IndexFunc(fb.Items, func(item models.Item) bool {
 			return utils.RomMSlugToCFW(platform.Slug) == filepath.Base(item.Path)
 		})
 
@@ -119,16 +117,13 @@ func (p PlatformMappingScreen) Draw() (interface{}, int, error) {
 	)
 
 	if err != nil {
-		// TODO fill me
-	}
-
-	if result == nil || result.IsNone() {
+		// TODO might need logging
 		return nil, 1, nil
 	}
 
 	mappings := make(map[string]models.DirectoryMapping)
 
-	for _, m := range result.Unwrap().Items {
+	for _, m := range result.Items {
 		rp := m.Item.Metadata.(string)
 		rfd := m.Options[m.SelectedOption].Value.(string)
 

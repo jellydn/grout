@@ -14,8 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/UncleJunVIP/gabagool/pkg/gabagool"
-	shared "github.com/UncleJunVIP/nextui-pak-shared-functions/models"
+	"github.com/UncleJunVIP/gabagool/v2/pkg/gabagool"
 )
 
 type RomMClient struct {
@@ -295,7 +294,7 @@ func (c *RomMClient) GetPlatforms() ([]RomMPlatform, error) {
 	return platforms, nil
 }
 
-func (c *RomMClient) ListDirectory(platformID string) (shared.Items, error) {
+func (c *RomMClient) ListDirectory(platformID string) (models.Items, error) {
 	params := url.Values{
 		"platform_id": {platformID},
 		"limit":       {"10000"},
@@ -312,9 +311,9 @@ func (c *RomMClient) ListDirectory(platformID string) (shared.Items, error) {
 		return nil, err
 	}
 
-	items := make([]shared.Item, 0, len(rawItemsList.Items))
+	items := make([]models.Item, 0, len(rawItemsList.Items))
 	for _, rawItem := range rawItemsList.Items {
-		items = append(items, shared.Item{
+		items = append(items, models.Item{
 			DisplayName:  rawItem.FsNameNoTags,
 			Filename:     rawItem.FsName,
 			FileSize:     strconv.Itoa(rawItem.FsSizeBytes),

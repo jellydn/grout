@@ -11,20 +11,18 @@ import (
 	"strconv"
 	"strings"
 
-	gaba "github.com/UncleJunVIP/gabagool/pkg/gabagool"
-	"github.com/UncleJunVIP/nextui-pak-shared-functions/common"
-	shared "github.com/UncleJunVIP/nextui-pak-shared-functions/models"
+	gaba "github.com/UncleJunVIP/gabagool/v2/pkg/gabagool"
 	"qlova.tech/sum"
 )
 
 type DownloadScreen struct {
 	Platform      models.Platform
-	Games         shared.Items
-	SelectedGames shared.Items
+	Games         models.Items
+	SelectedGames models.Items
 	SearchFilter  string
 }
 
-func InitDownloadScreen(platform models.Platform, games shared.Items, selectedGames shared.Items, searchFilter string) DownloadScreen {
+func InitDownloadScreen(platform models.Platform, games models.Items, selectedGames models.Items, searchFilter string) DownloadScreen {
 	return DownloadScreen{
 		Platform:      platform,
 		Games:         games,
@@ -59,27 +57,30 @@ func (d DownloadScreen) Draw() (value interface{}, exitCode int, e error) {
 	res, err := gaba.DownloadManager(downloads, headers, state.GetAppState().Config.DownloadArt)
 	if err != nil {
 		logger.Error("Error downloading", "error", err)
-		return nil, -1, err
+		return nil, 1, err
 	}
 
-	if len(res.FailedDownloads) > 0 {
+	if len(res.Failed) > 0 {
 		for _, g := range downloads {
-			if slices.Contains(res.FailedDownloads, g) {
-				common.DeleteFile(g.Location)
+			failedMatch := slices.ContainsFunc(res.Failed, func(de gaba.DownloadError) bool {
+				return de.Download.DisplayName == g.DisplayName
+			})
+			if failedMatch {
+				utils.DeleteFile(g.Location)
 			}
 		}
 	}
 
 	exitCode = 0
 
-	if len(res.CompletedDownloads) == 0 {
+	if len(res.Completed) == 0 {
 		exitCode = 1
 	}
 
-	var downloadedGames []shared.Item
+	var downloadedGames []models.Item
 
 	for _, g := range d.Games {
-		if slices.ContainsFunc(res.CompletedDownloads, func(d gaba.Download) bool {
+		if slices.ContainsFunc(res.Completed, func(d gaba.Download) bool {
 			return d.DisplayName == g.DisplayName
 		}) {
 			downloadedGames = append(downloadedGames, g)
@@ -89,7 +90,7 @@ func (d DownloadScreen) Draw() (value interface{}, exitCode int, e error) {
 	return downloadedGames, exitCode, err
 }
 
-func BuildDownload(platform models.Platform, games shared.Items) []gaba.Download {
+func BuildDownload(platform models.Platform, games models.Items) []gaba.Download {
 	config := state.GetAppState().Config
 
 	var downloads []gaba.Download

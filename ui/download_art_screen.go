@@ -6,19 +6,17 @@ import (
 	"grout/utils"
 	"time"
 
-	"github.com/UncleJunVIP/gabagool/pkg/gabagool"
-	"github.com/UncleJunVIP/nextui-pak-shared-functions/common"
-	shared "github.com/UncleJunVIP/nextui-pak-shared-functions/models"
+	"github.com/UncleJunVIP/gabagool/v2/pkg/gabagool"
 	"qlova.tech/sum"
 )
 
 type DownloadArtScreen struct {
 	Platform     models.Platform
-	Games        shared.Items
+	Games        models.Items
 	SearchFilter string
 }
 
-func InitDownloadArtScreen(platform models.Platform, games shared.Items, searchFilter string) models.Screen {
+func InitDownloadArtScreen(platform models.Platform, games models.Items, searchFilter string) models.Screen {
 	return DownloadArtScreen{
 		Platform:     platform,
 		Games:        games,
@@ -71,8 +69,8 @@ func (a DownloadArtScreen) Draw() (value interface{}, exitCode int, e error) {
 				ImagePath: artPath,
 			})
 
-		if err != nil || result.IsNone() {
-			common.DeleteFile(artPath)
+		if err != nil || result.Confirmed {
+			utils.DeleteFile(artPath)
 		}
 	}
 

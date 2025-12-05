@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"grout/client"
 	"grout/models"
+	"grout/utils"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/UncleJunVIP/gabagool/pkg/gabagool"
-	"github.com/UncleJunVIP/nextui-pak-shared-functions/common"
+	"github.com/UncleJunVIP/gabagool/v2/pkg/gabagool"
 	"qlova.tech/sum"
 )
 
@@ -37,7 +37,7 @@ func HandleLogin(existing models.Host) *models.Config {
 			time.Sleep(3 * time.Second)
 			return nil, nil
 		})
-		common.LogStandardFatal("Unable to get login information", err)
+		utils.LogStandardFatal("Unable to get login information", err)
 	} else if code == 2 {
 		os.Exit(1)
 	}
@@ -56,14 +56,14 @@ func HandleLogin(existing models.Host) *models.Config {
 		return LoginResult{}, nil
 	})
 
-	if loginRe.Result.(LoginResult).BadHost {
+	if loginRe.(LoginResult).BadHost {
 		gabagool.ConfirmationMessage("Could not connect to RomM!\nPlease check the hostname and port.",
 			[]gabagool.FooterHelpItem{
 				{ButtonName: "A", HelpText: "Continue"},
 			},
 			gabagool.MessageOptions{})
 		return HandleLogin(host.(models.Host))
-	} else if loginRe.Result.(LoginResult).BadCredentials {
+	} else if loginRe.(LoginResult).BadCredentials {
 		gabagool.ConfirmationMessage("Invalid Username or Password.",
 			[]gabagool.FooterHelpItem{
 				{ButtonName: "A", HelpText: "Continue"},
@@ -179,11 +179,9 @@ func (l Login) Draw() (newHost interface{}, exitCode int, e error) {
 
 	if err != nil {
 		return nil, 1, err
-	} else if res.IsNone() {
-		return nil, 2, nil
 	}
 
-	loginSettings := res.Unwrap().Items
+	loginSettings := res.Items
 
 	var host models.Host
 

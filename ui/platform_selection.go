@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"grout/models"
 
-	"github.com/UncleJunVIP/gabagool/pkg/gabagool"
+	"github.com/UncleJunVIP/gabagool/v2/pkg/gabagool"
 	"qlova.tech/sum"
 )
 
@@ -68,13 +68,13 @@ func (ps PlatformSelection) Draw() (p interface{}, exitCode int, e error) {
 	selection, err := gabagool.List(options)
 
 	if err != nil {
-		return models.Platform{}, -1, err
+		return models.Platform{}, 2, err
 	}
 
-	if selection.IsSome() && selection.Unwrap().ActionTriggered && ps.QuitOnBack {
+	if selection.Action == gabagool.ListActionTriggered && ps.QuitOnBack {
 		return nil, 4, nil
-	} else if selection.IsSome() && selection.Unwrap().SelectedIndex != -1 {
-		return selection.Unwrap().SelectedItem.Metadata.(models.Platform), 0, nil
+	} else if selection.Action == gabagool.ListActionSelected {
+		return selection.Items[selection.Selected[0]].Metadata.(models.Platform), 0, nil
 	}
 
 	return nil, 2, nil
