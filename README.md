@@ -42,9 +42,14 @@ These systems will have controls automatically mapped.
 
 Grout has been tested on the following devices running muOS 2508.4 Loose Goose.
 
-- RG35XXSP
-- RG34XX
-- TrimUI Smart Pro
+- Anbernic Devices
+    - RG35XXSP
+    - RG34XX
+    - RG40XXV
+
+- TrimUI Devices
+    - Brick
+    - Smart Pro
 
 Please help by verifying if it works on other devices!
 
