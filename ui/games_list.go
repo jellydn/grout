@@ -160,6 +160,12 @@ func (s *GameListScreen) prepareDisplayList(games []romm.DetailedRom) []romm.Det
 		if games[i].Name == "" {
 			games[i].Name = strings.ReplaceAll(games[i].FileName, filepath.Ext(games[i].FileName), "")
 		}
+
+		regions := strings.Join(games[i].Regions, ", ")
+
+		if len(regions) > 0 {
+			games[i].Name = fmt.Sprintf("%s (%s)", games[i].Name, regions)
+		}
 	}
 
 	slices.SortFunc(games, func(a, b romm.DetailedRom) int {

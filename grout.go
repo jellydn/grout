@@ -38,9 +38,7 @@ type (
 	}
 )
 
-var appConfig *models.Config
-
-func init() {
+func setup() *models.Config {
 	cfw := utils.GetCFW()
 
 	gaba.Init(gaba.Options{
@@ -57,7 +55,6 @@ func init() {
 		_, _ = gaba.ConfirmationMessage("No Internet Connection!\nMake sure you are connected to Wi-Fi.", []gaba.FooterHelpItem{
 			{ButtonName: "B", HelpText: "Quit"},
 		}, gaba.MessageOptions{})
-		defer cleanup()
 		utils.LogStandardFatal("No Internet Connection", nil)
 	}
 
@@ -81,8 +78,6 @@ func init() {
 		utils.SaveConfig(config)
 	}
 
-	appConfig = config
-
 	if config.LogLevel != "" {
 		gaba.SetRawLogLevel(config.LogLevel)
 	}
@@ -101,11 +96,11 @@ func init() {
 		if err == nil && result.ExitCode == gaba.ExitCodeSuccess {
 			config.DirectoryMappings = result.Value.Mappings
 			utils.SaveConfig(config)
-			appConfig = config
 		}
 	}
 
 	gaba.GetLogger().Debug("Configuration Loaded!", "config", config.ToLoggable())
+	return config
 }
 
 func cleanup() {
@@ -115,10 +110,11 @@ func cleanup() {
 func main() {
 	defer cleanup()
 
+	config := setup()
+
 	logger := gaba.GetLogger()
 	logger.Debug("Starting Grout")
 
-	config := appConfig
 	cfw := utils.GetCFW()
 	quitOnBack := len(config.Hosts) == 1
 	platforms := utils.GetMappedPlatforms(config.Hosts[0], config.DirectoryMappings)
