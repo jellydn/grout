@@ -12,9 +12,7 @@ import (
 type PaginatedRoms struct {
 	Items  []Rom `json:"items"`
 	Total  int   `json:"total"`
-	Page   int   `json:"page"`
-	Size   int   `json:"size"`
-	Pages  int   `json:"pages"`
+	Limit  int   `json:"limit"`
 	Offset int   `json:"offset"`
 }
 
@@ -93,12 +91,13 @@ type RomFile struct {
 }
 
 type GetRomsOptions struct {
-	Page       int
-	Size       int
-	PlatformID *int
-	Search     string
-	OrderBy    string
-	OrderDir   string
+	Page         int
+	Limit        int
+	PlatformID   *int
+	CollectionID *int
+	Search       string
+	OrderBy      string
+	OrderDir     string
 }
 
 func (c *Client) GetRoms(opts *GetRomsOptions) (*PaginatedRoms, error) {
@@ -108,11 +107,14 @@ func (c *Client) GetRoms(opts *GetRomsOptions) (*PaginatedRoms, error) {
 		if opts.Page > 0 {
 			params["page"] = strconv.Itoa(opts.Page)
 		}
-		if opts.Size > 0 {
-			params["size"] = strconv.Itoa(opts.Size)
+		if opts.Limit > 0 {
+			params["limit"] = strconv.Itoa(opts.Limit)
 		}
 		if opts.PlatformID != nil {
 			params["platform_id"] = strconv.Itoa(*opts.PlatformID)
+		}
+		if opts.CollectionID != nil {
+			params["collection_id"] = strconv.Itoa(*opts.CollectionID)
 		}
 		if opts.Search != "" {
 			params["search"] = opts.Search
@@ -128,6 +130,7 @@ func (c *Client) GetRoms(opts *GetRomsOptions) (*PaginatedRoms, error) {
 	var result PaginatedRoms
 	path := "/api/roms" + buildQueryString(params)
 	err := c.doRequest("GET", path, nil, &result)
+
 	return &result, err
 }
 

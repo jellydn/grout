@@ -6,6 +6,7 @@ import (
 	"grout/constants"
 	"grout/models"
 	"grout/romm"
+	"grout/utils"
 	"slices"
 	"strings"
 	"time"
@@ -13,11 +14,19 @@ import (
 	gaba "github.com/UncleJunVIP/gabagool/v2/pkg/gabagool"
 )
 
+type FetchType int
+
+const (
+	Platform FetchType = iota
+	Collection
+)
+
 type GameListInput struct {
 	Config               *models.Config
 	Host                 models.Host
 	Platform             romm.Platform
-	Games                []romm.Rom // Pre-loaded games (optional, will fetch if empty)
+	Collection           romm.Collection
+	Games                []romm.Rom
 	SearchFilter         string
 	LastSelectedIndex    int
 	LastSelectedPosition int
@@ -26,8 +35,9 @@ type GameListInput struct {
 type GameListOutput struct {
 	SelectedGames        []romm.Rom
 	Platform             romm.Platform
+	Collection           romm.Collection
 	SearchFilter         string
-	AllGames             []romm.Rom // Full list for navigation back
+	AllGames             []romm.Rom
 	LastSelectedIndex    int
 	LastSelectedPosition int
 }
@@ -42,7 +52,7 @@ func (s *GameListScreen) Draw(input GameListInput) (ScreenResult[GameListOutput]
 	games := input.Games
 
 	if len(games) == 0 {
-		loaded, err := s.loadGames(input.Config, input.Host, input.Platform)
+		loaded, err := s.loadGames(input)
 		if err != nil {
 			return WithCode(GameListOutput{}, gaba.ExitCodeError), err
 		}
@@ -51,23 +61,60 @@ func (s *GameListScreen) Draw(input GameListInput) (ScreenResult[GameListOutput]
 
 	output := GameListOutput{
 		Platform:             input.Platform,
+		Collection:           input.Collection,
 		SearchFilter:         input.SearchFilter,
 		AllGames:             games,
 		LastSelectedIndex:    input.LastSelectedIndex,
 		LastSelectedPosition: input.LastSelectedPosition,
 	}
 
-	displayGames := s.prepareDisplayList(games)
+	displayGames := utils.PrepareRomNames(games)
 
-	title := input.Platform.Name
+	// Use collection name if viewing a collection, otherwise use platform name
+	displayName := input.Platform.Name
+	allGamesFilteredOut := false
+	if input.Collection.ID != 0 {
+		displayName = input.Collection.Name
+		originalCount := len(displayGames)
+		// Filter out games without platform mappings
+		filteredGames := make([]romm.Rom, 0, len(displayGames))
+		for _, game := range displayGames {
+			if _, hasMapping := input.Config.DirectoryMappings[game.PlatformSlug]; hasMapping {
+				filteredGames = append(filteredGames, game)
+			}
+		}
+		displayGames = filteredGames
+
+		// Track if all games were filtered out due to platform mappings
+		allGamesFilteredOut = originalCount > 0 && len(displayGames) == 0
+
+		// Add platform slug to each game name when viewing a collection
+		for i := range displayGames {
+			displayGames[i].Name = fmt.Sprintf("[%s] %s", displayGames[i].PlatformSlug, displayGames[i].Name)
+		}
+	}
+
+	title := displayName
 	if input.SearchFilter != "" {
-		title = fmt.Sprintf("[Search: \"%s\"] | %s", input.SearchFilter, input.Platform.Name)
+		title = fmt.Sprintf("[Search: \"%s\"] | %s", input.SearchFilter, displayName)
 		displayGames = filterList(displayGames, input.SearchFilter)
 	}
 
 	if len(displayGames) == 0 {
-		s.showEmptyMessage(input.Platform.Name, input.SearchFilter)
-		return WithCode(output, gaba.ExitCode(404)), nil
+		if allGamesFilteredOut {
+			s.showFilteredOutMessage(displayName)
+		} else {
+			s.showEmptyMessage(displayName, input.SearchFilter)
+		}
+		// Only trigger search if there was an active search query
+		if input.SearchFilter != "" {
+			return WithCode(output, constants.ExitCodeNoResults), nil
+		}
+		// Otherwise, go back
+		if input.Collection.ID != 0 {
+			return WithCode(output, constants.ExitCodeBackToCollection), nil
+		}
+		return Back(output), nil
 	}
 
 	menuItems := make([]gaba.MenuItem, len(displayGames))
@@ -103,6 +150,10 @@ func (s *GameListScreen) Draw(input GameListInput) (ScreenResult[GameListOutput]
 				output.LastSelectedPosition = 0
 				return WithCode(output, constants.ExitCodeClearSearch), nil
 			}
+			// Return different exit code based on whether viewing collection or platform
+			if input.Collection.ID != 0 {
+				return WithCode(output, constants.ExitCodeBackToCollection), nil
+			}
 			return Back(output), nil
 		}
 		return WithCode(output, gaba.ExitCodeError), err
@@ -123,20 +174,39 @@ func (s *GameListScreen) Draw(input GameListInput) (ScreenResult[GameListOutput]
 		return WithCode(output, constants.ExitCodeSearch), nil
 	}
 
+	// Return different exit code based on whether viewing collection or platform
+	if input.Collection.ID != 0 {
+		return WithCode(output, constants.ExitCodeBackToCollection), nil
+	}
 	return Back(output), nil
 }
 
-func (s *GameListScreen) loadGames(config *models.Config, host models.Host, platform romm.Platform) ([]romm.Rom, error) {
+func (s *GameListScreen) loadGames(input GameListInput) ([]romm.Rom, error) {
+	config := input.Config
+	host := input.Host
+	platform := input.Platform
+	collection := input.Collection
+
+	id := platform.ID
+	ft := Platform
+	displayName := platform.Name
+
+	if collection.ID != 0 {
+		id = collection.ID
+		ft = Collection
+		displayName = collection.Name
+	}
+
 	logger := gaba.GetLogger()
 
 	var games []romm.Rom
 	var loadErr error
 
 	_, err := gaba.ProcessMessage(
-		fmt.Sprintf("Loading %s...", platform.Name),
+		fmt.Sprintf("Loading %s...", displayName),
 		gaba.ProcessMessageOptions{ShowThemeBackground: true},
 		func() (interface{}, error) {
-			roms, err := fetchList(config, host, platform)
+			roms, err := fetchList(config, host, id, ft)
 			if err != nil {
 				logger.Error("Error downloading game list", "error", err)
 				loadErr = err
@@ -152,22 +222,6 @@ func (s *GameListScreen) loadGames(config *models.Config, host models.Host, plat
 	}
 
 	return games, nil
-}
-
-func (s *GameListScreen) prepareDisplayList(games []romm.Rom) []romm.Rom {
-	for i := range games {
-		regions := strings.Join(games[i].Regions, ", ")
-
-		if len(regions) > 0 {
-			games[i].Name = fmt.Sprintf("%s (%s)", games[i].Name, regions)
-		}
-	}
-
-	slices.SortFunc(games, func(a, b romm.Rom) int {
-		return strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name))
-	})
-
-	return games
 }
 
 func (s *GameListScreen) showEmptyMessage(platformName, searchFilter string) {
@@ -188,24 +242,42 @@ func (s *GameListScreen) showEmptyMessage(platformName, searchFilter string) {
 	)
 }
 
-func fetchList(config *models.Config, host models.Host, platform romm.Platform) ([]romm.Rom, error) {
-	logger := gaba.GetLogger()
+func (s *GameListScreen) showFilteredOutMessage(collectionName string) {
+	message := fmt.Sprintf("No games in %s match your platform mappings", collectionName)
 
-	logger.Debug("Fetching Item List",
-		"host", host.ToLoggable())
+	gaba.ProcessMessage(
+		message,
+		gaba.ProcessMessageOptions{ShowThemeBackground: true},
+		func() (interface{}, error) {
+			time.Sleep(time.Second * 1)
+			return nil, nil
+		},
+	)
+}
+
+func fetchList(config *models.Config, host models.Host, queryID int, fetchType FetchType) ([]romm.Rom, error) {
+	logger := gaba.GetLogger()
 
 	rc := romm.NewClient(host.URL(),
 		romm.WithBasicAuth(host.Username, host.Password),
 		romm.WithTimeout(config.ApiTimeout))
 
-	res, err := rc.GetRoms(&romm.GetRomsOptions{
-		Size:       10000,
-		PlatformID: &platform.ID,
-	})
+	opt := &romm.GetRomsOptions{
+		Limit: 10000,
+	}
+
+	switch fetchType {
+	case Platform:
+		opt.PlatformID = &queryID
+	case Collection:
+		opt.CollectionID = &queryID
+	}
+
+	res, err := rc.GetRoms(opt)
 	if err != nil {
 		return nil, err
 	}
-
+	logger.Debug("Fetched platform games", "count", len(res.Items), "total", res.Total)
 	return res.Items, nil
 }
 

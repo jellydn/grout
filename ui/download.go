@@ -125,7 +125,18 @@ func (s *DownloadScreen) buildDownloads(config models.Config, host models.Host, 
 	downloads := make([]gaba.Download, 0, len(games))
 
 	for _, g := range games {
-		romDirectory := utils.GetPlatformRomDirectory(config, platform)
+		// For collections, use each game's platform info; for platforms, use the passed platform
+		gamePlatform := platform
+		if platform.ID == 0 && g.PlatformID != 0 {
+			// Construct platform from game's platform info (happens when viewing collections)
+			gamePlatform = romm.Platform{
+				ID:   g.PlatformID,
+				Slug: g.PlatformSlug,
+				Name: g.PlatformDisplayName,
+			}
+		}
+
+		romDirectory := utils.GetPlatformRomDirectory(config, gamePlatform)
 		downloadLocation := ""
 
 		sourceURL := ""

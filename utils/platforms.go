@@ -8,7 +8,7 @@ import (
 )
 
 func GetMappedPlatforms(host models.Host, mappings map[string]models.DirectoryMapping) []romm.Platform {
-	c := romm.NewClient(host.URL(), romm.WithBasicAuth(host.Username, host.Password))
+	c := GetRommClient(host)
 
 	rommPlatforms, err := c.GetPlatforms()
 	if err != nil {

@@ -2,7 +2,7 @@ package ui
 
 import (
 	"errors"
-
+	"grout/constants"
 	"grout/romm"
 
 	gaba "github.com/UncleJunVIP/gabagool/v2/pkg/gabagool"
@@ -11,6 +11,7 @@ import (
 type PlatformSelectionInput struct {
 	Platforms            []romm.Platform
 	QuitOnBack           bool // If true, back button quits the app; if false, it navigates back
+	ShowCollections      bool
 	LastSelectedIndex    int
 	LastSelectedPosition int
 }
@@ -33,19 +34,28 @@ func (s *PlatformSelectionScreen) Draw(input PlatformSelectionInput) (ScreenResu
 		LastSelectedPosition: input.LastSelectedPosition,
 	}
 
-	// Handle empty platforms
 	if len(input.Platforms) == 0 {
 		return WithCode(output, gaba.ExitCode(404)), nil
 	}
 
-	menuItems := make([]gaba.MenuItem, len(input.Platforms))
-	for i, platform := range input.Platforms {
-		menuItems[i] = gaba.MenuItem{
+	var menuItems []gaba.MenuItem
+
+	if input.ShowCollections {
+		menuItems = append(menuItems, gaba.MenuItem{
+			Text:     "Collections",
+			Selected: false,
+			Focused:  false,
+			Metadata: romm.Platform{Slug: "collections"},
+		})
+	}
+
+	for _, platform := range input.Platforms {
+		menuItems = append(menuItems, gaba.MenuItem{
 			Text:     platform.Name,
 			Selected: false,
 			Focused:  false,
 			Metadata: platform,
-		}
+		})
 	}
 
 	var footerItems []gaba.FooterHelpItem
@@ -78,7 +88,13 @@ func (s *PlatformSelectionScreen) Draw(input PlatformSelectionInput) (ScreenResu
 
 	switch sel.Action {
 	case gaba.ListActionSelected:
+
 		platform := sel.Items[sel.Selected[0]].Metadata.(romm.Platform)
+
+		if platform.Slug == "collections" {
+			return WithCode(output, constants.ExitCodeCollections), nil
+		}
+
 		output.SelectedPlatform = platform
 		output.LastSelectedIndex = sel.Selected[0]
 		output.LastSelectedPosition = sel.VisiblePosition

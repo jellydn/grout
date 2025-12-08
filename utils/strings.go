@@ -1,9 +1,12 @@
 package utils
 
 import (
+	"fmt"
 	"grout/constants"
+	"grout/romm"
 	"path"
 	"path/filepath"
+	"slices"
 	"strings"
 )
 
@@ -65,4 +68,20 @@ func ItemNameCleaner(filename string, stripTag bool) (string, string) {
 	foundTag = strings.ReplaceAll(foundTag, ")", "")
 
 	return cleaned, foundTag
+}
+
+func PrepareRomNames(games []romm.Rom) []romm.Rom {
+	for i := range games {
+		regions := strings.Join(games[i].Regions, ", ")
+
+		if len(regions) > 0 {
+			games[i].Name = fmt.Sprintf("%s (%s)", games[i].Name, regions)
+		}
+	}
+
+	slices.SortFunc(games, func(a, b romm.Rom) int {
+		return strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name))
+	})
+
+	return games
 }
