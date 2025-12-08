@@ -5,7 +5,7 @@ import (
 )
 
 type Config struct {
-	Hosts             Hosts                       `json:"hosts,omitempty"`
+	Hosts             []Host                      `json:"hosts,omitempty"`
 	DirectoryMappings map[string]DirectoryMapping `json:"directory_mappings,omitempty"`
 	ApiTimeout        time.Duration               `json:"api_timeout"`
 	DownloadTimeout   time.Duration               `json:"download_timeout"`

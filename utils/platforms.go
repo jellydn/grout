@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"grout/models"
 
-	"github.com/brandonkowalski/go-romm"
+	"grout/romm"
 )
 
 func GetMappedPlatforms(host models.Host, mappings map[string]models.DirectoryMapping) []romm.Platform {

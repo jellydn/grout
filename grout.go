@@ -8,9 +8,10 @@ import (
 	"log/slog"
 	"time"
 
+	"grout/romm"
+
 	_ "github.com/UncleJunVIP/certifiable"
 	gaba "github.com/UncleJunVIP/gabagool/v2/pkg/gabagool"
-	"github.com/brandonkowalski/go-romm"
 )
 
 const (
@@ -22,8 +23,8 @@ const (
 )
 
 type (
-	CurrentGamesList   []romm.DetailedRom
-	FullGamesList      []romm.DetailedRom
+	CurrentGamesList   []romm.Rom
+	FullGamesList      []romm.Rom
 	SearchFilterString string
 	QuitOnBackBool     bool
 

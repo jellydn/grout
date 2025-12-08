@@ -10,23 +10,24 @@ import (
 	"strconv"
 	"strings"
 
+	"grout/romm"
+
 	gaba "github.com/UncleJunVIP/gabagool/v2/pkg/gabagool"
-	"github.com/brandonkowalski/go-romm"
 )
 
 type DownloadInput struct {
 	Config        models.Config
 	Host          models.Host
 	Platform      romm.Platform
-	SelectedGames []romm.DetailedRom
-	AllGames      []romm.DetailedRom
+	SelectedGames []romm.Rom
+	AllGames      []romm.Rom
 	SearchFilter  string
 }
 
 type DownloadOutput struct {
-	DownloadedGames []romm.DetailedRom
+	DownloadedGames []romm.Rom
 	Platform        romm.Platform
-	AllGames        []romm.DetailedRom
+	AllGames        []romm.Rom
 	SearchFilter    string
 }
 
@@ -36,7 +37,7 @@ func NewDownloadScreen() *DownloadScreen {
 	return &DownloadScreen{}
 }
 
-func (s *DownloadScreen) Execute(config models.Config, host models.Host, platform romm.Platform, selectedGames []romm.DetailedRom, allGames []romm.DetailedRom, searchFilter string) DownloadOutput {
+func (s *DownloadScreen) Execute(config models.Config, host models.Host, platform romm.Platform, selectedGames []romm.Rom, allGames []romm.Rom, searchFilter string) DownloadOutput {
 	result, err := s.Draw(DownloadInput{
 		Config:        config,
 		Host:          host,
@@ -56,7 +57,7 @@ func (s *DownloadScreen) Execute(config models.Config, host models.Host, platfor
 	}
 
 	if result.ExitCode == gaba.ExitCodeSuccess && len(result.Value.DownloadedGames) > 0 {
-		gaba.GetLogger().Info("Successfully downloaded games", "count", len(result.Value.DownloadedGames))
+		gaba.GetLogger().Debug("Successfully downloaded games", "count", len(result.Value.DownloadedGames))
 	}
 
 	return result.Value
@@ -107,7 +108,7 @@ func (s *DownloadScreen) Draw(input DownloadInput) (ScreenResult[DownloadOutput]
 		return WithCode(output, gaba.ExitCodeError), nil
 	}
 
-	downloadedGames := make([]romm.DetailedRom, 0, len(res.Completed))
+	downloadedGames := make([]romm.Rom, 0, len(res.Completed))
 	for _, g := range input.SelectedGames {
 		if slices.ContainsFunc(res.Completed, func(d gaba.Download) bool {
 			return d.DisplayName == g.Name
@@ -120,7 +121,7 @@ func (s *DownloadScreen) Draw(input DownloadInput) (ScreenResult[DownloadOutput]
 	return Success(output), nil
 }
 
-func (s *DownloadScreen) buildDownloads(config models.Config, host models.Host, platform romm.Platform, games []romm.DetailedRom) []gaba.Download {
+func (s *DownloadScreen) buildDownloads(config models.Config, host models.Host, platform romm.Platform, games []romm.Rom) []gaba.Download {
 	downloads := make([]gaba.Download, 0, len(games))
 
 	for _, g := range games {
@@ -129,7 +130,7 @@ func (s *DownloadScreen) buildDownloads(config models.Config, host models.Host, 
 
 		sourceURL := ""
 
-		if g.MultiFile {
+		if g.Multi {
 			// TODO Fill this shit out
 		} else {
 			downloadLocation = filepath.Join(romDirectory, g.Files[0].FileName)

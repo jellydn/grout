@@ -6,14 +6,13 @@ import (
 )
 
 type Host struct {
-	DisplayName string `yaml:"display_name,omitempty" json:"display_name,omitempty"`
-	RootURI     string `yaml:"root_uri,omitempty" json:"root_uri,omitempty"`
-	Port        int    `yaml:"port,omitempty" json:"port,omitempty"`
+	DisplayName string `json:"display_name,omitempty"`
+	RootURI     string `json:"root_uri,omitempty"`
+	Port        int    `json:"port,omitempty"`
 
-	Username string `yaml:"username,omitempty" json:"username,omitempty"`
-	Password string `yaml:"password,omitempty" json:"password,omitempty"`
+	Username string `json:"username,omitempty"`
+	Password string `json:"password,omitempty"`
 }
-type Hosts []Host
 
 func (h Host) ToLoggable() map[string]any {
 	temp := map[string]any{

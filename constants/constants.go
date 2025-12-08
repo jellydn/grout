@@ -13,6 +13,8 @@ const (
 	ExitCodeNoResults    gaba.ExitCode = 404
 )
 
+const MuOSSD1 = "/mnt/mmc"
+const MuOSSD2 = "/mnt/sdcard"
 const MuOSRomsFolderUnion = "/mnt/union/ROMS"
 const NextUIRomsFolder = "/mnt/SDCARD/Roms/"
 
