@@ -22,6 +22,25 @@ A RomM Client for [NextUI](https://nextui.loveretro.games) and [muOS](https://mu
 
 </div>
 
+## Overview
+
+Grout is a RomM Client for [NextUI](https://nextui.loveretro.games) and [muOS](https://muos.dev).
+
+It allows you to connect to a RomM instance, browse the library, and download ROMs with Box Art right on your device.
+
+---
+
+## Features
+
+- Download ROM Files
+- Download Box Art
+- Multi-file games with automatic M3U file creation
+- Select multiple games at once
+- Optional Game Details Screen
+- Optional Unzipping
+
+---
+
 ## How do I setup Grout?
 
 ### NextUI Setup
@@ -64,19 +83,27 @@ Please help by verifying if it works on other devices!
 6. Exit Archive Manager.
 7. Find an [input mapping config](/.github/resources/input_mappings) for your device.
     - If one does not exist, please try one for a different device.
-    - If that does not work, please [create an issue](https://github.com/rommapp/grout/issues/new).
+    - If that does not work,
+      please [create an issue](https://github.com/rommapp/grout/issues/new?template=button-mapping-request.md).
     - A first launch setup process is in the works but is not ready for prime-time.
 8. Save the input mapping JSON file as `input_mapping.json` and transfer it to SD1 `(mmc)/Applications/Grout` on your
    device.
-9. Select `Apps` on the Main Menu, launch Grout and enjoy!
+9. Select `Apps` on the Main Menu, launch Grout, and enjoy!
 
 **Note:** Grout does not support downloading art on muOS. This will be added in a future release.
 
 ---
 
-## Be a friend, tell a friend something nice; it might change their life!
+## Need Help? Find a Bug? Have an Idea?
 
-I've spent a good chunk of time building Grout.
+Please [create an issue](https://github.com/rommapp/grout/issues/new/choose). Be sure to fill out the template
+completely!
+
+---
+
+## Spread joy!
+
+A good chunk of time has been spent building Grout.
 
 If you feel inclined to pay it forward, go do something nice for someone! ❤️
 
