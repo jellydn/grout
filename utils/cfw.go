@@ -34,7 +34,7 @@ func GetRomDirectory() string {
 	case constants.MuOS:
 		return constants.MuOSRomsFolderUnion
 	case constants.NextUI:
-		return constants.NextUIRomsFolder
+		return filepath.Join(GetNextUIBasePath(), "Roms")
 	}
 
 	return ""
@@ -43,10 +43,10 @@ func GetRomDirectory() string {
 func GetSaveDirectory() string {
 	switch GetCFW() {
 	case constants.MuOS:
-		return filepath.Join(GetMuOSBasePath(), "save", "file")
+		return filepath.Join(GetMuOSBasePath(), "MUOS", "save", "file")
 
 	case constants.NextUI:
-		return constants.NextUISavesFolder
+		return filepath.Join(GetNextUIBasePath(), "Saves")
 	}
 
 	return ""
@@ -64,6 +64,14 @@ func GetMuOSBasePath() string {
 	}
 
 	return constants.MuOSSD1
+}
+
+func GetNextUIBasePath() string {
+	if os.Getenv("NEXTUI_BASE_PATH") != "" {
+		return os.Getenv("NEXTUI_BASE_PATH")
+	}
+
+	return "/mnt/SDCARD"
 }
 
 func GetMuOSInfoDirectory() string {

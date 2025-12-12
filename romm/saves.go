@@ -58,27 +58,6 @@ func (c *Client) GetSaves(query SaveQuery) (*[]Save, error) {
 	return &saves, err
 }
 
-func (c *Client) GetSavesByRomForPlatform(platformID int) (map[int]*[]Save, error) {
-	saves, err := c.GetSaves(SaveQuery{PlatformID: platformID})
-	if err != nil {
-		return nil, err
-	}
-
-	res := make(map[int]*[]Save)
-
-	for _, save := range *saves {
-		ptr := res[save.RomID]
-		if ptr == nil {
-			var s []Save
-			res[save.RomID] = &s
-			ptr = res[save.RomID]
-		}
-		*ptr = append(*ptr, save)
-	}
-
-	return res, nil
-}
-
 func (c *Client) DownloadSave(downloadPath string) ([]byte, error) {
 	return c.doRequestRaw("GET", downloadPath, nil)
 }

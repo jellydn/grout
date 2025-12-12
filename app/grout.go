@@ -130,6 +130,7 @@ func main() {
 	logger.Debug("Starting Grout")
 
 	cfw := utils.GetCFW()
+
 	quitOnBack := len(config.Hosts) == 1
 	platforms := utils.GetMappedPlatforms(config.Hosts[0], config.DirectoryMappings)
 	showCollections := utils.ShowCollections(config.Hosts[0])

@@ -8,11 +8,8 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /build
 
-# Build argument to enable local gabagool development
 ARG USE_LOCAL_GABAGOOL=false
 
-# Copy source files
-# Pattern works for both contexts: grout dir (go.mod) or parent dir (grout/go.mod)
 COPY go*.mod go*.sum* go*.work* ./
 COPY . .
 
@@ -44,11 +41,10 @@ RUN if [ "$USE_LOCAL_GABAGOOL" = "true" ]; then \
         GOWORK=off go mod download; \
     fi
 
-# Build
 RUN if [ "$USE_LOCAL_GABAGOOL" = "true" ]; then \
-        go build -gcflags="all=-N -l" -v; \
+        go build -gcflags="all=-N -l" -v -o grout app/grout.go; \
     else \
-        GOWORK=off go build -gcflags="all=-N -l" -v; \
+        GOWORK=off go build -gcflags="all=-N -l" -v -o grout app/grout; \
     fi
 
 CMD ["/bin/bash"]

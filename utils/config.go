@@ -13,17 +13,19 @@ import (
 type Config struct {
 	Hosts             []romm.Host                 `json:"hosts,omitempty"`
 	DirectoryMappings map[string]DirectoryMapping `json:"directory_mappings,omitempty"`
+	ShowGameDetails   bool                        `json:"show_game_details"`
+	AutoSyncSaves     bool                        `json:"auto_sync_saves"`
+	DownloadArt       bool                        `json:"download_art,omitempty"`
+	UnzipDownloads    bool                        `json:"unzip_downloads,omitempty"`
 	ApiTimeout        time.Duration               `json:"api_timeout"`
 	DownloadTimeout   time.Duration               `json:"download_timeout"`
-	UnzipDownloads    bool                        `json:"unzip_downloads,omitempty"`
-	DownloadArt       bool                        `json:"download_art,omitempty"`
-	ShowGameDetails   bool                        `json:"show_game_details"`
 	LogLevel          string                      `json:"log_level,omitempty"`
 }
 
 type DirectoryMapping struct {
-	RomMSlug     string `json:"slug"`
-	RelativePath string `json:"relative_path"`
+	RomMSlug      string `json:"slug"`
+	RelativePath  string `json:"relative_path"`
+	SaveDirectory string `json:"save_directory,omitempty"`
 }
 
 func (c Config) ToLoggable() any {

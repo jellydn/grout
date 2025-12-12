@@ -156,44 +156,60 @@ func (s *PlatformMappingScreen) buildPlatformOptions(
 	// Start with "Skip" option
 	options := []gaba.Option{{DisplayName: "Skip", Value: ""}}
 	selectedIndex := 0
-	canCreate := false
 
-	// Check if we can auto-match or need to create
-	matchIndex := s.findMatchingDirectory(platform, romDirectories, input.CFW)
+	// Get all valid CFW directories for this platform
+	cfwDirectories := s.getCFWDirectoriesForPlatform(platform.Slug, input.CFW)
 
-	if matchIndex == -1 {
-		// No match found - add "Create" option if possible
-		displayName := s.getCreateDisplayName(platform.Slug, input.CFW)
-		if displayName != "" {
+	// Add "Create" options for each valid CFW directory that doesn't exist
+	createOptionAdded := false
+	for _, cfwDir := range cfwDirectories {
+		// Check if this directory already exists
+		dirExists := false
+		for _, romDir := range romDirectories {
+			if s.directoriesMatch(cfwDir, romDir.Name(), input.CFW) {
+				dirExists = true
+				break
+			}
+		}
+
+		if !dirExists {
+			displayName := cfwDir
+			if input.CFW == constants.NextUI {
+				displayName = utils.ParseTag(cfwDir)
+			}
 			options = append(options, gaba.Option{
 				DisplayName: fmt.Sprintf("Create '%s'", displayName),
-				Value:       utils.RomMSlugToCFW(platform.Slug),
+				Value:       cfwDir,
 			})
-			canCreate = true
+			createOptionAdded = true
 		}
 	}
 
-	// Add all existing ROM directories as options
+	// Add existing ROM directories that match any valid CFW option for this platform
 	for _, romDir := range romDirectories {
 		dirName := romDir.Name()
-		displayName := dirName
-		if input.CFW == constants.NextUI {
-			displayName = utils.ParseTag(dirName)
-		}
 
-		options = append(options, gaba.Option{
-			DisplayName: fmt.Sprintf("/%s", displayName),
-			Value:       dirName,
-		})
+		// Only add if this directory is valid for this platform
+		if s.isValidDirectoryForPlatform(platform.Slug, dirName, input.CFW, cfwDirectories) {
+			displayName := dirName
+			if input.CFW == constants.NextUI {
+				displayName = utils.ParseTag(dirName)
+			}
 
-		// Check if this directory matches the platform
-		if s.directoryMatchesPlatform(platform, romDir.Name(), input.CFW) {
-			selectedIndex = len(options) - 1
+			options = append(options, gaba.Option{
+				DisplayName: fmt.Sprintf("/%s", displayName),
+				Value:       dirName,
+			})
+
+			// Check if this directory matches the platform
+			if s.directoryMatchesPlatform(platform, romDir.Name(), input.CFW) {
+				selectedIndex = len(options) - 1
+			}
 		}
 	}
 
-	// Auto-select "Create" if appropriate
-	if selectedIndex == 0 && len(options) > 1 && (len(romDirectories) == 0 || (canCreate && input.AutoSelect)) {
+	// Auto-select first "Create" option if no match found and auto-select enabled
+	if selectedIndex == 0 && createOptionAdded && input.AutoSelect {
 		selectedIndex = 1
 	}
 
@@ -229,6 +245,45 @@ func (s *PlatformMappingScreen) directoryMatchesPlatform(
 	}
 }
 
+func (s *PlatformMappingScreen) getCFWDirectoriesForPlatform(slug string, cfw constants.CFW) []string {
+	switch cfw {
+	case constants.MuOS:
+		return constants.MuOSPlatforms[slug]
+	case constants.NextUI:
+		return constants.NextUIPlatforms[slug]
+	default:
+		return []string{}
+	}
+}
+
+func (s *PlatformMappingScreen) getSaveDirectoriesForPlatform(slug string, cfw constants.CFW) []string {
+	switch cfw {
+	case constants.MuOS:
+		return constants.MuOSSaveDirectories[slug]
+	case constants.NextUI:
+		return constants.NextUISaves[slug]
+	default:
+		return []string{}
+	}
+}
+
+func (s *PlatformMappingScreen) directoriesMatch(dir1, dir2 string, cfw constants.CFW) bool {
+	if cfw == constants.NextUI {
+		return utils.ParseTag(dir1) == utils.ParseTag(dir2)
+	}
+	return dir1 == dir2
+}
+
+func (s *PlatformMappingScreen) isValidDirectoryForPlatform(slug, dirName string, cfw constants.CFW, cfwDirectories []string) bool {
+	// Check if this directory matches any of the valid CFW directories for this platform
+	for _, cfwDir := range cfwDirectories {
+		if s.directoriesMatch(cfwDir, dirName, cfw) {
+			return true
+		}
+	}
+	return false
+}
+
 func (s *PlatformMappingScreen) getCreateDisplayName(slug string, cfw constants.CFW) string {
 	displayName := utils.RomMSlugToCFW(slug)
 	if cfw == constants.NextUI {
@@ -239,6 +294,7 @@ func (s *PlatformMappingScreen) getCreateDisplayName(slug string, cfw constants.
 
 func (s *PlatformMappingScreen) buildMappingsFromResult(items []gaba.ItemWithOptions) map[string]utils.DirectoryMapping {
 	mappings := make(map[string]utils.DirectoryMapping)
+	cfw := utils.GetCFW()
 
 	for _, item := range items {
 		rommSlug := item.Item.Metadata.(string)
@@ -249,13 +305,36 @@ func (s *PlatformMappingScreen) buildMappingsFromResult(items []gaba.ItemWithOpt
 			continue
 		}
 
+		// Auto-populate save directory based on the selected ROM directory
+		saveDir := s.inferSaveDirectory(rommSlug, relativePath, cfw)
+
 		mappings[rommSlug] = utils.DirectoryMapping{
-			RomMSlug:     rommSlug,
-			RelativePath: relativePath,
+			RomMSlug:      rommSlug,
+			RelativePath:  relativePath,
+			SaveDirectory: saveDir,
 		}
 	}
 
 	return mappings
+}
+
+func (s *PlatformMappingScreen) inferSaveDirectory(slug, romDir string, cfw constants.CFW) string {
+	saveDirectories := s.getSaveDirectoriesForPlatform(slug, cfw)
+
+	// Try to match the ROM directory to a save directory
+	for _, saveDir := range saveDirectories {
+		if s.directoriesMatch(romDir, saveDir, cfw) {
+			return saveDir
+		}
+	}
+
+	// If no match, use the first available save directory
+	if len(saveDirectories) > 0 {
+		return saveDirectories[0]
+	}
+
+	// Fallback to ROM directory name
+	return romDir
 }
 
 func (s *PlatformMappingScreen) createDirectories(

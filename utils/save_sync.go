@@ -49,46 +49,50 @@ func (s SaveSync) download(host romm.Host) error {
 	logger := gaba.GetLogger()
 	rc := GetRommClient(host)
 
-	logger.Debug("Downloading save", "downloadPath", s.Remote.DownloadPath)
+	logger.Debug("Downloading save", "saveID", s.Remote.ID, "downloadPath", s.Remote.DownloadPath)
 
-	// Download the save file using the DownloadPath from the API
 	saveData, err := rc.DownloadSave(s.Remote.DownloadPath)
 	if err != nil {
 		return fmt.Errorf("failed to download save: %w", err)
 	}
 
-	// Determine the destination directory
 	var destDir string
 	if s.Local != nil {
-		// Use the directory from existing local save
 		destDir = filepath.Dir(s.Local.Path)
 	} else {
-		// Get the save directory for this platform
-		saveFiles := FindSaveFiles(s.Slug)
-		if len(saveFiles) > 0 {
-			// Use the directory from any existing save file
-			destDir = filepath.Dir(saveFiles[0].Path)
-		} else {
-			// No existing saves, need to determine the save directory
-			return fmt.Errorf("cannot determine save location for slug %s: no existing save files", s.Slug)
+		var err error
+		destDir, err = GetSaveDirectoryForSlug(s.Slug, s.Remote.Emulator)
+		if err != nil {
+			return fmt.Errorf("cannot determine save location: %w", err)
 		}
 	}
 
-	// Always use the full ROM name (with region tags) for the save filename
 	ext := s.Remote.FileExtension
+	if ext != "" && !strings.HasPrefix(ext, ".") {
+		ext = "." + ext
+	}
 	filename := s.GameBase + ext
 	destPath := filepath.Join(destDir, filename)
 
-	// If we have a local save with a different name, remove it after backup
 	if s.Local != nil && s.Local.Path != destPath {
 		defer os.Remove(s.Local.Path)
 	}
 
-	// Write the downloaded file
 	err = os.WriteFile(destPath, saveData, 0644)
 	if err != nil {
 		return fmt.Errorf("failed to write save file: %w", err)
 	}
+
+	// Update the file's modification time to match the remote's UpdatedAt
+	// This ensures future comparisons are accurate
+	err = os.Chtimes(destPath, s.Remote.UpdatedAt, s.Remote.UpdatedAt)
+	if err != nil {
+		return fmt.Errorf("failed to update file timestamp: %w", err)
+	}
+
+	logger.Debug("Downloaded save and set timestamp",
+		"path", destPath,
+		"remoteUpdatedAt", s.Remote.UpdatedAt)
 
 	return nil
 }
@@ -100,8 +104,10 @@ func (s SaveSync) upload(host romm.Host) error {
 
 	rc := GetRommClient(host)
 
-	// Create a temp file with the game's full name (includes region info)
 	ext := filepath.Ext(s.Local.Path)
+	if ext != "" && !strings.HasPrefix(ext, ".") {
+		ext = "." + ext
+	}
 	filename := s.GameBase + ext
 	tmp := filepath.Join(TempDir(), "uploads", filename)
 
@@ -115,8 +121,6 @@ func (s SaveSync) upload(host romm.Host) error {
 		return err
 	}
 
-	// Update local file's modification time to match server's UpdatedAt
-	// This ensures future comparisons are accurate
 	err = os.Chtimes(s.Local.Path, uploadedSave.UpdatedAt, uploadedSave.UpdatedAt)
 	if err != nil {
 		return fmt.Errorf("failed to update file timestamp: %w", err)
@@ -126,35 +130,56 @@ func (s SaveSync) upload(host romm.Host) error {
 }
 
 func FindSaveSyncs(host romm.Host) ([]SaveSync, error) {
+	logger := gaba.GetLogger()
 	rc := GetRommClient(host)
 
+	logger.Debug("FindSaveSyncs: Starting save sync discovery")
+
 	scanLocal := ScanAllRoms()
+	logger.Debug("FindSaveSyncs: Scanned local ROMs", "platformCount", len(scanLocal))
+
+	allSaves, err := rc.GetSaves(romm.SaveQuery{})
+	if err != nil {
+		logger.Error("FindSaveSyncs: Could not retrieve saves", "error", err)
+		return []SaveSync{}, err
+	}
+	logger.Debug("FindSaveSyncs: Retrieved all saves", "count", len(*allSaves))
+
+	savesByRomID := make(map[int][]romm.Save)
+	for _, save := range *allSaves {
+		savesByRomID[save.RomID] = append(savesByRomID[save.RomID], save)
+	}
 
 	plats, err := rc.GetPlatforms()
 	if err != nil {
-		gaba.GetLogger().Error("Could not retrieve platforms")
+		logger.Error("FindSaveSyncs: Could not retrieve platforms", "error", err)
 		return []SaveSync{}, err
 	}
+	logger.Debug("FindSaveSyncs: Retrieved platforms from API", "count", len(plats))
 
 	for slug, localRoms := range scanLocal {
+		logger.Debug("FindSaveSyncs: Processing platform", "slug", slug, "localRomCount", len(localRoms))
+
 		idx := slices.IndexFunc(plats, func(p romm.Platform) bool {
 			return p.Slug == slug
 		})
 
-		platform := plats[idx]
-
-		remoteSaves, err := rc.GetSavesByRomForPlatform(platform.ID)
-		if err != nil {
-			gaba.GetLogger().Error("Could not retrieve remote saves", "platform", platform)
+		if idx == -1 {
+			logger.Warn("FindSaveSyncs: Platform not found in API", "slug", slug)
 			continue
 		}
+
+		platform := plats[idx]
+		logger.Debug("FindSaveSyncs: Found platform match", "slug", slug, "platformID", platform.ID, "platformName", platform.Name)
 
 		roms, err := rc.GetRoms(&romm.GetRomsOptions{PlatformID: &platform.ID})
 		if err != nil {
-			gaba.GetLogger().Error("Could not retrieve roms", "platform", platform)
+			logger.Error("FindSaveSyncs: Could not retrieve roms", "platform", platform, "error", err)
 			continue
 		}
+		logger.Debug("FindSaveSyncs: Retrieved remote ROMs", "slug", slug, "count", len(roms.Items))
 
+		matchCount := 0
 		for idx, localRom := range localRoms {
 			hashMatchIdx := slices.IndexFunc(roms.Items, func(rom romm.Rom) bool {
 				return rom.Sha1Hash == localRom.SHA1
@@ -163,21 +188,24 @@ func FindSaveSyncs(host romm.Host) ([]SaveSync, error) {
 				continue
 			}
 
+			matchCount++
 			remoteRom := roms.Items[hashMatchIdx]
 			scanLocal[slug][idx].RomID = remoteRom.ID
 			scanLocal[slug][idx].RomName = remoteRom.Name
 
-			if saves, ok := remoteSaves[remoteRom.ID]; ok {
-				if len(*saves) > 0 {
-					scanLocal[slug][idx].RemoteSaves = *saves
+			if saves, ok := savesByRomID[remoteRom.ID]; ok {
+				if len(saves) > 0 {
+					scanLocal[slug][idx].RemoteSaves = saves
+					logger.Debug("FindSaveSyncs: Found remote saves for ROM", "romName", remoteRom.Name, "saveCount", len(saves))
 				}
 			}
 		}
+		logger.Debug("FindSaveSyncs: Finished matching ROMs", "slug", slug, "matchedCount", matchCount)
 	}
 
 	var syncs []SaveSync
 
-	for _, roms := range scanLocal {
+	for slug, roms := range scanLocal {
 		for _, r := range roms {
 			action := r.SyncAction()
 			switch action {
@@ -192,10 +220,16 @@ func FindSaveSyncs(host romm.Host) ([]SaveSync, error) {
 					Remote:   lastRemoteSave,
 					Action:   action,
 				})
-
+				logger.Debug("FindSaveSyncs: Added sync action",
+					"slug", slug,
+					"localFilename", r.FileName,
+					"romName", r.RomName,
+					"gameBase", base,
+					"action", action)
 			}
 		}
 	}
 
+	logger.Debug("FindSaveSyncs: Completed", "totalSyncs", len(syncs))
 	return syncs, nil
 }

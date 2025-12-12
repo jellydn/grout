@@ -23,7 +23,6 @@ func (lc LocalSave) TimestampedFilename() string {
 	ext := filepath.Ext(lc.Path)
 	base := strings.ReplaceAll(filepath.Base(lc.Path), ext, "")
 
-	// Format timestamp for backup filename
 	lm := lc.LastModified.Format(BACKUP_TIMESTAMP_FORMAT)
 
 	return fmt.Sprintf("%s [%s]%s", base, lm, ext)
@@ -32,6 +31,62 @@ func (lc LocalSave) TimestampedFilename() string {
 func (lc LocalSave) Backup() error {
 	dest := filepath.Join(filepath.Dir(lc.Path), ".backup", lc.TimestampedFilename())
 	return CopyFile(lc.Path, dest)
+}
+
+func GetSaveDirectoryForSlug(slug string, emulator string) (string, error) {
+	logger := gaba.GetLogger()
+	bsd := GetSaveDirectory()
+
+	// First, check if there's a config override
+	config, err := LoadConfig()
+	if err == nil {
+		if mapping, ok := config.DirectoryMappings[slug]; ok && mapping.SaveDirectory != "" {
+			saveDir := filepath.Join(bsd, mapping.SaveDirectory)
+			logger.Debug("Using config save directory", "slug", slug, "directory", mapping.SaveDirectory)
+
+			if err := os.MkdirAll(saveDir, 0755); err != nil {
+				logger.Error("Failed to create save directory", "path", saveDir, "error", err)
+				return "", fmt.Errorf("failed to create save directory: %w", err)
+			}
+
+			return saveDir, nil
+		}
+	}
+
+	// Fall back to CFW default mappings
+	var saveFolders []string
+
+	switch GetCFW() {
+	case constants.MuOS:
+		saveFolders = constants.MuOSSaveDirectories[slug]
+	case constants.NextUI:
+		saveFolders = constants.NextUISaves[slug]
+	}
+
+	if len(saveFolders) == 0 {
+		return "", fmt.Errorf("no save folder mapping for slug: %s", slug)
+	}
+
+	// Try to match the emulator to a save folder
+	selectedFolder := saveFolders[0]
+	if emulator != "" {
+		for _, folder := range saveFolders {
+			if strings.Contains(strings.ToLower(folder), strings.ToLower(emulator)) {
+				selectedFolder = folder
+				logger.Debug("Matched emulator to save folder", "emulator", emulator, "folder", folder)
+				break
+			}
+		}
+	}
+
+	saveDir := filepath.Join(bsd, selectedFolder)
+
+	if err := os.MkdirAll(saveDir, 0755); err != nil {
+		logger.Error("Failed to create save directory", "path", saveDir, "error", err)
+		return "", fmt.Errorf("failed to create save directory: %w", err)
+	}
+
+	return saveDir, nil
 }
 
 func FindSaveFiles(slug string) []LocalSave {
@@ -44,10 +99,7 @@ func FindSaveFiles(slug string) []LocalSave {
 	case constants.MuOS:
 		saveFolders = constants.MuOSSaveDirectories[slug]
 	case constants.NextUI:
-		saveFolder := constants.NextUISaves[slug]
-		if saveFolder != "" {
-			saveFolders = []string{saveFolder}
-		}
+		saveFolders = constants.NextUISaves[slug]
 	}
 
 	if len(saveFolders) == 0 {

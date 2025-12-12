@@ -116,8 +116,9 @@ func (c *Client) doRequestRaw(method, path string, body interface{}) ([]byte, er
 		reqBody = bytes.NewBuffer(jsonData)
 	}
 
-	u := c.baseURL + path
-	req, err := http.NewRequest(method, u, reqBody)
+	fullURL := c.baseURL + strings.ReplaceAll(path, " ", "%20")
+
+	req, err := http.NewRequest(method, fullURL, reqBody)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}

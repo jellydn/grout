@@ -89,6 +89,27 @@ func (s *SettingsScreen) Draw(input SettingsInput) (ScreenResult[SettingsOutput]
 		return WithCode(output, constants.ExitCodeEditMappings), nil
 	}
 
+	if result.Selected == 1 {
+		gaba.ProcessMessage("Syncing Saves...", gaba.ProcessMessageOptions{}, func() (interface{}, error) {
+			syncs, err := utils.FindSaveSyncs(config.Hosts[0])
+			if err != nil {
+				gaba.GetLogger().Error("Unable to sync saves!", "error", err)
+				return nil, nil
+			}
+
+			for _, s := range syncs {
+				gaba.GetLogger().Debug("Syncing save file", "save_info", s)
+				err := s.Execute(config.Hosts[0])
+				if err != nil {
+					gaba.GetLogger().Error("Unable to sync save!", "game", s.GameBase, "error", err)
+				} else {
+					gaba.GetLogger().Debug("Save synced!", "save_info", s)
+				}
+			}
+			return nil, nil
+		})
+	}
+
 	s.applySettings(config, result.Items)
 
 	output.Config = config
@@ -101,6 +122,29 @@ func (s *SettingsScreen) buildMenuItems(config *utils.Config) []gaba.ItemWithOpt
 			Item:    gaba.MenuItem{Text: "Edit Directory Mappings"},
 			Options: []gaba.Option{{Type: gaba.OptionTypeClickable}},
 		},
+		{
+			Item:    gaba.MenuItem{Text: "Sync Saves"},
+			Options: []gaba.Option{{Type: gaba.OptionTypeClickable}},
+		},
+
+		{
+			Item: gaba.MenuItem{Text: "Show Game Details"},
+			Options: []gaba.Option{
+				{DisplayName: "True", Value: true},
+				{DisplayName: "False", Value: false},
+			},
+			SelectedOption: boolToIndex(!config.ShowGameDetails),
+		},
+
+		// TODO Enable Later
+		//{
+		//	Item: gaba.MenuItem{Text: "Auto Sync Saves"},
+		//	Options: []gaba.Option{
+		//		{DisplayName: "True", Value: true},
+		//		{DisplayName: "False", Value: false},
+		//	},
+		//	SelectedOption: boolToIndex(!config.AutoSyncSaves),
+		//},
 		{
 			Item: gaba.MenuItem{Text: "Download Art"},
 			Options: []gaba.Option{
@@ -116,14 +160,6 @@ func (s *SettingsScreen) buildMenuItems(config *utils.Config) []gaba.ItemWithOpt
 				{DisplayName: "False", Value: false},
 			},
 			SelectedOption: boolToIndex(!config.UnzipDownloads),
-		},
-		{
-			Item: gaba.MenuItem{Text: "Show Game Details"},
-			Options: []gaba.Option{
-				{DisplayName: "True", Value: true},
-				{DisplayName: "False", Value: false},
-			},
-			SelectedOption: boolToIndex(!config.ShowGameDetails),
 		},
 		{
 			Item:           gaba.MenuItem{Text: "API Timeout"},
@@ -185,6 +221,8 @@ func (s *SettingsScreen) applySettings(config *utils.Config, items []gaba.ItemWi
 		switch item.Item.Text {
 		case "Download Art":
 			config.DownloadArt = item.SelectedOption == 0
+		case "Auto Sync Saves":
+			config.AutoSyncSaves = item.SelectedOption == 0
 		case "Unzip Downloads":
 			config.UnzipDownloads = item.SelectedOption == 0
 		case "Show Game Details":
