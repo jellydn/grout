@@ -23,107 +23,116 @@ A RomM Client for <a href="https://nextui.loveretro.games">NextUI</a> and <a hre
 
 ## Features
 
-- Download Games Wirelessly From Your RomM Instance
-- Download Box Art
+- Download games wirelessly from your RomM instance
+  - Ability to select multiple games at once
+- Download box art
 - Multi-file games with automatic M3U file creation
-- Select multiple games at once
-- Save Sync
-- Optional Game Details Screen
-- Optional Unzipping
+- Save sync
+- Game details screen
+- Platform directory mapping on device
+- Optional unzipping
+
+---
 
 ### Save Sync
 
-Save Sync allows you to store game saves on your RomM instance and use them across your devices.
+Save Sync allows you to store game saves on your RomM instance and use them across multiple devices.
 
-How does Save Sync work?
+**How does Save Sync work?**
 
-**Downloading**
+Grout scans your local ROM and save directories on your device.
 
-Grout will scan your local ROM and save directories on your device.
+**When downloading saves:**
 
-If a game on your device currently has no save file and the active RomM user has a save file for that game, Grout will
-pull down that save file to your device.
+- If a game has no local save file but has a remote save file, Grout downloads the remote save.
+- If a game has both a local and remote save file, and the remote save is newer, Grout will:
+    - Back up your current save file into a hidden `.backup` folder within your saves directory with a timestamp
+      appended to the filename.
+    - Download the remote save file and rename it so your CFW recognizes it.
 
-If a game on your device currently has a save file and the remote save file is newer, Grout will do the following:
+**When uploading saves:**
 
-- Backup your current save file into a hidden `.backup` folder that is created within your saves directory.
-    - This backup will have a timestamp appended to the filename.
-- Download the save file from RomM and assign the proper filename to it such that it is recognized by your CFW.
+- If a game has a local save file but no remote save file, Grout uploads your local save.
+- If a game has both a local and remote save file, and the local save is newer, Grout uploads your local save.
 
 **Save Sync Notes**
 
-- Grout uploads and downloads saves associated with the active RomM user setup in Grout
-    - If you have a shared user on your RomM instance that you use for Grout, be sure to be cautious with this feature.
+- Grout uploads and downloads saves associated with the active RomM user configured in Grout.
+    - If you have a shared user on your RomM instance, use this feature carefully.
 
 - Grout **does not** sync save states.
-    - If you use save states with auto-loading enabled, please be aware you will need to reset your emulator in order to
-      load a downloaded save file.
+    - If you use save states with autoloading enabled, you will need to reset your emulator to load a downloaded save
+      file.
+  
+---
 
 ## Installation
 
 ### NextUI Setup
 
-Grout has been tested on the following devices running NextUI.
+Grout has been tested on the following devices running NextUI:
 
-- TrimUI Devices
-    - Brick
-    - Smart Pro
+- TrimUI Brick
+- TrimUI Smart Pro
 
-1. Own a TrimUI Brick or Smart Pro and have a SD Card with NextUI.
+**Installation Steps:**
+
+1. Ensure your TrimUI device has NextUI installed on an SD card.
 2. Connect your device to a Wi-Fi network.
-3. The preferred Grout installation method is to use the NextUI Pak Store. You can find the Pak Store in the
-   `Tools` menu. Once in the Pak Store, Grout can be found under the `ROM Management` category.
-    - Alternatively, download
-      the [latest Grout release](https://github.com/rommapp/grout/releases/latest/download/Grout.pak.zip) for
-      NextUI
-    - For manual downloads, unzip the release zip and place the `Grout.pak` directory into `SD_ROOT/Tools/tg5040`.
-4. Launch `Grout` from the `Tools` menu and enjoy!
+3. Install Grout using one of these methods:
+    - **Recommended:** Use the NextUI Pak Store found in the `Tools` menu. Navigate to the `ROM Management` category and
+      install Grout.
+    - **Manual:** Download
+      the [latest Grout release](https://github.com/rommapp/grout/releases/latest/download/Grout.pak.zip) for NextUI,
+      unzip it, and place the `Grout.pak` directory into `SD_ROOT/Tools/tg5040`.
+4. Launch Grout from the `Tools` menu and enjoy!
 
 ---
 
 ### muOS Setup
 
-Grout has been tested on the following devices running muOS 2508.4 Loose Goose.
+Grout has been tested on the following devices running muOS 2508.4 Loose Goose:
 
-- Anbernic Devices
-    - RG34XX
-    - RG35XXSP
-    - RG40XXV
+**Anbernic:**
 
-- TrimUI Devices
-    - Brick
-    - Smart Pro
+- RG34XX
+- RG35XXSP
+- RG40XXV
 
-Please help by verifying if it works on other devices!
+**TrimUI:**
 
-1. Own a supported device running muOS.
+- Brick
+- Smart Pro
+
+Please help verify compatibility on other devices by reporting your results!
+
+**Installation Steps:**
+
+1. Ensure your device is running muOS.
 2. Download the [latest Grout release](https://github.com/rommapp/grout/releases/latest/download/Grout.muxapp) for muOS.
-3. Transfer the `Grout.muxapp` file an `ARCHIVE` folder on your device.
+3. Transfer the `Grout.muxapp` file to an `ARCHIVE` folder on your device:
     - `/mnt/mmc/ARCHIVE` or `/mnt/sdcard/ARCHIVE`
-4. Go to Applications and launch Archive Manager.
+4. Open Applications and launch Archive Manager.
 5. Select `[SDX-APP] Grout` from the list and let it extract to your applications directory.
 6. Exit Archive Manager.
 7. Find an [input mapping config](/.github/resources/input_mappings) for your device.
-    - If one does not exist, please try one for a different device.
-    - If that does not work,
-      please [create an issue](https://github.com/rommapp/grout/issues/new?template=button-mapping-request.md).
-    - A first launch setup process is in the works but is not ready for primetime.
-8. Save the input mapping JSON file as `input_mapping.json` and transfer it to `/MUOS/application/Grout`.
-    - `/mnt/mmc/MUOS/application` or `/mnt/sdcard/MUOS/application`
-9. Select `Apps` on the Main Menu, launch Grout, and enjoy!
+    - If one does not exist, try a config for a different device.
+    - If that does not
+      work, [create an issue](https://github.com/rommapp/grout/issues/new?template=button-mapping-request.md) to request
+      a mapping for your device.
+8. Save the input mapping JSON file as `input_mapping.json` and transfer it to the Grout application folder:
+    - `/mnt/mmc/MUOS/application/Grout` or `/mnt/sdcard/MUOS/application/Grout`
+9. Select `Apps` on the main menu, launch Grout, and enjoy!
 
-**Note:** Grout does not support downloading art on muOS. This will be added in a future release.
+## Need Help? Found a Bug? Have an Idea?
 
-## Need Help? Find a Bug? Have an Idea?
+Please [create an issue](https://github.com/rommapp/grout/issues/new/choose) and fill out the template completely.
 
-Please [create an issue](https://github.com/rommapp/grout/issues/new/choose). Be sure to fill out the template
-completely!
+## Spread Joy!
 
-## Spread joy!
+A significant amount of time has been spent building Grout.
 
-A good chunk of time has been spent building Grout.
-
-If you feel inclined to pay it forward, go do something nice for someone! ❤️
+If you enjoy using Grount and feel inclined to pay it forward, go do something nice for someone! ❤️
 
 ✌🏻
 
