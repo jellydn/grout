@@ -10,7 +10,7 @@ import (
 
 type PlatformSelectionInput struct {
 	Platforms            []romm.Platform
-	QuitOnBack           bool // If true, back button quits the app; if false, it navigates back
+	QuitOnBack           bool
 	ShowCollections      bool
 	LastSelectedIndex    int
 	LastSelectedPosition int
@@ -101,7 +101,6 @@ func (s *PlatformSelectionScreen) Draw(input PlatformSelectionInput) (ScreenResu
 		return Success(output), nil
 
 	case gaba.ListActionTriggered:
-		// Settings action (X button) - only available when QuitOnBack is true
 		if input.QuitOnBack {
 			return WithCode(output, gaba.ExitCodeAction), nil
 		}

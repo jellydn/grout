@@ -27,7 +27,7 @@ type SmartCollection struct {
 	HasCover    bool        `json:"has_cover"`
 	IsPublic    bool        `json:"is_public"`
 	UserID      int         `json:"user_id"`
-	Criteria    interface{} `json:"criteria"` // Filter criteria as JSON object
+	Criteria    interface{} `json:"criteria"`
 	ROMs        []Rom       `json:"roms"`
 	ROMCount    int         `json:"rom_count"`
 	CreatedAt   time.Time   `json:"created_at"`

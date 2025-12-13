@@ -28,24 +28,49 @@ const (
 	Skip                = "SKIP"
 )
 
-func (s SaveSync) Execute(host romm.Host) error {
-	switch s.Action {
-	case Upload:
-		return s.upload(host)
-	case Download:
-		if s.Local != nil {
-			err := s.Local.Backup()
-			if err != nil {
-				return err
-			}
-		}
-		return s.download(host)
-	}
-
-	return nil
+type SyncResult struct {
+	GameName string
+	Action   SyncAction
+	Success  bool
+	Error    string
+	FilePath string
 }
 
-func (s SaveSync) download(host romm.Host) error {
+func (s SaveSync) Execute(host romm.Host) SyncResult {
+	result := SyncResult{
+		GameName: s.GameBase,
+		Action:   s.Action,
+		Success:  false,
+	}
+
+	var err error
+	switch s.Action {
+	case Upload:
+		result.FilePath, err = s.upload(host)
+	case Download:
+		if s.Local != nil {
+			err = s.Local.Backup()
+			if err != nil {
+				result.Error = err.Error()
+				return result
+			}
+		}
+		result.FilePath, err = s.download(host)
+	case Skip:
+		result.Success = true
+		return result
+	}
+
+	if err != nil {
+		result.Error = err.Error()
+	} else {
+		result.Success = true
+	}
+
+	return result
+}
+
+func (s SaveSync) download(host romm.Host) (string, error) {
 	logger := gaba.GetLogger()
 	rc := GetRommClient(host)
 
@@ -53,7 +78,7 @@ func (s SaveSync) download(host romm.Host) error {
 
 	saveData, err := rc.DownloadSave(s.Remote.DownloadPath)
 	if err != nil {
-		return fmt.Errorf("failed to download save: %w", err)
+		return "", fmt.Errorf("failed to download save: %w", err)
 	}
 
 	var destDir string
@@ -63,7 +88,7 @@ func (s SaveSync) download(host romm.Host) error {
 		var err error
 		destDir, err = GetSaveDirectoryForSlug(s.Slug, s.Remote.Emulator)
 		if err != nil {
-			return fmt.Errorf("cannot determine save location: %w", err)
+			return "", fmt.Errorf("cannot determine save location: %w", err)
 		}
 	}
 
@@ -80,26 +105,24 @@ func (s SaveSync) download(host romm.Host) error {
 
 	err = os.WriteFile(destPath, saveData, 0644)
 	if err != nil {
-		return fmt.Errorf("failed to write save file: %w", err)
+		return "", fmt.Errorf("failed to write save file: %w", err)
 	}
 
-	// Update the file's modification time to match the remote's UpdatedAt
-	// This ensures future comparisons are accurate
 	err = os.Chtimes(destPath, s.Remote.UpdatedAt, s.Remote.UpdatedAt)
 	if err != nil {
-		return fmt.Errorf("failed to update file timestamp: %w", err)
+		return "", fmt.Errorf("failed to update file timestamp: %w", err)
 	}
 
 	logger.Debug("Downloaded save and set timestamp",
 		"path", destPath,
 		"remoteUpdatedAt", s.Remote.UpdatedAt)
 
-	return nil
+	return destPath, nil
 }
 
-func (s SaveSync) upload(host romm.Host) error {
+func (s SaveSync) upload(host romm.Host) (string, error) {
 	if s.Local == nil {
-		return fmt.Errorf("cannot upload: no local save file")
+		return "", fmt.Errorf("cannot upload: no local save file")
 	}
 
 	rc := GetRommClient(host)
@@ -113,20 +136,20 @@ func (s SaveSync) upload(host romm.Host) error {
 
 	err := CopyFile(s.Local.Path, tmp)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	uploadedSave, err := rc.UploadSave(s.RomID, tmp)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	err = os.Chtimes(s.Local.Path, uploadedSave.UpdatedAt, uploadedSave.UpdatedAt)
 	if err != nil {
-		return fmt.Errorf("failed to update file timestamp: %w", err)
+		return "", fmt.Errorf("failed to update file timestamp: %w", err)
 	}
 
-	return nil
+	return s.Local.Path, nil
 }
 
 func FindSaveSyncs(host romm.Host) ([]SaveSync, error) {

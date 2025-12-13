@@ -16,22 +16,19 @@ import (
 	gaba "github.com/UncleJunVIP/gabagool/v2/pkg/gabagool"
 )
 
-// PlatformMappingInput contains data needed to render the platform mapping screen
 type PlatformMappingInput struct {
 	Host           romm.Host
 	ApiTimeout     time.Duration
 	CFW            constants.CFW
-	RomDirectory   string // Base ROM directory path
-	AutoSelect     bool   // Auto-select "Create" option when no match found
-	HideBackButton bool   // Hide the back/cancel button
+	RomDirectory   string
+	AutoSelect     bool
+	HideBackButton bool
 }
 
-// PlatformMappingOutput contains the result of the platform mapping screen
 type PlatformMappingOutput struct {
 	Mappings map[string]utils.DirectoryMapping
 }
 
-// PlatformMappingScreen displays platform to directory mapping configuration
 type PlatformMappingScreen struct{}
 
 func NewPlatformMappingScreen() *PlatformMappingScreen {
@@ -42,24 +39,20 @@ func (s *PlatformMappingScreen) Draw(input PlatformMappingInput) (ScreenResult[P
 	logger := gaba.GetLogger()
 	output := PlatformMappingOutput{Mappings: make(map[string]utils.DirectoryMapping)}
 
-	// Fetch RomM platforms
 	rommPlatforms, err := s.fetchPlatforms(input)
 	if err != nil {
 		logger.Error("Error fetching RomM Platforms", "error", err)
 		return WithCode(output, gaba.ExitCodeError), err
 	}
 
-	// Get local ROM directories
 	romDirectories, err := s.getRomDirectories(input.RomDirectory)
 	if err != nil {
 		logger.Error("Error fetching ROM directories", "error", err)
 		return WithCode(output, gaba.ExitCodeBack), err
 	}
 
-	// Build mapping options
 	mappingOptions := s.buildMappingOptions(rommPlatforms, romDirectories, input)
 
-	// Configure footer
 	footerItems := []gaba.FooterHelpItem{
 		{ButtonName: "←→", HelpText: "Cycle"},
 		{ButtonName: "Start", HelpText: "Save"},
@@ -68,7 +61,6 @@ func (s *PlatformMappingScreen) Draw(input PlatformMappingInput) (ScreenResult[P
 		footerItems = slices.Insert(footerItems, 0, gaba.FooterHelpItem{ButtonName: "B", HelpText: "Cancel"})
 	}
 
-	// Show options list
 	result, err := gaba.OptionsList(
 		"Rom Directory Mapping",
 		gaba.OptionListSettings{
@@ -85,10 +77,8 @@ func (s *PlatformMappingScreen) Draw(input PlatformMappingInput) (ScreenResult[P
 		return WithCode(PlatformMappingOutput{}, gaba.ExitCodeError), err
 	}
 
-	// Build mappings from result
 	output.Mappings = s.buildMappingsFromResult(result.Items)
 
-	// Create directories for any "Create" options selected
 	if err := s.createDirectories(output.Mappings, input.RomDirectory, romDirectories); err != nil {
 		logger.Error("Error creating directories", "error", err)
 		return WithCode(output, gaba.ExitCodeError), err
@@ -153,17 +143,13 @@ func (s *PlatformMappingScreen) buildPlatformOptions(
 	romDirectories []os.DirEntry,
 	input PlatformMappingInput,
 ) ([]gaba.Option, int) {
-	// Start with "Skip" option
 	options := []gaba.Option{{DisplayName: "Skip", Value: ""}}
 	selectedIndex := 0
 
-	// Get all valid CFW directories for this platform
 	cfwDirectories := s.getCFWDirectoriesForPlatform(platform.Slug, input.CFW)
 
-	// Add "Create" options for each valid CFW directory that doesn't exist
 	createOptionAdded := false
 	for _, cfwDir := range cfwDirectories {
-		// Check if this directory already exists
 		dirExists := false
 		for _, romDir := range romDirectories {
 			if s.directoriesMatch(cfwDir, romDir.Name(), input.CFW) {
@@ -185,11 +171,9 @@ func (s *PlatformMappingScreen) buildPlatformOptions(
 		}
 	}
 
-	// Add existing ROM directories that match any valid CFW option for this platform
 	for _, romDir := range romDirectories {
 		dirName := romDir.Name()
 
-		// Only add if this directory is valid for this platform
 		if s.isValidDirectoryForPlatform(platform.Slug, dirName, input.CFW, cfwDirectories) {
 			displayName := dirName
 			if input.CFW == constants.NextUI {
@@ -201,14 +185,12 @@ func (s *PlatformMappingScreen) buildPlatformOptions(
 				Value:       dirName,
 			})
 
-			// Check if this directory matches the platform
 			if s.directoryMatchesPlatform(platform, romDir.Name(), input.CFW) {
 				selectedIndex = len(options) - 1
 			}
 		}
 	}
 
-	// Auto-select first "Create" option if no match found and auto-select enabled
 	if selectedIndex == 0 && createOptionAdded && input.AutoSelect {
 		selectedIndex = 1
 	}
@@ -275,7 +257,6 @@ func (s *PlatformMappingScreen) directoriesMatch(dir1, dir2 string, cfw constant
 }
 
 func (s *PlatformMappingScreen) isValidDirectoryForPlatform(slug, dirName string, cfw constants.CFW, cfwDirectories []string) bool {
-	// Check if this directory matches any of the valid CFW directories for this platform
 	for _, cfwDir := range cfwDirectories {
 		if s.directoriesMatch(cfwDir, dirName, cfw) {
 			return true
@@ -300,12 +281,10 @@ func (s *PlatformMappingScreen) buildMappingsFromResult(items []gaba.ItemWithOpt
 		rommSlug := item.Item.Metadata.(string)
 		relativePath := item.Options[item.SelectedOption].Value.(string)
 
-		// Skip empty mappings
 		if relativePath == "" {
 			continue
 		}
 
-		// Auto-populate save directory based on the selected ROM directory
 		saveDir := s.inferSaveDirectory(rommSlug, relativePath, cfw)
 
 		mappings[rommSlug] = utils.DirectoryMapping{
@@ -321,19 +300,16 @@ func (s *PlatformMappingScreen) buildMappingsFromResult(items []gaba.ItemWithOpt
 func (s *PlatformMappingScreen) inferSaveDirectory(slug, romDir string, cfw constants.CFW) string {
 	saveDirectories := s.getSaveDirectoriesForPlatform(slug, cfw)
 
-	// Try to match the ROM directory to a save directory
 	for _, saveDir := range saveDirectories {
 		if s.directoriesMatch(romDir, saveDir, cfw) {
 			return saveDir
 		}
 	}
 
-	// If no match, use the first available save directory
 	if len(saveDirectories) > 0 {
 		return saveDirectories[0]
 	}
 
-	// Fallback to ROM directory name
 	return romDir
 }
 
@@ -344,20 +320,16 @@ func (s *PlatformMappingScreen) createDirectories(
 ) error {
 	logger := gaba.GetLogger()
 
-	// Build a map of existing directory names for quick lookup
 	existingDirMap := make(map[string]bool)
 	for _, dir := range existingDirs {
 		existingDirMap[dir.Name()] = true
 	}
 
-	// Check each mapping and create directories for new ones
 	for _, mapping := range mappings {
-		// Skip if the directory already exists
 		if existingDirMap[mapping.RelativePath] {
 			continue
 		}
 
-		// Create the directory
 		fullPath := filepath.Join(romDirectory, mapping.RelativePath)
 		logger.Debug("Creating new ROM directory", "path", fullPath)
 

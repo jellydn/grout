@@ -38,7 +38,6 @@ func (lrf LocalRomFile) SyncAction() SyncAction {
 		return Download
 	}
 
-	// Compare local file modification time with remote UpdatedAt
 	logger := gaba.GetLogger()
 	lastRemote := lrf.LastRemoteSave()
 
@@ -96,14 +95,11 @@ func ScanAllRoms() map[string][]LocalRomFile {
 	baseRomDir := GetRomDirectory()
 	logger.Debug("Starting ROM scan", "baseDir", baseRomDir)
 
-	// First, check for config-based directory mappings
 	config, _ := LoadConfig()
 
-	// For NextUI, we need to scan all directories and match by tag
 	if cfw == constants.NextUI {
 		result = scanNextUIRoms(baseRomDir, platformMap, config)
 	} else {
-		// For MuOS, use direct directory name matching
 		result = scanMuOSRoms(baseRomDir, platformMap, config)
 	}
 
@@ -120,14 +116,12 @@ func scanNextUIRoms(baseRomDir string, platformMap map[string][]string, config *
 	logger := gaba.GetLogger()
 	result := make(map[string][]LocalRomFile)
 
-	// Read all directories in the ROM directory
 	entries, err := os.ReadDir(baseRomDir)
 	if err != nil {
 		logger.Error("Failed to read ROM directory", "path", baseRomDir, "error", err)
 		return result
 	}
 
-	// For each directory, extract the tag and find matching platform
 	for _, entry := range entries {
 		if !entry.IsDir() || strings.HasPrefix(entry.Name(), ".") {
 			continue
@@ -140,7 +134,6 @@ func scanNextUIRoms(baseRomDir string, platformMap map[string][]string, config *
 			continue
 		}
 
-		// Find which platform(s) this tag belongs to
 		for slug, cfwDirs := range platformMap {
 			matched := false
 			for _, cfwDir := range cfwDirs {
@@ -152,7 +145,6 @@ func scanNextUIRoms(baseRomDir string, platformMap map[string][]string, config *
 			}
 
 			if !matched {
-				// Check config override
 				if config != nil {
 					if mapping, ok := config.DirectoryMappings[slug]; ok {
 						if ParseTag(mapping.RelativePath) == tag {
@@ -188,7 +180,6 @@ func scanMuOSRoms(baseRomDir string, platformMap map[string][]string, config *Co
 	result := make(map[string][]LocalRomFile)
 
 	for slug := range platformMap {
-		// Check config first
 		romFolderName := ""
 		if config != nil {
 			if mapping, ok := config.DirectoryMappings[slug]; ok && mapping.RelativePath != "" {
@@ -196,7 +187,6 @@ func scanMuOSRoms(baseRomDir string, platformMap map[string][]string, config *Co
 			}
 		}
 
-		// Fall back to CFW default
 		if romFolderName == "" {
 			romFolderName = RomMSlugToCFW(slug)
 		}
@@ -244,10 +234,6 @@ func scanRomDirectory(slug, romDir string, saveFileMap map[string]*LocalSave) []
 			continue
 		}
 
-		if shouldSkipFile(entry.Name()) {
-			continue
-		}
-
 		romPath := filepath.Join(romDir, entry.Name())
 
 		fileInfo, err := entry.Info()
@@ -280,41 +266,6 @@ func scanRomDirectory(slug, romDir string, saveFileMap map[string]*LocalSave) []
 	}
 
 	return roms
-}
-
-func shouldSkipFile(filename string) bool {
-	skipExtensions := []string{
-		".txt", ".nfo", ".diz", ".db",
-		".ini", ".cfg", ".conf",
-		".jpg", ".jpeg", ".png", ".gif", ".bmp",
-		".m3u",                   // Playlist files
-		".cue",                   // Some systems use .cue but we may want to include these
-		".srm", ".sav", ".state", // Save files
-	}
-
-	skipNames := []string{
-		"desktop.ini",
-		"thumbs.db",
-		".ds_store",
-	}
-
-	lowerName := strings.ToLower(filename)
-
-	// Check skip names
-	for _, skip := range skipNames {
-		if lowerName == skip {
-			return true
-		}
-	}
-
-	// Check skip extensions
-	for _, ext := range skipExtensions {
-		if strings.HasSuffix(lowerName, ext) {
-			return true
-		}
-	}
-
-	return false
 }
 
 func calculateRomSHA1(filePath string) (string, error) {

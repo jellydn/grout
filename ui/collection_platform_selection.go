@@ -77,7 +77,6 @@ func (s *CollectionPlatformSelectionScreen) Draw(input CollectionPlatformSelecti
 	platformMap := make(map[int]romm.Platform)
 	for _, game := range allGames {
 		if _, exists := platformMap[game.PlatformID]; !exists {
-			// Check if this platform is mapped in config
 			if _, hasMapping := input.Config.DirectoryMappings[game.PlatformSlug]; hasMapping {
 				platformMap[game.PlatformID] = romm.Platform{
 					ID:   game.PlatformID,
@@ -100,21 +99,17 @@ func (s *CollectionPlatformSelectionScreen) Draw(input CollectionPlatformSelecti
 		return WithCode(output, gaba.ExitCodeBack), nil
 	}
 
-	// Convert map to sorted slice
 	platforms := make([]romm.Platform, 0, len(platformMap))
 	for _, platform := range platformMap {
 		platforms = append(platforms, platform)
 	}
 
-	// Sort platforms by name
 	slices.SortFunc(platforms, func(a, b romm.Platform) int {
 		return strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name))
 	})
 
-	// Build menu items
 	menuItems := make([]gaba.MenuItem, len(platforms))
 	for i, platform := range platforms {
-		// Count games for this platform
 		gameCount := 0
 		for _, game := range allGames {
 			if game.PlatformID == platform.ID {

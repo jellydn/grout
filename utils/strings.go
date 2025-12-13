@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"grout/constants"
 	"grout/romm"
-	"path"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -60,7 +59,7 @@ func NameCleaner(name string, stripTag bool) (string, string) {
 		cleaned = strings.ReplaceAll(cleaned, orderedFolderRegex[0], "")
 	}
 
-	cleaned = strings.ReplaceAll(cleaned, path.Ext(cleaned), "")
+	cleaned = strings.ReplaceAll(cleaned, ":", " -")
 
 	cleaned = strings.TrimSpace(cleaned)
 
@@ -82,7 +81,6 @@ func PrepareRomNames(games []romm.Rom) []romm.Rom {
 			games[i].DisplayName = dn
 		}
 
-		games[i].ListName = games[i].DisplayName
 	}
 
 	slices.SortFunc(games, func(a, b romm.Rom) int {

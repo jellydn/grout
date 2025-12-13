@@ -114,8 +114,7 @@ func RomFolderBase(path string) string {
 	case constants.MuOS:
 		return path
 	case constants.NextUI:
-		_, tag := NameCleaner(path, true)
-		return tag
+		return ParseTag(path)
 	default:
 		return path
 	}
@@ -129,7 +128,6 @@ func GetArtDirectory(config Config, platform romm.Platform) string {
 	case constants.MuOS:
 		systemName, exists := constants.MuOSArtDirectory[platform.Slug]
 		if !exists {
-			// Fallback to platform display name if not in map
 			systemName = platform.Name
 		}
 		muosInfoDir := GetMuOSInfoDirectory()

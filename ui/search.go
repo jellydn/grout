@@ -24,7 +24,6 @@ func (s *SearchScreen) Draw(input SearchInput) (ScreenResult[SearchOutput], erro
 	res, err := gaba.Keyboard(input.InitialText)
 	if err != nil {
 		if errors.Is(err, gaba.ErrCancelled) {
-			// User cancelled - not an error, just go back
 			return Back(SearchOutput{}), nil
 		}
 		gaba.GetLogger().Error("Error with keyboard", "error", err)

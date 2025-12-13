@@ -84,13 +84,11 @@ func (s *GameListScreen) Draw(input GameListInput) (ScreenResult[GameListOutput]
 
 		allGamesFilteredOut = originalCount > 0 && len(displayGames) == 0
 
-		// Only add platform prefix if we're viewing multiple platforms (no specific platform selected)
 		if input.Platform.ID == 0 {
 			for i := range displayGames {
-				displayGames[i].ListName = fmt.Sprintf("[%s] %s", displayGames[i].PlatformSlug, displayGames[i].DisplayName)
+				displayGames[i].DisplayName = fmt.Sprintf("[%s] %s", displayGames[i].PlatformSlug, displayGames[i].DisplayName)
 			}
 		} else {
-			// Viewing a specific platform within collection, show platform name
 			displayName = fmt.Sprintf("%s - %s", input.Collection.Name, input.Platform.Name)
 		}
 	}
@@ -122,7 +120,7 @@ func (s *GameListScreen) Draw(input GameListInput) (ScreenResult[GameListOutput]
 	menuItems := make([]gaba.MenuItem, len(displayGames))
 	for i, game := range displayGames {
 		menuItems[i] = gaba.MenuItem{
-			Text:     game.ListName,
+			Text:     game.DisplayName,
 			Selected: false,
 			Focused:  false,
 			Metadata: game,
@@ -152,7 +150,6 @@ func (s *GameListScreen) Draw(input GameListInput) (ScreenResult[GameListOutput]
 				output.LastSelectedPosition = 0
 				return WithCode(output, constants.ExitCodeClearSearch), nil
 			}
-			// Return different exit code based on whether viewing collection or platform
 			if input.Collection.ID != 0 && input.Platform.ID != 0 {
 				return WithCode(output, constants.ExitCodeBackToCollectionPlatform), nil
 			}

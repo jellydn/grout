@@ -164,14 +164,12 @@ func LoginFlow(existingHost romm.Host) (*utils.Config, error) {
 			return nil, fmt.Errorf("unable to get login information: %w", err)
 		}
 
-		// User quit
 		if result.ExitCode == gabagool.ExitCodeBack || result.ExitCode == gabagool.ExitCodeCancel {
 			os.Exit(1)
 		}
 
 		host := result.Value.Host
 
-		// Attempt login
 		loginResult := attemptLogin(host)
 
 		switch {
@@ -181,7 +179,7 @@ func LoginFlow(existingHost romm.Host) (*utils.Config, error) {
 					{ButtonName: "A", HelpText: "Continue"},
 				},
 				gabagool.MessageOptions{})
-			existingHost = host // Retry with entered values
+			existingHost = host
 			continue
 
 		case loginResult.BadCredentials:
@@ -190,11 +188,10 @@ func LoginFlow(existingHost romm.Host) (*utils.Config, error) {
 					{ButtonName: "A", HelpText: "Continue"},
 				},
 				gabagool.MessageOptions{})
-			existingHost = host // Retry with entered values
+			existingHost = host
 			continue
 		}
 
-		// Success
 		config := &utils.Config{
 			Hosts: []romm.Host{host},
 		}

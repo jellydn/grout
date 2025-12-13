@@ -32,7 +32,6 @@ func (s *CollectionSelectionScreen) Draw(input CollectionSelectionInput) (Screen
 		LastSelectedPosition: input.LastSelectedPosition,
 	}
 
-	// Fetch collections from RomM
 	rc := utils.GetRommClient(input.Host)
 	collections, err := rc.GetCollections()
 	if err != nil {

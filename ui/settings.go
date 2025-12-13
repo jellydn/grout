@@ -90,24 +90,42 @@ func (s *SettingsScreen) Draw(input SettingsInput) (ScreenResult[SettingsOutput]
 	}
 
 	if result.Selected == 1 {
-		gaba.ProcessMessage("Syncing Saves...", gaba.ProcessMessageOptions{}, func() (interface{}, error) {
+		syncResults, _ := gaba.ProcessMessage("Syncing Saves...", gaba.ProcessMessageOptions{}, func() (interface{}, error) {
 			syncs, err := utils.FindSaveSyncs(config.Hosts[0])
 			if err != nil {
 				gaba.GetLogger().Error("Unable to sync saves!", "error", err)
 				return nil, nil
 			}
 
+			results := make([]utils.SyncResult, 0, len(syncs))
 			for _, s := range syncs {
 				gaba.GetLogger().Debug("Syncing save file", "save_info", s)
-				err := s.Execute(config.Hosts[0])
-				if err != nil {
-					gaba.GetLogger().Error("Unable to sync save!", "game", s.GameBase, "error", err)
+				result := s.Execute(config.Hosts[0])
+				results = append(results, result)
+				if !result.Success {
+					gaba.GetLogger().Error("Unable to sync save!", "game", s.GameBase, "error", result.Error)
 				} else {
 					gaba.GetLogger().Debug("Save synced!", "save_info", s)
 				}
 			}
-			return nil, nil
+
+			return results, nil
 		})
+
+		if syncResults != nil {
+			if results, ok := syncResults.([]utils.SyncResult); ok && len(results) > 0 {
+				reportScreen := NewSyncReportScreen()
+				_, err := reportScreen.Draw(SyncReportInput{Results: results})
+				if err != nil {
+					gaba.GetLogger().Error("Error showing sync report", "error", err)
+				}
+			}
+		} else {
+			gaba.ProcessMessage("Everything is up to date!", gaba.ProcessMessageOptions{}, func() (interface{}, error) {
+				time.Sleep(time.Second * 1)
+				return nil, nil
+			})
+		}
 	}
 
 	s.applySettings(config, result.Items)

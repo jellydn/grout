@@ -29,7 +29,6 @@ type Rom struct {
 	FsSizeBytes         int    `json:"fs_size_bytes,omitempty"`
 	Name                string `json:"name,omitempty"`
 	DisplayName         string
-	ListName            string
 	Slug                string       `json:"slug,omitempty"`
 	Summary             string       `json:"summary,omitempty"`
 	AlternativeNames    []string     `json:"alternative_names,omitempty"`
@@ -178,7 +177,6 @@ func (c *Client) GetRomFileContent(id int, fileName string) ([]byte, error) {
 func (c *Client) DownloadRoms(romIDs []int) ([]byte, error) {
 	params := map[string]string{}
 
-	// Build comma-separated list of ROM IDs
 	if len(romIDs) > 0 {
 		ids := ""
 		for i, id := range romIDs {

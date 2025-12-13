@@ -37,7 +37,6 @@ func GetSaveDirectoryForSlug(slug string, emulator string) (string, error) {
 	logger := gaba.GetLogger()
 	bsd := GetSaveDirectory()
 
-	// First, check if there's a config override
 	config, err := LoadConfig()
 	if err == nil {
 		if mapping, ok := config.DirectoryMappings[slug]; ok && mapping.SaveDirectory != "" {
@@ -53,7 +52,6 @@ func GetSaveDirectoryForSlug(slug string, emulator string) (string, error) {
 		}
 	}
 
-	// Fall back to CFW default mappings
 	var saveFolders []string
 
 	switch GetCFW() {
@@ -67,7 +65,6 @@ func GetSaveDirectoryForSlug(slug string, emulator string) (string, error) {
 		return "", fmt.Errorf("no save folder mapping for slug: %s", slug)
 	}
 
-	// Try to match the emulator to a save folder
 	selectedFolder := saveFolders[0]
 	if emulator != "" {
 		for _, folder := range saveFolders {
