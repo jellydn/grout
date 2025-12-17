@@ -19,16 +19,38 @@ A RomM Client for <a href="https://nextui.loveretro.games">NextUI</a> and <a hre
 
 ![Grout preview, collection flow](.github/resources/webp/preview.webp "Grout preview, collection flow")
 
-
 </div>
 
-## Selected Features
+---
+
+## High-level Features
 
 - Download games wirelessly from your RomM instance
 - Download box art
 - Multi-file games with automatic M3U file creation
 - Save sync
 - Platform directory mapping that is configurable on device
+
+---
+
+## Table of Contents
+
+- [User Guide](#user-guide)
+  - [First Launch and Login](#first-launch-and-login)
+  - [Platform Directory Mapping](#platform-directory-mapping)
+  - [Main Menu - Platform Selection](#main-menu--platform-selection)
+  - [Collections](#collections)
+  - [Game List](#game-list)
+  - [Search](#search)
+  - [Game Details](#game-details)
+  - [Downloading Games](#downloading-games)
+  - [Settings](#settings)
+  - [Save Sync](#save-sync)
+- [Installation](#installation)
+  - [NextUI Setup](#nextui-setup)
+  - [muOS Setup](#muos-setup)
+- [Need Help? Found a Bug? Have an Idea?](#need-help-found-a-bug-have-an-idea)
+- [Make The World Better](#spread-joy)
 
 ---
 
@@ -61,6 +83,8 @@ Password), pressing A will open an on-screen keyboard.
 When you're ready, press Start to log in. If your credentials are correct and Grout can reach your server, you'll move
 to the next step. If something goes wrong, you'll get a message telling you what happened, and you can try again.
 
+---
+
 ### Platform Directory Mapping
 
 After logging in successfully for the first time, you'll need to map your RomM platforms to directories on your device.
@@ -71,7 +95,7 @@ This tells Grout where to put games when you download them.
 You'll see a list of all platforms from your RomM instance. For each one, you can:
 
 - **Skip** – Don't map this platform. Games from this platform won't be available to download.
-- **Create {Directory Name}'** – Create a new directory for this platform. Grout will automatically suggest directory
+- **Create {Directory Name}** – Create a new directory for this platform. Grout will automatically suggest directory
   names that match your custom firmware's expected structure.
 - **/{Existing Directory}** – Map to an existing directory on your device.
 
@@ -82,6 +106,8 @@ Use left/right to cycle through the options for each platform. When you're happy
 save. Grout will create any new directories you selected.
 
 You can change these mappings later from the Settings menu.
+
+---
 
 ### Main Menu – Platform Selection
 
@@ -103,6 +129,8 @@ platforms – NES, SNES, PlayStation, whatever you've got.
 Selecting a platform will take you to the game list for that platform. Selecting Collections will show you your RomM
 collections.
 
+---
+
 ### Collections
 
 Collections are custom groupings you can create in RomM - like "My Favorites," "Beat 'em Ups," or "Games to Play."
@@ -121,6 +149,8 @@ list.
 
 > [!IMPORTANT]
 > If you skipped a platform in the mapping screen, you won't see games for that platform in your collections.
+
+---
 
 ### Game List
 
@@ -149,6 +179,8 @@ once. Check all the ones you want, then press start to confirm your selections.
 
 [SCREENSHOT: Game list in multi-select mode with checkboxes]
 
+---
+
 ### Search
 
 Press X from any game list to search.
@@ -159,6 +191,8 @@ Type your search term using the on-screen keyboard and confirm. The game list wi
 The search is case-insensitive and matches anywhere in the game name.
 
 To clear a search, press B to go back from the filtered results.
+
+---
 
 ### Game Details
 
@@ -179,6 +213,8 @@ From here:
 
 - Press A to download the game
 - Press B to go back without downloading
+
+---
 
 ### Downloading Games
 
@@ -207,6 +243,8 @@ failed downloads get cleaned up.
 
 When everything's done, you're dropped back to the game list. The games you just downloaded are now on your device and
 ready to play.
+
+---
 
 ### Settings
 
@@ -240,6 +278,8 @@ slow connections. Options range from 15 to 120 minutes.
 **Log Level** – Set to Debug if you're troubleshooting issues and want detailed logs. Otherwise, Error is fine.
 
 Use left/right to cycle through options. Press Start to save your changes, or B to cancel.
+
+---
 
 ### Save Sync
 
@@ -381,7 +421,7 @@ Please [create an issue](https://github.com/rommapp/grout/issues/new/choose) and
 
 A significant amount of time has been spent building Grout.
 
-If you enjoy using Grount and feel inclined to pay it forward, go do something nice for someone! ❤️
+If you enjoy using Grout and feel inclined to pay it forward, go do something nice for someone! ❤️
 
 ✌🏻
 
