@@ -157,7 +157,7 @@ func (s *GameDetailsScreen) buildSections(input GameDetailsInput) []gaba.Section
 	if game.FsSizeBytes > 0 {
 		metadata = append(metadata, gaba.MetadataItem{
 			Label: "File Size",
-			Value: formatBytes(game.FsSizeBytes),
+			Value: utils.FormatBytes(game.FsSizeBytes),
 		})
 	}
 
@@ -253,17 +253,4 @@ func (s *GameDetailsScreen) fetchImageFromURL(host romm.Host, imageURL string) [
 
 	logger.Debug("Successfully fetched image", "url", imageURL, "size", len(imageData))
 	return imageData
-}
-
-func formatBytes(bytes int) string {
-	const unit = 1024
-	if bytes < unit {
-		return fmt.Sprintf("%d B", bytes)
-	}
-	div, exp := int64(unit), 0
-	for n := bytes / unit; n >= unit; n /= unit {
-		div *= unit
-		exp++
-	}
-	return fmt.Sprintf("%.1f %cB", float64(bytes)/float64(div), "KMGTPE"[exp])
 }

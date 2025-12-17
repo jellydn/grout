@@ -2,6 +2,10 @@ github.com/BrandonKowalski/gabagool/v2 v2.1.9 h1:AjRc1QgzJd630wCcyrZn3QhY8NlABoG
 github.com/BrandonKowalski/gabagool/v2 v2.1.9/go.mod h1:Zs3qwuXXMQz1rm63LXtIuBep5W/yCivfAtYLTxHR3Mw=
 github.com/UncleJunVIP/certifiable v1.0.0 h1:g8SMZrGW74qLvli9j0CYO5BvpVcGhqxfvAUnTeSjyfc=
 github.com/UncleJunVIP/certifiable v1.0.0/go.mod h1:paPhCSE8DKzYvBcFcr5NVAYJmmvADq8e5fvkvs95np4=
+github.com/UncleJunVIP/certifiable v1.1.0 h1:bA0wvgmkMbB8/d1n89F3KxG9zqwRAom8M/qEhPEC1QU=
+github.com/UncleJunVIP/certifiable v1.1.0/go.mod h1:paPhCSE8DKzYvBcFcr5NVAYJmmvADq8e5fvkvs95np4=
+github.com/UncleJunVIP/certifiable v1.2.0 h1:xGqpc7U9FafWPqJ/sQreOQRPj8fv0Y4x9EBdfa2ic3Q=
+github.com/UncleJunVIP/certifiable v1.2.0/go.mod h1:paPhCSE8DKzYvBcFcr5NVAYJmmvADq8e5fvkvs95np4=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/fogleman/gg v1.3.0 h1:/7zJX8F6AaYQc57WQCyN9cAIz+4bCJGO9B+dyW29am8=

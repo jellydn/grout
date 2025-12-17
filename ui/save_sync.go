@@ -24,14 +24,8 @@ func NewSaveSyncScreen() *SaveSyncScreen {
 func (s *SaveSyncScreen) Draw(input SaveSyncInput) (ScreenResult[SaveSyncOutput], error) {
 	output := SaveSyncOutput{}
 
-	type syncScanResult struct {
-		Results   []utils.SyncResult
-		Unmatched []utils.UnmatchedSave
-	}
-
-	// Step 1: Scan for syncs (no UI nesting here)
 	type scanResult struct {
-		Syncs     []interface{} // Store as interface{} to avoid exposing internal type
+		Syncs     []utils.SaveSync
 		Unmatched []utils.UnmatchedSave
 	}
 
@@ -42,13 +36,7 @@ func (s *SaveSyncScreen) Draw(input SaveSyncInput) (ScreenResult[SaveSyncOutput]
 			return nil, nil
 		}
 
-		// Convert to interface{} slice
-		syncInterfaces := make([]interface{}, len(syncs))
-		for i, s := range syncs {
-			syncInterfaces[i] = s
-		}
-
-		return scanResult{Syncs: syncInterfaces, Unmatched: unmatched}, nil
+		return scanResult{Syncs: syncs, Unmatched: unmatched}, nil
 	})
 
 	var results []utils.SyncResult
@@ -58,38 +46,30 @@ func (s *SaveSyncScreen) Draw(input SaveSyncInput) (ScreenResult[SaveSyncOutput]
 		unmatched = scan.Unmatched
 		results = make([]utils.SyncResult, 0, len(scan.Syncs))
 
-		// Get platform names for better UX
 		rc := utils.GetRommClient(input.Host)
 		platforms, err := rc.GetPlatforms()
 		if err != nil {
 			gaba.GetLogger().Warn("Failed to fetch platforms, using slugs", "error", err)
 		}
 
-		// Build slug -> platform name map
 		platformNames := make(map[string]string)
 		for _, p := range platforms {
 			platformNames[p.Slug] = p.Name
 		}
 
-		// Convert to slice of SaveSync pointers
 		syncs := make([]*utils.SaveSync, len(scan.Syncs))
-		for i, syncInterface := range scan.Syncs {
-			sync := syncInterface.(utils.SaveSync)
-			syncs[i] = &sync
+		for i := range scan.Syncs {
+			syncs[i] = &scan.Syncs[i]
 		}
 
-		// Group syncs by platform slug
 		syncsByPlatform := make(map[string][]*utils.SaveSync)
 		for _, s := range syncs {
-			slug := s.GetSlug()
-			syncsByPlatform[slug] = append(syncsByPlatform[slug], s)
+			syncsByPlatform[s.Slug] = append(syncsByPlatform[s.Slug], s)
 		}
 
-		// Step 2: Handle emulator selection once per platform
-		emulatorSelections := make(map[string]string) // slug -> selected emulator
+		emulatorSelections := make(map[string]string)
 
 		for slug, platformSyncs := range syncsByPlatform {
-			// Check if any sync in this platform needs selection
 			needsSelection := false
 			for _, s := range platformSyncs {
 				if s.NeedsEmulatorSelection() {
@@ -102,12 +82,10 @@ func (s *SaveSyncScreen) Draw(input SaveSyncInput) (ScreenResult[SaveSyncOutput]
 
 			if needsSelection {
 
-				// Convert to UI choices with default marked
 				uiChoices := make([]EmulatorChoice, len(dirInfos))
 				for i, info := range dirInfos {
 					displayName := info.DirectoryName
 					if i == 0 {
-						// First one is the default
 						displayName = info.DirectoryName + " (Default)"
 					}
 					uiChoices[i] = EmulatorChoice{
@@ -118,13 +96,11 @@ func (s *SaveSyncScreen) Draw(input SaveSyncInput) (ScreenResult[SaveSyncOutput]
 					}
 				}
 
-				// Get platform name for display
 				platformName := platformNames[slug]
 				if platformName == "" {
 					platformName = slug
 				}
 
-				// Show emulator selection UI (outside ProcessMessage - no nesting!)
 				screen := NewEmulatorSelectionScreen()
 				selResult, err := screen.Draw(EmulatorSelectionInput{
 					PlatformSlug:    slug,
@@ -133,7 +109,6 @@ func (s *SaveSyncScreen) Draw(input SaveSyncInput) (ScreenResult[SaveSyncOutput]
 				})
 
 				if err != nil || selResult.ExitCode != gaba.ExitCodeSuccess {
-					// User cancelled - skip all syncs for this platform (don't add to results)
 					gaba.GetLogger().Debug("User cancelled emulator selection", "platform", slug)
 					continue
 				}
@@ -141,7 +116,6 @@ func (s *SaveSyncScreen) Draw(input SaveSyncInput) (ScreenResult[SaveSyncOutput]
 				emulatorSelections[slug] = selResult.Value.SelectedEmulator
 				gaba.GetLogger().Debug("Stored emulator selection for platform", "slug", slug, "selectedEmulator", selResult.Value.SelectedEmulator)
 			} else {
-				// Auto-select if there's exactly one non-empty directory
 				nonEmptyDirs := make([]utils.EmulatorDirectoryInfo, 0)
 				for _, info := range dirInfos {
 					if info.HasSaves {
@@ -150,27 +124,22 @@ func (s *SaveSyncScreen) Draw(input SaveSyncInput) (ScreenResult[SaveSyncOutput]
 				}
 
 				if len(nonEmptyDirs) == 1 {
-					// Auto-select the single non-empty directory
 					emulatorSelections[slug] = nonEmptyDirs[0].DirectoryName
 					gaba.GetLogger().Debug("Auto-selected single non-empty directory", "slug", slug, "selectedEmulator", nonEmptyDirs[0].DirectoryName)
 				}
 			}
 		}
 
-		// Step 3: Execute all syncs
 		for _, s := range syncs {
-			// Skip syncs that needed selection but user cancelled
 			if s.NeedsEmulatorSelection() {
-				if _, ok := emulatorSelections[s.GetSlug()]; !ok {
-					// User cancelled for this platform - skip this sync
-					gaba.GetLogger().Debug("Skipping sync due to cancelled emulator selection", "game", s.GetGameBase())
+				if _, ok := emulatorSelections[s.Slug]; !ok {
+					gaba.GetLogger().Debug("Skipping sync due to cancelled emulator selection", "game", s.GameBase)
 					continue
 				}
 			}
 
-			// Apply emulator selection if one was made for this platform
-			if selectedEmulator, ok := emulatorSelections[s.GetSlug()]; ok {
-				gaba.GetLogger().Debug("Applying emulator selection to sync", "game", s.GetGameBase(), "slug", s.GetSlug(), "selectedEmulator", selectedEmulator)
+			if selectedEmulator, ok := emulatorSelections[s.Slug]; ok {
+				gaba.GetLogger().Debug("Applying emulator selection to sync", "game", s.GameBase, "slug", s.Slug, "selectedEmulator", selectedEmulator)
 				s.SetSelectedEmulator(selectedEmulator)
 			}
 
@@ -184,7 +153,7 @@ func (s *SaveSyncScreen) Draw(input SaveSyncInput) (ScreenResult[SaveSyncOutput]
 				"gameName", result.GameName,
 				"romDisplayName", result.RomDisplayName)
 			if !result.Success {
-				gaba.GetLogger().Error("Unable to sync save!", "game", s.GetGameBase(), "error", result.Error)
+				gaba.GetLogger().Error("Unable to sync save!", "game", s.GameBase, "error", result.Error)
 			} else {
 				gaba.GetLogger().Debug("Save synced!", "save_info", s)
 			}

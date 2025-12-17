@@ -24,7 +24,7 @@ type localRomFile struct {
 	SaveFile     *localSave
 }
 
-func (lrf localRomFile) syncAction() syncAction {
+func (lrf localRomFile) syncAction() SyncAction {
 	logger := gaba.GetLogger()
 
 	hasLocalSave := lrf.SaveFile != nil
@@ -276,7 +276,6 @@ func getRomDirectoriesForSlug(slug string) ([]string, error) {
 
 	var romDirs []string
 
-	// Check if there's a custom directory mapping in config
 	if config != nil {
 		if mapping, ok := config.DirectoryMappings[slug]; ok && mapping.RelativePath != "" {
 			romDir := filepath.Join(baseRomDir, mapping.RelativePath)
@@ -285,7 +284,6 @@ func getRomDirectoriesForSlug(slug string) ([]string, error) {
 		}
 	}
 
-	// Use CFW-specific platform mapping
 	if cfw == constants.NextUI {
 		platformMap := constants.NextUIPlatforms
 		if cfwDirs, ok := platformMap[slug]; ok {
@@ -305,7 +303,6 @@ func getRomDirectoriesForSlug(slug string) ([]string, error) {
 					continue
 				}
 
-				// Check if this directory matches the platform
 				for _, cfwDir := range cfwDirs {
 					cfwTag := ParseTag(cfwDir)
 					if cfwTag == tag {
@@ -316,7 +313,6 @@ func getRomDirectoriesForSlug(slug string) ([]string, error) {
 			}
 		}
 	} else {
-		// MuOS: use direct folder mapping
 		romFolderName := RomMSlugToCFW(slug)
 		if romFolderName != "" {
 			romDir := filepath.Join(baseRomDir, romFolderName)
@@ -331,59 +327,4 @@ func getRomDirectoriesForSlug(slug string) ([]string, error) {
 	}
 
 	return romDirs, nil
-}
-
-func findRomByBasename(slug, basename string) (*localRomFile, error) {
-	logger := gaba.GetLogger()
-
-	romDirs, err := getRomDirectoriesForSlug(slug)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, romDir := range romDirs {
-		entries, err := os.ReadDir(romDir)
-		if err != nil {
-			logger.Warn("Failed to read ROM directory", "path", romDir, "error", err)
-			continue
-		}
-
-		for _, entry := range entries {
-			if entry.IsDir() || strings.HasPrefix(entry.Name(), ".") {
-				continue
-			}
-
-			// Check if basename matches (without extension)
-			entryBaseName := strings.TrimSuffix(entry.Name(), filepath.Ext(entry.Name()))
-			if entryBaseName == basename {
-				romPath := filepath.Join(romDir, entry.Name())
-
-				fileInfo, err := entry.Info()
-				if err != nil {
-					logger.Warn("Failed to get file info", "file", entry.Name(), "error", err)
-					continue
-				}
-
-				hash, err := calculateSHA1(romPath)
-				if err != nil {
-					logger.Warn("Failed to calculate SHA1 for ROM", "path", romPath, "error", err)
-					return nil, err
-				}
-
-				rom := &localRomFile{
-					Slug:         slug,
-					Path:         romPath,
-					FileName:     entry.Name(),
-					SHA1:         hash,
-					LastModified: fileInfo.ModTime(),
-				}
-
-				logger.Debug("Found ROM for basename", "basename", basename, "file", entry.Name())
-				return rom, nil
-			}
-		}
-	}
-
-	logger.Debug("No ROM file found for basename", "basename", basename, "slug", slug)
-	return nil, nil
 }

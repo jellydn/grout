@@ -22,6 +22,11 @@ type loginOutput struct {
 	Config *utils.Config
 }
 
+type loginAttemptResult struct {
+	BadHost        bool
+	BadCredentials bool
+}
+
 type LoginScreen struct{}
 
 func newLoginScreen() *LoginScreen {
@@ -197,11 +202,6 @@ func LoginFlow(existingHost romm.Host) (*utils.Config, error) {
 		}
 		return config, nil
 	}
-}
-
-type loginAttemptResult struct {
-	BadHost        bool
-	BadCredentials bool
 }
 
 func attemptLogin(host romm.Host) loginAttemptResult {

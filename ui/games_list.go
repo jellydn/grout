@@ -266,15 +266,15 @@ func fetchList(config *utils.Config, host romm.Host, queryID int, fetchType fetc
 		romm.WithBasicAuth(host.Username, host.Password),
 		romm.WithTimeout(config.ApiTimeout))
 
-	opt := &romm.GetRomsOptions{
+	opt := romm.GetRomsQuery{
 		Limit: 10000,
 	}
 
 	switch fetchType {
 	case ftPlatform:
-		opt.PlatformID = &queryID
+		opt.PlatformID = queryID
 	case ftCollection:
-		opt.CollectionID = &queryID
+		opt.CollectionID = queryID
 	}
 
 	res, err := rc.GetRoms(opt)

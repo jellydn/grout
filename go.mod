@@ -4,7 +4,7 @@ go 1.24.1
 
 require (
 	github.com/BrandonKowalski/gabagool/v2 v2.1.9
-	github.com/UncleJunVIP/certifiable v1.0.0
+	github.com/UncleJunVIP/certifiable v1.2.0
 	github.com/sonh/qs v0.6.4
 	github.com/yeqown/go-qrcode/v2 v2.2.5
 	github.com/yeqown/go-qrcode/writer/standard v1.3.0

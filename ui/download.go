@@ -277,7 +277,7 @@ func (s *DownloadScreen) draw(input downloadInput) (ScreenResult[downloadOutput]
 				Progress:            progress,
 			},
 			func() (interface{}, error) {
-				s.downloadArtInBackground(artDownloads, downloadedGames, headers, progress)
+				s.downloadArt(artDownloads, downloadedGames, headers, progress)
 				return nil, nil
 			},
 		)
@@ -354,7 +354,7 @@ func (s *DownloadScreen) buildDownloads(config utils.Config, host romm.Host, pla
 	return downloads, artDownloads
 }
 
-func (s *DownloadScreen) downloadArtInBackground(artDownloads []artDownload, downloadedGames []romm.Rom, headers map[string]string, progress *atomic.Float64) {
+func (s *DownloadScreen) downloadArt(artDownloads []artDownload, downloadedGames []romm.Rom, headers map[string]string, progress *atomic.Float64) {
 	logger := gaba.GetLogger()
 
 	downloadedGameNames := make(map[string]bool)

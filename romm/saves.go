@@ -40,7 +40,7 @@ type Save struct {
 		MissingFromFs  bool      `json:"missing_from_fs"`
 		CreatedAt      time.Time `json:"created_at"`
 		UpdatedAt      time.Time `json:"updated_at"`
-	} `json:"screenshot"`
+	} `json:"Screenshot"`
 }
 
 type SaveQuery struct {
@@ -53,20 +53,20 @@ func (sq SaveQuery) Valid() bool {
 	return sq.RomID != 0 || sq.PlatformID != 0
 }
 
-func (c *Client) GetSaves(query SaveQuery) (*[]Save, error) {
+func (c *Client) GetSaves(query SaveQuery) ([]Save, error) {
 	var saves []Save
 	err := c.doRequest("GET", endpointSaves, query, nil, &saves)
-	return &saves, err
+	return saves, err
 }
 
 func (c *Client) DownloadSave(downloadPath string) ([]byte, error) {
 	return c.doRequestRaw("GET", downloadPath, nil)
 }
 
-func (c *Client) UploadSave(romID int, savePath string, emulator string) (*Save, error) {
+func (c *Client) UploadSave(romID int, savePath string, emulator string) (Save, error) {
 	file, err := os.Open(savePath)
 	if err != nil {
-		return nil, err
+		return Save{}, err
 	}
 	defer file.Close()
 
@@ -75,22 +75,22 @@ func (c *Client) UploadSave(romID int, savePath string, emulator string) (*Save,
 
 	part, err := writer.CreateFormFile("saveFile", filepath.Base(savePath))
 	if err != nil {
-		return nil, err
+		return Save{}, err
 	}
 
 	if _, err := io.Copy(part, file); err != nil {
-		return nil, err
+		return Save{}, err
 	}
 
 	if err := writer.Close(); err != nil {
-		return nil, err
+		return Save{}, err
 	}
 
 	var res Save
 	err = c.doMultipartRequest("POST", endpointSaves, SaveQuery{RomID: romID, Emulator: emulator}, &buf, writer.FormDataContentType(), &res)
 	if err != nil {
-		return nil, err
+		return Save{}, err
 	}
 
-	return &res, nil
+	return res, nil
 }

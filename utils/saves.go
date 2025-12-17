@@ -61,7 +61,6 @@ func getSaveDirectoryForSlug(slug string, emulator string) (string, error) {
 	selectedFolder := saveFolders[0]
 	logger.Debug("Initial selectedFolder (default)", "selectedFolder", selectedFolder, "allFolders", saveFolders)
 	if emulator != "" {
-		// Try exact match first
 		matched := false
 		for _, folder := range saveFolders {
 			if folder == emulator {
@@ -72,7 +71,6 @@ func getSaveDirectoryForSlug(slug string, emulator string) (string, error) {
 			}
 		}
 
-		// Fall back to substring match if no exact match
 		if !matched {
 			for _, folder := range saveFolders {
 				if strings.Contains(strings.ToLower(folder), strings.ToLower(emulator)) {
@@ -184,13 +182,11 @@ func GetEmulatorDirectoriesWithStatus(slug string) []EmulatorDirectoryInfo {
 			SaveCount:     0,
 		}
 
-		// Check if directory exists
 		if _, err := os.Stat(fullPath); os.IsNotExist(err) {
 			dirInfos = append(dirInfos, info)
 			continue
 		}
 
-		// Count non-hidden files
 		entries, err := os.ReadDir(fullPath)
 		if err != nil {
 			logger.Warn("Failed to read directory", "path", fullPath, "error", err)
@@ -215,19 +211,16 @@ func GetEmulatorDirectoriesWithStatus(slug string) []EmulatorDirectoryInfo {
 }
 
 func needsEmulatorSelection(slug string, hasLocalSave bool) bool {
-	// Don't prompt if updating existing save
 	if hasLocalSave {
 		return false
 	}
 
 	dirInfos := GetEmulatorDirectoriesWithStatus(slug)
 
-	// If no directories configured, no selection needed
 	if len(dirInfos) <= 1 {
 		return false
 	}
 
-	// Count directories with existing saves
 	nonEmptyCount := 0
 	for _, info := range dirInfos {
 		if info.HasSaves {
@@ -235,16 +228,13 @@ func needsEmulatorSelection(slug string, hasLocalSave bool) bool {
 		}
 	}
 
-	// Prompt if multiple non-empty directories (ambiguous)
 	if nonEmptyCount > 1 {
 		return true
 	}
 
-	// Prompt if no non-empty directories (new platform setup with multiple emulators)
 	if nonEmptyCount == 0 {
 		return true
 	}
 
-	// Single non-empty directory - use it automatically
 	return false
 }

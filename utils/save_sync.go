@@ -17,7 +17,7 @@ type SaveSync struct {
 	GameBase         string
 	Local            *localSave
 	Remote           romm.Save
-	Action           syncAction
+	Action           SyncAction
 	selectedEmulator string
 }
 
@@ -25,27 +25,15 @@ func (s *SaveSync) NeedsEmulatorSelection() bool {
 	return s.Local == nil && needsEmulatorSelection(s.Slug, false)
 }
 
-func (s *SaveSync) GetSlug() string {
-	return s.Slug
-}
-
-func (s *SaveSync) GetGameBase() string {
-	return s.GameBase
-}
-
-func (s *SaveSync) GetAction() syncAction {
-	return s.Action
-}
-
 func (s *SaveSync) SetSelectedEmulator(emulator string) {
 	gaba.GetLogger().Debug("SetSelectedEmulator called", "game", s.GameBase, "emulator", emulator, "previousValue", s.selectedEmulator)
 	s.selectedEmulator = emulator
 }
 
-type syncAction string
+type SyncAction string
 
 const (
-	Download syncAction = "DOWNLOAD"
+	Download SyncAction = "DOWNLOAD"
 	Upload              = "UPLOAD"
 	Skip                = "SKIP"
 )
@@ -53,7 +41,7 @@ const (
 type SyncResult struct {
 	GameName       string
 	RomDisplayName string
-	Action         syncAction
+	Action         SyncAction
 	Success        bool
 	Error          string
 	FilePath       string
@@ -252,11 +240,11 @@ func FindSaveSyncs(host romm.Host) ([]SaveSync, []UnmatchedSave, error) {
 		logger.Error("FindSaveSyncs: Could not retrieve saves", "error", err)
 		return []SaveSync{}, nil, err
 	}
-	logger.Debug("FindSaveSyncs: Retrieved all saves", "count", len(*allSaves))
+	logger.Debug("FindSaveSyncs: Retrieved all saves", "count", len(allSaves))
 
 	// Group saves by RomID
 	savesByRomID := make(map[int][]romm.Save)
-	for _, s := range *allSaves {
+	for _, s := range allSaves {
 		savesByRomID[s.RomID] = append(savesByRomID[s.RomID], s)
 	}
 

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 	"strings"
 	"time"
 
@@ -187,25 +186,6 @@ func (c *Client) doMultipartRequest(method, path string, queryParams queryParam,
 	}
 
 	return nil
-}
-
-func buildQueryString(params map[string]string) string {
-	if len(params) == 0 {
-		return ""
-	}
-
-	values := url.Values{}
-	for k, v := range params {
-		if v != "" {
-			values.Add(k, v)
-		}
-	}
-
-	query := values.Encode()
-	if query != "" {
-		return "?" + query
-	}
-	return ""
 }
 
 func (c *Client) downloadFile(downloadURL string) ([]byte, error) {

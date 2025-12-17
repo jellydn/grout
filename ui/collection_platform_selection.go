@@ -53,9 +53,9 @@ func (s *CollectionPlatformSelectionScreen) Draw(input CollectionPlatformSelecti
 			gaba.ProcessMessageOptions{ShowThemeBackground: true},
 			func() (interface{}, error) {
 				rc := utils.GetRommClient(input.Host)
-				opt := &romm.GetRomsOptions{
+				opt := romm.GetRomsQuery{
 					Limit:        10000,
-					CollectionID: &input.Collection.ID,
+					CollectionID: input.Collection.ID,
 				}
 
 				res, err := rc.GetRoms(opt)
