@@ -6,7 +6,7 @@
   <br />
   <img src=".github/resources/logotipo.png" height="45px" width="auto" alt="romm grout logotype">
     <h3 style="font-size: 25px;">
-A RomM Client for <a href="https://nextui.loveretro.games">NextUI</a> and <a href="https://muos.dev">muOS</a>
+A RomM Client for <a href="https://muos.dev">muOS</a>, <a href="https://knulli.org">Knulli</a>, and <a href="https://nextui.loveretro.games">NextUI</a>.
     </h3>
 
 <br>
@@ -47,8 +47,9 @@ A RomM Client for <a href="https://nextui.loveretro.games">NextUI</a> and <a hre
     - [Settings](#settings)
     - [Save Sync](#save-sync)
 - [Installation](#installation)
-    - [NextUI Setup](#nextui-setup)
     - [muOS Setup](#muos-setup)
+    - [Knulli Setup](#knulli-setup)
+    - [NextUI Setup](#nextui-setup)
 - [Need Help? Found a Bug? Have an Idea?](#need-help-found-a-bug-have-an-idea)
 - [Make The World Better](#spread-joy)
 
@@ -359,27 +360,6 @@ When the sync completes, you'll see a summary showing:
 
 ## Installation
 
-### NextUI Setup
-
-Grout has been tested on the following devices running NextUI:
-
-- TrimUI Brick
-- TrimUI Smart Pro
-
-**Installation Steps:**
-
-1. Ensure your TrimUI device has NextUI installed on an SD card.
-2. Connect your device to a Wi-Fi network.
-3. Install Grout using one of these methods:
-    - **Recommended:** Use the NextUI Pak Store found in the `Tools` menu. Navigate to the `ROM Management` category and
-      install Grout.
-    - **Manual:** Download
-      the [latest Grout release](https://github.com/rommapp/grout/releases/latest/download/Grout.pak.zip) for NextUI,
-      unzip it, and place the `Grout.pak` directory into `SD_ROOT/Tools/tg5040`.
-4. Launch Grout from the `Tools` menu and enjoy!
-
----
-
 ### muOS Setup
 
 Grout has been tested on the following devices running muOS 2508.4 Loose Goose:
@@ -415,6 +395,52 @@ Please help verify compatibility on other devices by reporting your results!
 8. Save the input mapping JSON file as `input_mapping.json` and transfer it to the Grout application folder:
     - `/mnt/mmc/MUOS/application/Grout` or `/mnt/sdcard/MUOS/application/Grout`
 9. Select `Apps` on the main menu, launch Grout, and enjoy!
+
+---
+
+### Knulli Setup
+
+Grout has been tested on the following devices running Knulli Gladiator II:
+
+**Anbernic:**
+
+- RG34XX
+
+**Installation Steps:**
+
+1. Ensure your device is running Knulli.
+2. Download the [latest Grout release](https://github.com/rommapp/grout/releases/latest/download/Grout-Knulli.zip) for
+   Knulli.
+3. Unzip the downloaded archive.
+4. Copy the Grout folder to your Tools directory (`/userdata/roms/tools`)
+5. On the main Knulli menu, press start, navigate to `Game Settings`, and select `Update Gameslist`.
+6. Launch Grout from the `Tools` menu and enjoy!
+
+> [!IMPORTANT]
+> Grout requires a setting to be toggled in Knulli to enable art downloading.
+> On the main Knulli menu, press start, 'System Settings', `Frontend Developer Options` (at the very bottom), and turn
+`Search For Local Art` on.
+
+---
+
+### NextUI Setup
+
+Grout has been tested on the following devices running NextUI:
+
+- TrimUI Brick
+- TrimUI Smart Pro
+
+**Installation Steps:**
+
+1. Ensure your TrimUI device has NextUI installed on an SD card.
+2. Connect your device to a Wi-Fi network.
+3. Install Grout using one of these methods:
+    - **Recommended:** Use the NextUI Pak Store found in the `Tools` menu. Navigate to the `ROM Management` category and
+      install Grout.
+    - **Manual:** Download
+      the [latest Grout release](https://github.com/rommapp/grout/releases/latest/download/Grout.pak.zip) for NextUI,
+      unzip it, and place the `Grout.pak` directory into `SD_ROOT/Tools/tg5040`.
+4. Launch Grout from the `Tools` menu and enjoy!
 
 ---
 

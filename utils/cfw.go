@@ -11,16 +11,19 @@ import (
 )
 
 func GetCFW() constants.CFW {
-	cfw := strings.ToLower(os.Getenv("CFW"))
+	cfwEnv := strings.ToUpper(os.Getenv("CFW"))
+	cfw := constants.CFW(cfwEnv)
+
 	switch cfw {
-	case "muos":
-		return constants.MuOS
-	case "nextui":
-		return constants.NextUI
+	case constants.MuOS, constants.NextUI, constants.Knulli:
+		return cfw
 	default:
-		LogStandardFatal(fmt.Sprintf("Unsupported CFW: %s", cfw), nil)
+		LogStandardFatal(
+			fmt.Sprintf("Unsupported CFW: '%s'. Valid options: NextUI, muOS, Knulli", cfwEnv),
+			nil,
+		)
+		return ""
 	}
-	return ""
 }
 
 func GetRomDirectory() string {
@@ -58,6 +61,9 @@ func GetArtDirectory(config Config, platform romm.Platform) string {
 	case constants.NextUI:
 		romDir := GetPlatformRomDirectory(config, platform)
 		return filepath.Join(romDir, ".media")
+	case constants.Knulli:
+		romDir := GetPlatformRomDirectory(config, platform)
+		return filepath.Join(romDir, "images")
 	case constants.MuOS:
 		systemName, exists := constants.MuOSArtDirectory[platform.Slug]
 		if !exists {

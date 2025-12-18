@@ -234,6 +234,9 @@ func (s *PlatformMappingScreen) getCFWDirectoriesForPlatform(slug string, cfw co
 		return constants.MuOSPlatforms[slug]
 	case constants.NextUI:
 		return constants.NextUIPlatforms[slug]
+	case constants.Knulli:
+		return constants.KnulliPlatforms[slug]
+
 	default:
 		return []string{}
 	}

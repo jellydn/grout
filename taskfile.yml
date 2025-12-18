@@ -23,6 +23,7 @@ tasks:
       - task: extract
       - task: package-next
       - task: package-muos
+      - task: package-knulli
 
   all-local:
     desc: Build (with local gabagool via go work) and package for all platforms
@@ -31,6 +32,7 @@ tasks:
       - task: extract
       - task: package-next
       - task: package-muos
+      - task: package-knulli
 
   extract:
     desc: Extract binary and libraries from Docker image
@@ -65,6 +67,17 @@ tasks:
       - cp -R resources build/muOS/Grout/
     silent: true
 
+  package-knulli:
+    desc: Package for Knulli
+    cmds:
+      - rm -rf build/Knulli || true
+      - mkdir -p build/Knulli/Grout
+      - mkdir -p build/Knulli/Grout/resources/lib
+      - cp build/grout scripts/Knulli/Grout.sh README.md LICENSE build/Knulli/Grout
+      - cp -R build/lib build/Knulli/Grout/resources
+      - cp -R resources build/Knulli/Grout/
+    silent: true
+
   adb-next:
     desc: Deploy to NextUI device via ADB
     cmds:
@@ -80,6 +93,14 @@ tasks:
       - adb push build/muOS/Grout /mnt/sdcard/MUOS/application
       - adb push config-platformless.json /mnt/sdcard/MUOS/application/Grout/config.json
       - adb push .github/resources/input_mappings/muOS/anbernic_mapping.json /mnt/sdcard/MUOS/application/Grout/input_mapping.json
+    silent: true
+
+  adb-knulli:
+    desc: Deploy to Knulli device via ADB
+    cmds:
+      - adb shell rm -rf /userdata/roms/ports/Grout || true
+      - adb push build/Knulli/Grout /userdata/roms/ports
+      - adb push config-platformless.json /userdata/roms/ports/Grout/config.json
     silent: true
 
   i18n-extract:
