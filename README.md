@@ -364,21 +364,18 @@ When the sync completes, you'll see a summary showing:
 
 Grout has been tested on the following devices running muOS 2508.4 Loose Goose:
 
-**Anbernic:**
+| Manufacturer | Device       |
+|--------------|--------------|
+| Anbernic     | RG34XX       |
+| Anbernic     | RG35XX-H     |
+| Anbernic     | RG35XXSP     |
+| Anbernic     | RG40XXV      |
+| TrimUI       | Brick        |
+| TrimUI       | Smart Pro    |
 
-- RG34XX
-- RG35XX-H
-- RG35XXSP
-- RG40XXV
+_Please help verify compatibility on other devices by reporting your results!_
 
-**TrimUI:**
-
-- Brick
-- Smart Pro
-
-**Please help verify compatibility on other devices by reporting your results!**
-
-**Installation Steps:**
+#### Installation Steps:
 
 1. Ensure your device is running muOS.
 2. Download the [latest Grout release](https://github.com/rommapp/grout/releases/latest/download/Grout.muxapp) for muOS.
@@ -402,13 +399,13 @@ Grout has been tested on the following devices running muOS 2508.4 Loose Goose:
 
 Grout has been tested on the following devices running Knulli Gladiator II:
 
-**Anbernic:**
+| Manufacturer | Device |
+|--------------|--------|
+| Anbernic     | RG34XX |
 
-- RG34XX
+_Please help verify compatibility on other devices by reporting your results!_
 
-**Please help verify compatibility on other devices by reporting your results!**
-
-**Installation Steps:**
+#### Installation Steps:
 
 1. Ensure your device is running Knulli.
 2. Download the [latest Grout release](https://github.com/rommapp/grout/releases/latest/download/Grout-Knulli.zip) for
@@ -430,10 +427,12 @@ Grout has been tested on the following devices running Knulli Gladiator II:
 
 Grout has been tested on the following devices running NextUI:
 
-- TrimUI Brick
-- TrimUI Smart Pro
+| Manufacturer | Device     |
+|--------------|------------|
+| TrimUI       | Brick      |
+| TrimUI       | Smart Pro  |
 
-**Installation Steps:**
+#### Installation Steps:
 
 1. Ensure your TrimUI device has NextUI installed on an SD card.
 2. Connect your device to a Wi-Fi network.
