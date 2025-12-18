@@ -10,25 +10,30 @@ import (
 
 	"grout/romm"
 
-	"github.com/UncleJunVIP/gabagool/v2/pkg/gabagool"
+	"github.com/BrandonKowalski/gabagool/v2/pkg/gabagool"
 )
 
-type LoginInput struct {
+type loginInput struct {
 	ExistingHost romm.Host
 }
 
-type LoginOutput struct {
+type loginOutput struct {
 	Host   romm.Host
 	Config *utils.Config
 }
 
+type loginAttemptResult struct {
+	BadHost        bool
+	BadCredentials bool
+}
+
 type LoginScreen struct{}
 
-func NewLoginScreen() *LoginScreen {
+func newLoginScreen() *LoginScreen {
 	return &LoginScreen{}
 }
 
-func (s *LoginScreen) Draw(input LoginInput) (ScreenResult[LoginOutput], error) {
+func (s *LoginScreen) draw(input loginInput) (ScreenResult[loginOutput], error) {
 	host := input.ExistingHost
 
 	items := []gabagool.ItemWithOptions{
@@ -131,7 +136,7 @@ func (s *LoginScreen) Draw(input LoginInput) (ScreenResult[LoginOutput], error) 
 	)
 
 	if err != nil {
-		return WithCode(LoginOutput{}, gabagool.ExitCodeCancel), nil
+		return withCode(loginOutput{}, gabagool.ExitCodeCancel), nil
 	}
 
 	loginSettings := res.Items
@@ -148,14 +153,14 @@ func (s *LoginScreen) Draw(input LoginInput) (ScreenResult[LoginOutput], error) 
 		Password: loginSettings[4].Options[0].Value.(string),
 	}
 
-	return Success(LoginOutput{Host: newHost}), nil
+	return success(loginOutput{Host: newHost}), nil
 }
 
 func LoginFlow(existingHost romm.Host) (*utils.Config, error) {
-	screen := NewLoginScreen()
+	screen := newLoginScreen()
 
 	for {
-		result, err := screen.Draw(LoginInput{ExistingHost: existingHost})
+		result, err := screen.draw(loginInput{ExistingHost: existingHost})
 		if err != nil {
 			gabagool.ProcessMessage("Something unexpected happened!\nCheck the logs for more info.", gabagool.ProcessMessageOptions{}, func() (interface{}, error) {
 				time.Sleep(3 * time.Second)
@@ -164,14 +169,12 @@ func LoginFlow(existingHost romm.Host) (*utils.Config, error) {
 			return nil, fmt.Errorf("unable to get login information: %w", err)
 		}
 
-		// User quit
 		if result.ExitCode == gabagool.ExitCodeBack || result.ExitCode == gabagool.ExitCodeCancel {
 			os.Exit(1)
 		}
 
 		host := result.Value.Host
 
-		// Attempt login
 		loginResult := attemptLogin(host)
 
 		switch {
@@ -181,7 +184,7 @@ func LoginFlow(existingHost romm.Host) (*utils.Config, error) {
 					{ButtonName: "A", HelpText: "Continue"},
 				},
 				gabagool.MessageOptions{})
-			existingHost = host // Retry with entered values
+			existingHost = host
 			continue
 
 		case loginResult.BadCredentials:
@@ -190,21 +193,15 @@ func LoginFlow(existingHost romm.Host) (*utils.Config, error) {
 					{ButtonName: "A", HelpText: "Continue"},
 				},
 				gabagool.MessageOptions{})
-			existingHost = host // Retry with entered values
+			existingHost = host
 			continue
 		}
 
-		// Success
 		config := &utils.Config{
 			Hosts: []romm.Host{host},
 		}
 		return config, nil
 	}
-}
-
-type loginAttemptResult struct {
-	BadHost        bool
-	BadCredentials bool
 }
 
 func attemptLogin(host romm.Host) loginAttemptResult {

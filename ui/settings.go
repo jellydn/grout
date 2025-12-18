@@ -7,18 +7,20 @@ import (
 	"grout/utils"
 	"time"
 
-	gaba "github.com/UncleJunVIP/gabagool/v2/pkg/gabagool"
+	gaba "github.com/BrandonKowalski/gabagool/v2/pkg/gabagool"
 )
 
 type SettingsInput struct {
-	Config *utils.Config
-	CFW    constants.CFW
-	Host   romm.Host
+	Config            *utils.Config
+	CFW               constants.CFW
+	Host              romm.Host
+	LastSelectedIndex int
 }
 
 type SettingsOutput struct {
 	Config              *utils.Config
 	EditMappingsClicked bool
+	LastSelectedIndex   int
 }
 
 type SettingsScreen struct{}
@@ -66,33 +68,40 @@ func (s *SettingsScreen) Draw(input SettingsInput) (ScreenResult[SettingsOutput]
 	items := s.buildMenuItems(config)
 
 	result, err := gaba.OptionsList(
-		"Grout Settings",
+		"Settings",
 		gaba.OptionListSettings{
 			FooterHelpItems: []gaba.FooterHelpItem{
 				{ButtonName: "B", HelpText: "Cancel"},
 				{ButtonName: "←→", HelpText: "Cycle"},
 				{ButtonName: "Start", HelpText: "Save"},
 			},
+			InitialSelectedIndex: input.LastSelectedIndex,
 		},
 		items,
 	)
 
 	if err != nil {
 		if errors.Is(err, gaba.ErrCancelled) {
-			return Back(SettingsOutput{}), nil
+			return back(SettingsOutput{}), nil
 		}
-		return WithCode(SettingsOutput{}, gaba.ExitCodeError), err
+		return withCode(SettingsOutput{}, gaba.ExitCodeError), err
 	}
+
+	output.LastSelectedIndex = result.Selected
 
 	if result.Selected == 0 {
 		output.EditMappingsClicked = true
-		return WithCode(output, constants.ExitCodeEditMappings), nil
+		return withCode(output, constants.ExitCodeEditMappings), nil
+	}
+
+	if result.Selected == 1 {
+		return withCode(output, constants.ExitCodeSaveSync), nil
 	}
 
 	s.applySettings(config, result.Items)
 
 	output.Config = config
-	return Success(output), nil
+	return success(output), nil
 }
 
 func (s *SettingsScreen) buildMenuItems(config *utils.Config) []gaba.ItemWithOptions {
@@ -101,6 +110,29 @@ func (s *SettingsScreen) buildMenuItems(config *utils.Config) []gaba.ItemWithOpt
 			Item:    gaba.MenuItem{Text: "Edit Directory Mappings"},
 			Options: []gaba.Option{{Type: gaba.OptionTypeClickable}},
 		},
+		{
+			Item:    gaba.MenuItem{Text: "Sync Saves"},
+			Options: []gaba.Option{{Type: gaba.OptionTypeClickable}},
+		},
+
+		{
+			Item: gaba.MenuItem{Text: "Show Game Details"},
+			Options: []gaba.Option{
+				{DisplayName: "True", Value: true},
+				{DisplayName: "False", Value: false},
+			},
+			SelectedOption: boolToIndex(!config.ShowGameDetails),
+		},
+
+		// TODO Enable Later
+		//{
+		//	Item: gaba.MenuItem{Text: "Auto Sync Saves"},
+		//	Options: []gaba.Option{
+		//		{DisplayName: "True", Value: true},
+		//		{DisplayName: "False", Value: false},
+		//	},
+		//	SelectedOption: boolToIndex(!config.AutoSyncSaves),
+		//},
 		{
 			Item: gaba.MenuItem{Text: "Download Art"},
 			Options: []gaba.Option{
@@ -116,14 +148,6 @@ func (s *SettingsScreen) buildMenuItems(config *utils.Config) []gaba.ItemWithOpt
 				{DisplayName: "False", Value: false},
 			},
 			SelectedOption: boolToIndex(!config.UnzipDownloads),
-		},
-		{
-			Item: gaba.MenuItem{Text: "Show Game Details"},
-			Options: []gaba.Option{
-				{DisplayName: "True", Value: true},
-				{DisplayName: "False", Value: false},
-			},
-			SelectedOption: boolToIndex(!config.ShowGameDetails),
 		},
 		{
 			Item:           gaba.MenuItem{Text: "API Timeout"},
@@ -185,6 +209,8 @@ func (s *SettingsScreen) applySettings(config *utils.Config, items []gaba.ItemWi
 		switch item.Item.Text {
 		case "Download Art":
 			config.DownloadArt = item.SelectedOption == 0
+		case "Auto Sync Saves":
+			config.AutoSyncSaves = item.SelectedOption == 0
 		case "Unzip Downloads":
 			config.UnzipDownloads = item.SelectedOption == 0
 		case "Show Game Details":

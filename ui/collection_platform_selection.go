@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	gaba "github.com/UncleJunVIP/gabagool/v2/pkg/gabagool"
+	gaba "github.com/BrandonKowalski/gabagool/v2/pkg/gabagool"
 )
 
 type CollectionPlatformSelectionInput struct {
@@ -53,9 +53,9 @@ func (s *CollectionPlatformSelectionScreen) Draw(input CollectionPlatformSelecti
 			gaba.ProcessMessageOptions{ShowThemeBackground: true},
 			func() (interface{}, error) {
 				rc := utils.GetRommClient(input.Host)
-				opt := &romm.GetRomsOptions{
+				opt := romm.GetRomsQuery{
 					Limit:        10000,
-					CollectionID: &input.Collection.ID,
+					CollectionID: input.Collection.ID,
 				}
 
 				res, err := rc.GetRoms(opt)
@@ -70,14 +70,13 @@ func (s *CollectionPlatformSelectionScreen) Draw(input CollectionPlatformSelecti
 		)
 
 		if err != nil || loadErr != nil {
-			return WithCode(output, gaba.ExitCodeError), err
+			return withCode(output, gaba.ExitCodeError), err
 		}
 	}
 
 	platformMap := make(map[int]romm.Platform)
 	for _, game := range allGames {
 		if _, exists := platformMap[game.PlatformID]; !exists {
-			// Check if this platform is mapped in config
 			if _, hasMapping := input.Config.DirectoryMappings[game.PlatformSlug]; hasMapping {
 				platformMap[game.PlatformID] = romm.Platform{
 					ID:   game.PlatformID,
@@ -97,24 +96,20 @@ func (s *CollectionPlatformSelectionScreen) Draw(input CollectionPlatformSelecti
 				return nil, nil
 			},
 		)
-		return WithCode(output, gaba.ExitCodeBack), nil
+		return withCode(output, gaba.ExitCodeBack), nil
 	}
 
-	// Convert map to sorted slice
 	platforms := make([]romm.Platform, 0, len(platformMap))
 	for _, platform := range platformMap {
 		platforms = append(platforms, platform)
 	}
 
-	// Sort platforms by name
 	slices.SortFunc(platforms, func(a, b romm.Platform) int {
 		return strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name))
 	})
 
-	// Build menu items
 	menuItems := make([]gaba.MenuItem, len(platforms))
 	for i, platform := range platforms {
-		// Count games for this platform
 		gameCount := 0
 		for _, game := range allGames {
 			if game.PlatformID == platform.ID {
@@ -146,9 +141,9 @@ func (s *CollectionPlatformSelectionScreen) Draw(input CollectionPlatformSelecti
 	sel, err := gaba.List(options)
 	if err != nil {
 		if errors.Is(err, gaba.ErrCancelled) {
-			return Back(output), nil
+			return back(output), nil
 		}
-		return WithCode(output, gaba.ExitCodeError), err
+		return withCode(output, gaba.ExitCodeError), err
 	}
 
 	switch sel.Action {
@@ -159,8 +154,9 @@ func (s *CollectionPlatformSelectionScreen) Draw(input CollectionPlatformSelecti
 		output.AllGames = allGames
 		output.LastSelectedIndex = sel.Selected[0]
 		output.LastSelectedPosition = sel.VisiblePosition
-		return Success(output), nil
-	}
+		return success(output), nil
 
-	return WithCode(output, gaba.ExitCodeBack), nil
+	default:
+		return withCode(output, gaba.ExitCodeBack), nil
+	}
 }

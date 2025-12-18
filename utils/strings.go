@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"grout/constants"
 	"grout/romm"
-	"path"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -32,7 +31,7 @@ func ParseTag(input string) string {
 	return foundTag
 }
 
-func NameCleaner(name string, stripTag bool) (string, string) {
+func nameCleaner(name string, stripTag bool) (string, string) {
 	cleaned := filepath.Clean(name)
 
 	tags := constants.TagRegex.FindAllStringSubmatch(cleaned, -1)
@@ -60,7 +59,7 @@ func NameCleaner(name string, stripTag bool) (string, string) {
 		cleaned = strings.ReplaceAll(cleaned, orderedFolderRegex[0], "")
 	}
 
-	cleaned = strings.ReplaceAll(cleaned, path.Ext(cleaned), "")
+	cleaned = strings.ReplaceAll(cleaned, ":", " -")
 
 	cleaned = strings.TrimSpace(cleaned)
 
@@ -74,7 +73,7 @@ func PrepareRomNames(games []romm.Rom) []romm.Rom {
 	for i := range games {
 		regions := strings.Join(games[i].Regions, ", ")
 
-		cleanedName, _ := NameCleaner(games[i].Name, true)
+		cleanedName, _ := nameCleaner(games[i].Name, true)
 		games[i].DisplayName = cleanedName
 
 		if len(regions) > 0 {
@@ -82,7 +81,6 @@ func PrepareRomNames(games []romm.Rom) []romm.Rom {
 			games[i].DisplayName = dn
 		}
 
-		games[i].ListName = games[i].DisplayName
 	}
 
 	slices.SortFunc(games, func(a, b romm.Rom) int {
@@ -90,4 +88,17 @@ func PrepareRomNames(games []romm.Rom) []romm.Rom {
 	})
 
 	return games
+}
+
+func FormatBytes(bytes int) string {
+	const unit = 1024
+	if bytes < unit {
+		return fmt.Sprintf("%d B", bytes)
+	}
+	div, exp := int64(unit), 0
+	for n := bytes / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	return fmt.Sprintf("%.1f %cB", float64(bytes)/float64(div), "KMGTPE"[exp])
 }

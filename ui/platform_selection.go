@@ -5,12 +5,12 @@ import (
 	"grout/constants"
 	"grout/romm"
 
-	gaba "github.com/UncleJunVIP/gabagool/v2/pkg/gabagool"
+	gaba "github.com/BrandonKowalski/gabagool/v2/pkg/gabagool"
 )
 
 type PlatformSelectionInput struct {
 	Platforms            []romm.Platform
-	QuitOnBack           bool // If true, back button quits the app; if false, it navigates back
+	QuitOnBack           bool
 	ShowCollections      bool
 	LastSelectedIndex    int
 	LastSelectedPosition int
@@ -35,7 +35,7 @@ func (s *PlatformSelectionScreen) Draw(input PlatformSelectionInput) (ScreenResu
 	}
 
 	if len(input.Platforms) == 0 {
-		return WithCode(output, gaba.ExitCode(404)), nil
+		return withCode(output, gaba.ExitCode(404)), nil
 	}
 
 	var menuItems []gaba.MenuItem
@@ -81,9 +81,9 @@ func (s *PlatformSelectionScreen) Draw(input PlatformSelectionInput) (ScreenResu
 	sel, err := gaba.List(options)
 	if err != nil {
 		if errors.Is(err, gaba.ErrCancelled) {
-			return Back(output), nil
+			return back(output), nil
 		}
-		return WithCode(output, gaba.ExitCodeError), err
+		return withCode(output, gaba.ExitCodeError), err
 	}
 
 	switch sel.Action {
@@ -95,17 +95,16 @@ func (s *PlatformSelectionScreen) Draw(input PlatformSelectionInput) (ScreenResu
 		output.LastSelectedPosition = sel.VisiblePosition
 
 		if platform.Slug == "collections" {
-			return WithCode(output, constants.ExitCodeCollections), nil
+			return withCode(output, constants.ExitCodeCollections), nil
 		}
 
-		return Success(output), nil
+		return success(output), nil
 
 	case gaba.ListActionTriggered:
-		// Settings action (X button) - only available when QuitOnBack is true
 		if input.QuitOnBack {
-			return WithCode(output, gaba.ExitCodeAction), nil
+			return withCode(output, gaba.ExitCodeAction), nil
 		}
 	}
 
-	return WithCode(output, gaba.ExitCodeBack), nil
+	return withCode(output, gaba.ExitCodeBack), nil
 }
