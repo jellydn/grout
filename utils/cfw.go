@@ -11,16 +11,19 @@ import (
 )
 
 func GetCFW() constants.CFW {
-	cfw := strings.ToLower(os.Getenv("CFW"))
+	cfwEnv := strings.ToUpper(os.Getenv("CFW"))
+	cfw := constants.CFW(cfwEnv)
+
 	switch cfw {
-	case "muos":
-		return constants.MuOS
-	case "nextui":
-		return constants.NextUI
+	case constants.MuOS, constants.NextUI, constants.Knulli:
+		return cfw
 	default:
-		LogStandardFatal(fmt.Sprintf("Unsupported CFW: %s", cfw), nil)
+		LogStandardFatal(
+			fmt.Sprintf("Unsupported CFW: '%s'. Valid options: NextUI, muOS, Knulli", cfwEnv),
+			nil,
+		)
+		return ""
 	}
-	return ""
 }
 
 func GetRomDirectory() string {
@@ -34,7 +37,10 @@ func GetRomDirectory() string {
 	case constants.MuOS:
 		return constants.MuOSRomsFolderUnion
 	case constants.NextUI:
-		return filepath.Join(getNextUIBasePath(), "Roms")
+		return filepath.Join(getBasePath(constants.NextUI), "Roms")
+	case constants.Knulli:
+		return filepath.Join(getBasePath(constants.Knulli), "roms")
+
 	}
 
 	return ""
@@ -55,6 +61,9 @@ func GetArtDirectory(config Config, platform romm.Platform) string {
 	case constants.NextUI:
 		romDir := GetPlatformRomDirectory(config, platform)
 		return filepath.Join(romDir, ".media")
+	case constants.Knulli:
+		romDir := GetPlatformRomDirectory(config, platform)
+		return filepath.Join(romDir, "images")
 	case constants.MuOS:
 		systemName, exists := constants.MuOSArtDirectory[platform.Slug]
 		if !exists {
@@ -67,14 +76,44 @@ func GetArtDirectory(config Config, platform romm.Platform) string {
 	}
 }
 
-func RomMSlugToCFW(slug string) string {
-	var cfwPlatformMap map[string][]string
-
-	switch GetCFW() {
+func GetPlatformMap(cfw constants.CFW) map[string][]string {
+	switch cfw {
 	case constants.MuOS:
-		cfwPlatformMap = constants.MuOSPlatforms
+		return constants.MuOSPlatforms
 	case constants.NextUI:
-		cfwPlatformMap = constants.NextUIPlatforms
+		return constants.NextUIPlatforms
+	case constants.Knulli:
+		return constants.KnulliPlatforms
+	default:
+		return nil
+	}
+}
+
+func GetSaveDirectoriesMap(cfw constants.CFW) map[string][]string {
+	switch cfw {
+	case constants.MuOS:
+		return constants.MuOSSaveDirectories
+	case constants.NextUI:
+		return constants.NextUISaveDirectories
+	case constants.Knulli:
+		return constants.KnulliSaveDirectories
+	default:
+		return nil
+	}
+}
+
+func GetSaveDirectoriesForSlug(slug string) []string {
+	saveDirectoriesMap := GetSaveDirectoriesMap(GetCFW())
+	if saveDirectoriesMap == nil {
+		return nil
+	}
+	return saveDirectoriesMap[slug]
+}
+
+func RomMSlugToCFW(slug string) string {
+	cfwPlatformMap := GetPlatformMap(GetCFW())
+	if cfwPlatformMap == nil {
+		return strings.ToLower(slug)
 	}
 
 	if value, ok := cfwPlatformMap[slug]; ok {
@@ -90,7 +129,7 @@ func RomMSlugToCFW(slug string) string {
 
 func RomFolderBase(path string) string {
 	switch GetCFW() {
-	case constants.MuOS:
+	case constants.MuOS, constants.Knulli:
 		return path
 	case constants.NextUI:
 		return ParseTag(path)
@@ -99,39 +138,49 @@ func RomFolderBase(path string) string {
 	}
 }
 
-func getMuOSBasePath() string {
-	if os.Getenv("MUOS_BASE_PATH") != "" {
-		return os.Getenv("MUOS_BASE_PATH")
-	}
+func getBasePath(cfw constants.CFW) string {
+	switch cfw {
+	case constants.MuOS:
+		if os.Getenv("MUOS_BASE_PATH") != "" {
+			return os.Getenv("MUOS_BASE_PATH")
+		}
+		// Hack to see if there is actually content
+		sd2InfoDir := filepath.Join(constants.MuOSSD2, "MuOS", "info")
+		if _, err := os.Stat(sd2InfoDir); err == nil {
+			return constants.MuOSSD2
+		}
+		return constants.MuOSSD1
 
-	// Hack to see if there is actually content
-	sd2InfoDir := filepath.Join(constants.MuOSSD2, "MuOS", "info")
-	if _, err := os.Stat(sd2InfoDir); err == nil {
-		return constants.MuOSSD2
-	}
+	case constants.NextUI:
+		if os.Getenv("NEXTUI_BASE_PATH") != "" {
+			return os.Getenv("NEXTUI_BASE_PATH")
+		}
+		return "/mnt/SDCARD"
 
-	return constants.MuOSSD1
+	case constants.Knulli:
+		if os.Getenv("KNULLI_BASE_PATH") != "" {
+			return os.Getenv("KNULLI_BASE_PATH")
+		}
+		return "/userdata"
+
+	default:
+		return ""
+	}
 }
 
 func getMuOSInfoDirectory() string {
-	return filepath.Join(getMuOSBasePath(), "MUOS", "info")
-}
-
-func getNextUIBasePath() string {
-	if os.Getenv("NEXTUI_BASE_PATH") != "" {
-		return os.Getenv("NEXTUI_BASE_PATH")
-	}
-
-	return "/mnt/SDCARD"
+	return filepath.Join(getBasePath(constants.MuOS), "MUOS", "info")
 }
 
 func getSaveDirectory() string {
-	switch GetCFW() {
+	cfw := GetCFW()
+	switch cfw {
 	case constants.MuOS:
-		return filepath.Join(getMuOSBasePath(), "MUOS", "save", "file")
-
+		return filepath.Join(getBasePath(cfw), "MUOS", "save", "file")
 	case constants.NextUI:
-		return filepath.Join(getNextUIBasePath(), "Saves")
+		return filepath.Join(getBasePath(cfw), "Saves")
+	case constants.Knulli:
+		return filepath.Join(getBasePath(cfw), "saves")
 	}
 
 	return ""
