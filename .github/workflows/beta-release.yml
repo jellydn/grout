@@ -33,32 +33,23 @@ jobs:
           # Get current date
           DATE=$(date +%Y%m%d)
           
-          # Create beta version string
-          BETA_VERSION="${CURRENT_VERSION}-beta-${DATE}-${COMMIT_SHA}"
+          # Create beta version string using date-based format
+          BETA_VERSION="beta-${DATE}-${COMMIT_SHA}"
           
           # Get commit message for changelog
           COMMIT_MESSAGE=$(git log -1 --pretty=format:"%s")
           
           echo "version=$BETA_VERSION" >> $GITHUB_OUTPUT
           
-          # Create changelog using a heredoc to avoid YAML parsing issues
-          cat << 'EOF' > changelog.txt
-          Auto beta release from dev branch
-
-          Commit: $COMMIT_SHA
-          Message: $COMMIT_MESSAGE
-          Date: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
-
-          This is an automated beta release from the dev branch.
-          EOF
-          
-          # Replace variables in changelog
-          sed -i.bak "s/\$COMMIT_SHA/$COMMIT_SHA/g; s/\$COMMIT_MESSAGE/$COMMIT_MESSAGE/g" changelog.txt
-          
-          # Read changelog into output
-          CHANGELOG_CONTENT=$(cat changelog.txt)
+          # Create changelog using heredoc with variable expansion
           echo "changelog<<EOF" >> $GITHUB_OUTPUT
-          echo "$CHANGELOG_CONTENT" >> $GITHUB_OUTPUT
+          echo "Auto beta release from dev branch" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "Commit: $COMMIT_SHA" >> $GITHUB_OUTPUT
+          echo "Message: $COMMIT_MESSAGE" >> $GITHUB_OUTPUT
+          echo "Date: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "This is an automated beta release from the dev branch." >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Create beta branch
