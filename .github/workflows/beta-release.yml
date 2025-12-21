@@ -109,36 +109,3 @@ jobs:
           prerelease: true
           target_commitish: beta-${{ steps.version.outputs.version }}
 
-      - name: Create Pull Request to main
-        uses: peter-evans/create-pull-request@v6
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "Merge beta release ${{ steps.version.outputs.version }} to main"
-          title: "Beta Release: ${{ steps.version.outputs.version }}"
-          body: |
-            ## Beta Release Ready
-            
-            This PR prepares the beta release `${{ steps.version.outputs.version }}` for merging into main.
-            
-            **Release Details:**
-            - Version: `${{ steps.version.outputs.version }}`
-            - Source Branch: `beta-${{ steps.version.outputs.version }}`
-            - Target Branch: `main`
-            
-            **Changes:**
-            - Version bump in pak.json
-            - Automated build and packaging completed
-            - Beta release created with pre-release flag
-            
-            **Actions:**
-            - [ ] Review changes
-            - [ ] Run tests
-            - [ ] Merge to main for stable release
-            
-            **Assets:**
-            - Grout.pak.zip - NextUI package
-            - Grout.muxapp - muOS package
-            
-            After merging to main, you can create a stable release using the manual release workflow.
-          branch: main
-          delete-branch: true
