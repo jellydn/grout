@@ -558,7 +558,7 @@ var KnulliPlatforms = map[string][]string{
 	"rpg-maker":                          {"easyrpg"},
 	"saturn":                             {"saturn"},
 	"scummvm":                            {"scummvm"},
-	"sega-master-system":                 {"mastersystem"},
+	"sega-master-system":                 {"mastersystem", "sms", "ms", "Sega Master System"},
 	"sega-pico":                          {"pico"},
 	"sega32":                             {"sega32x"},
 	"segacd":                             {"segacd"},
