@@ -495,7 +495,7 @@ var KnulliPlatforms = map[string][]string{
 	"3ds":                                {"3ds"},
 	"acpc":                               {"amstradcpc"},
 	"amiga":                              {"amiga500", "amiga1200"},
-	"arcade":                             {"arcade"},
+	"arcade":                             {"arcade", "mame", "fbneo"},
 	"arduboy":                            {"arduboy"},
 	"atari-st":                           {"atarist"},
 	"atari2600":                          {"atari2600"},
