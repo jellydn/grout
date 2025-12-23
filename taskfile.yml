@@ -115,3 +115,19 @@ tasks:
     cmds:
       - cd resources/locales && go run github.com/nicksnyder/go-i18n/v2/goi18n@latest merge active.en.toml translate.{{.CLI_ARGS}}.toml
     silent: false
+
+  mp4-to-webp:
+    desc: ffmpeg conversion for mp4 to webp
+    interactive: true
+    prompt: true
+    cmds:
+      - |
+        read -p "Enter MP4 input path: " INPUT_PATH
+        read -p "Enter WEBP output path (e.g., /path/to/output.webp): " OUTPUT_PATH
+
+        # Add .webp extension if not present
+        if [[ ! "$OUTPUT_PATH" =~ \.webp$ ]]; then
+          OUTPUT_PATH="${OUTPUT_PATH}.webp"
+        fi
+
+        ffmpeg -i "$INPUT_PATH" -vcodec libwebp -filter:v fps=fps=20 -lossless 0  -compression_level 3 -q:v 70 -loop 0 -preset picture -an -vsync 0 -s 1024:768 "$OUTPUT_PATH"
