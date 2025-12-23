@@ -117,15 +117,16 @@ func (s *CollectionPlatformSelectionScreen) Draw(input CollectionPlatformSelecti
 		return strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name))
 	})
 
+	gameCounts := make(map[int]int)
+	for _, game := range allGames {
+		if _, hasMapping := input.Config.DirectoryMappings[game.PlatformSlug]; hasMapping {
+			gameCounts[game.PlatformID]++
+		}
+	}
+
 	menuItems := make([]gaba.MenuItem, len(platforms))
 	for i, platform := range platforms {
-		gameCount := 0
-		for _, game := range allGames {
-			if game.PlatformID == platform.ID {
-				gameCount++
-			}
-		}
-
+		gameCount := gameCounts[platform.ID]
 		displayName := fmt.Sprintf("%s (%d)", platform.Name, gameCount)
 		menuItems[i] = gaba.MenuItem{
 			Text:     displayName,

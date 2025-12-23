@@ -48,6 +48,11 @@ func NewGameListScreen() *GameListScreen {
 	return &GameListScreen{}
 }
 
+// isCollectionSet checks if a collection is set, accounting for all collection types
+func isCollectionSet(c romm.Collection) bool {
+	return c.ID != 0 || c.VirtualID != ""
+}
+
 func (s *GameListScreen) Draw(input GameListInput) (ScreenResult[GameListOutput], error) {
 	games := input.Games
 
@@ -83,7 +88,7 @@ func (s *GameListScreen) Draw(input GameListInput) (ScreenResult[GameListOutput]
 
 	displayName := input.Platform.Name
 	allGamesFilteredOut := false
-	if input.Collection.ID != 0 {
+	if isCollectionSet(input.Collection) {
 		displayName = input.Collection.Name
 		originalCount := len(displayGames)
 		filteredGames := make([]romm.Rom, 0, len(displayGames))
@@ -120,10 +125,10 @@ func (s *GameListScreen) Draw(input GameListInput) (ScreenResult[GameListOutput]
 		if input.SearchFilter != "" {
 			return withCode(output, constants.ExitCodeNoResults), nil
 		}
-		if input.Collection.ID != 0 && input.Platform.ID != 0 {
+		if isCollectionSet(input.Collection) && input.Platform.ID != 0 {
 			return withCode(output, constants.ExitCodeBackToCollectionPlatform), nil
 		}
-		if input.Collection.ID != 0 {
+		if isCollectionSet(input.Collection) {
 			return withCode(output, constants.ExitCodeBackToCollection), nil
 		}
 		return back(output), nil
@@ -167,10 +172,10 @@ func (s *GameListScreen) Draw(input GameListInput) (ScreenResult[GameListOutput]
 				output.LastSelectedPosition = 0
 				return withCode(output, constants.ExitCodeClearSearch), nil
 			}
-			if input.Collection.ID != 0 && input.Platform.ID != 0 {
+			if isCollectionSet(input.Collection) && input.Platform.ID != 0 {
 				return withCode(output, constants.ExitCodeBackToCollectionPlatform), nil
 			}
-			if input.Collection.ID != 0 {
+			if isCollectionSet(input.Collection) {
 				return withCode(output, constants.ExitCodeBackToCollection), nil
 			}
 			return back(output), nil
@@ -193,10 +198,10 @@ func (s *GameListScreen) Draw(input GameListInput) (ScreenResult[GameListOutput]
 		return withCode(output, constants.ExitCodeSearch), nil
 	}
 
-	if input.Collection.ID != 0 && input.Platform.ID != 0 {
+	if isCollectionSet(input.Collection) && input.Platform.ID != 0 {
 		return withCode(output, constants.ExitCodeBackToCollectionPlatform), nil
 	}
-	if input.Collection.ID != 0 {
+	if isCollectionSet(input.Collection) {
 		return withCode(output, constants.ExitCodeBackToCollection), nil
 	}
 	return back(output), nil
@@ -212,7 +217,7 @@ func (s *GameListScreen) loadGames(input GameListInput) ([]romm.Rom, error) {
 	ft := ftPlatform
 	displayName := platform.Name
 
-	if collection.ID != 0 {
+	if isCollectionSet(collection) {
 		id = collection.ID
 		ft = ftCollection
 		displayName = collection.Name
