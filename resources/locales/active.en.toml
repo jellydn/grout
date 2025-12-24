@@ -191,6 +191,10 @@ Select - Toggle multi-select mode
 Menu - Show this help screen
 D-Pad - Navigate the game list"""
 
+[help_exit_text]
+description = "Message to close the help screen"
+other = "Press any button to close help"
+
 [log_level_debug]
 description = "Debug log level"
 other = "Debug"

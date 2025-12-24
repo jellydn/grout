@@ -191,6 +191,10 @@ Select - Activer/désactiver le mode sélection multiple
 Menu - Afficher cet écran d'aide
 Croix directionnelle - Naviguer dans la liste des jeux"""
 
+[help_exit_text]
+description = "Message pour fermer l'écran d'aide"
+other = "Appuyez sur n'importe quel bouton pour fermer l'aide"
+
 [log_level_debug]
 description = "Niveau de log debug"
 other = "Debug"

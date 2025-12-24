@@ -233,6 +233,10 @@ Seleccionar - Activar modo multi-selección
 Menú - Mostrar esta pantalla de ayuda
 D-Pad - Navegar la lista de juegos"""
 
+[help_exit_text]
+description = "Message to close the help screen"
+other = "Presiona cualquier botón para cerrar la ayuda"
+
 [log_level_debug]
 description = "Debug log level"
 hash = "sha1-7b25054507859fc71900d3a3720f8b92dbbe85cc"

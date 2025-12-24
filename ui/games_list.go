@@ -153,6 +153,7 @@ func (s *GameListScreen) Draw(input GameListInput) (ScreenResult[GameListOutput]
 
 	options.HelpTitle = i18n.GetString("games_list_help_title")
 	options.HelpText = strings.Split(i18n.GetString("games_list_help_body"), "\n")
+	options.HelpExitText = i18n.GetString("help_exit_text")
 
 	options.FooterHelpItems = []gaba.FooterHelpItem{
 		{ButtonName: "B", HelpText: i18n.GetString("button_back")},
