@@ -1,0 +1,110 @@
+name: Beta Release from Dev
+
+on:
+  push:
+    branches: [ dev ]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  beta-release:
+    runs-on: ubuntu-22.04-arm
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+    
+    steps:
+      - name: Checkout dev branch
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Get version info
+        id: version
+        run: |
+          # Get current version from pak.json
+          CURRENT_VERSION=$(jq -r '.version' pak.json)
+          
+          # Get commit short hash
+          COMMIT_SHA=$(git rev-parse --short HEAD)
+          
+          # Get current date
+          DATE=$(date +%Y%m%d)
+          
+          # Create beta version string using date-based format
+          BETA_VERSION="beta-${DATE}-${COMMIT_SHA}"
+          
+          # Get commit message for changelog
+          COMMIT_MESSAGE=$(git log -1 --pretty=format:"%s")
+          
+          echo "version=$BETA_VERSION" >> $GITHUB_OUTPUT
+          
+          # Create changelog using heredoc with variable expansion
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "Auto beta release from dev branch" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "Commit: $COMMIT_SHA" >> $GITHUB_OUTPUT
+          echo "Message: $COMMIT_MESSAGE" >> $GITHUB_OUTPUT
+          echo "Date: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "This is an automated beta release from the dev branch." >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create beta branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Create and checkout beta branch
+          git checkout -b beta-${{ steps.version.outputs.version }}
+          
+          # Update version in pak.json for beta
+          jq --arg version "${{ steps.version.outputs.version }}" \
+             --arg changelog "${{ steps.version.outputs.changelog }}" \
+             '.version = $version | .changelog[$version] = $changelog' \
+             pak.json > pak.json.tmp && mv pak.json.tmp pak.json
+          
+          git add pak.json
+          git commit -m "Bump version to ${{ steps.version.outputs.version }} for beta release"
+          git push origin beta-${{ steps.version.outputs.version }}
+
+      - name: Install Task
+        uses: arduino/setup-task@v2
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Package
+        run: task build extract package-next package-muos package-knulli
+
+      - name: Create NextUI distribution
+        run: |
+          cd build/Grout.pak
+          zip -r ../Grout.pak.zip .
+
+      - name: Create muOS distribution
+        run: |
+          cd build/muOS
+          zip -r Grout.muxapp Grout
+          mv Grout.muxapp ../Grout.muxapp
+
+      - name: Create Knulli distribution
+        run: |
+          cd build/Knulli
+          zip -r ../Grout-Knulli.zip .
+
+      - name: Create GitHub Beta Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          name: "Beta Release ${{ steps.version.outputs.version }}"
+          body: ${{ steps.version.outputs.changelog }}
+          files: |
+            build/Grout.pak.zip
+            build/Grout.muxapp
+            build/Grout-Knulli.zip
+          draft: false
+          prerelease: true
+          target_commitish: beta-${{ steps.version.outputs.version }}
