@@ -44,7 +44,7 @@ RUN if [ "$USE_LOCAL_GABAGOOL" = "true" ]; then \
 RUN if [ "$USE_LOCAL_GABAGOOL" = "true" ]; then \
         go build -gcflags="all=-N -l" -v -o grout app/grout.go; \
     else \
-        GOWORK=off go build -gcflags="all=-N -l" -v -o grout app/grout; \
+        GOWORK=off go build -gcflags="all=-N -l" -v -o grout app/grout.go; \
     fi
 
 CMD ["/bin/bash"]
