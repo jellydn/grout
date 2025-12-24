@@ -28,8 +28,8 @@ A RomM Client for <a href="https://muos.dev">muOS</a>, <a href="https://knulli.o
 - Download games wirelessly from your RomM instance
 - Download box art
 - Multi-file games with automatic M3U file creation
-- Save sync
-- Platform directory mapping that is configurable on device
+- Save Sync
+- Platform directory mapping configurable on device
 
 ---
 
@@ -72,10 +72,13 @@ When you first launch Grout, you'll be greeted with this login screen.
 5. **Password** - Your RomM password.
 
 Use the left and right buttons to cycle through options for Protocol. For the text fields (Hostname, Username,
-Password), pressing A will open an on-screen keyboard.
+Password), pressing `A` will open an on-screen keyboard.
 
-Press Start to log in. If your credentials are correct and Grout can reach your server, you'll move
+Press `Start` to login. If your credentials are correct and Grout can reach your server, you'll move
 to the next step. If something goes wrong, you'll get a message telling you what happened, and you can try again.
+
+> [!NOTE]
+> **OIDC Users:** If your RomM instance uses OIDC authentication, you can still use Grout by setting a password for your user account. Grout will support API Keys once they are available in RomM. For more details, see [this GitHub issue](https://github.com/rommapp/romm/issues/1767#issuecomment-2744215262).
 
 ---
 
@@ -96,7 +99,7 @@ You'll see a list of all platforms from your RomM instance. For each one, you ca
 Grout tries to be smart about this. If you already have a directory that matches the platform name, it'll be
 pre-selected. If not, it'll suggest creating one with the correct name for your firmware.
 
-Use left/right to cycle through the options for each platform. When you're happy with your mappings, press Start to
+Use left/right to cycle through the options for each platform. When you're happy with your mappings, press `Start` to
 save. Grout will create any new directories you selected.
 
 You can change these mappings later from the Settings menu.
@@ -115,14 +118,23 @@ platforms – NES, SNES, PlayStation, whatever you've got.
 
 **Navigation:**
 
-- Use Up/Down to scroll through platforms
-- Press A to select a platform
-- Press X to open Settings
-- Press B to quit Grout
+- `Up/Down` to scroll through platforms
+- `A` to select a platform or collection
+- `X` to open Settings
+- `Y` to open the Save Sync menu
+- `Select` to enter reordering mode
+- `B` to quit Grout
 
-Selecting a platform will take you to the game list for that platform.
+**Reordering Platforms:**
 
-Selecting Collections will show you your RomM collections.
+![Grout preview, reordering platforms](.github/resources/user_guide/reordering_platforms.png "Grout preview, reordering")
+
+Press `Select` to enter reordering mode. You'll see a ↕ indicator next to the currently selected platform. Use the D-pad to this platform up and down:
+
+- `Up/Down` to move the platform one position
+- `Left/Right` to move the platform one page at a time
+
+Press `A` to place the selected platform into its new position. Your custom platform order is automatically saved to the config and will persist across sessions. New platforms you add to RomM later will appear alphabetically at the end of your custom order.
 
 ---
 
@@ -133,7 +145,7 @@ They're a great way to organize games across multiple platforms.
 
 ![Grout preview, collections list](.github/resources/user_guide/collections.png "Grout preview, collections list")
 
-After selecting Collections from the main menu, you'll see all your collections. Pick one and press A.
+After selecting Collections from the main menu, you'll see all your collections. Pick one and press `A`.
 
 If your collection has games from multiple platforms, you'll see a platform selection screen next. This lets you filter
 the collection to just one platform at a time. If the collection is platform-specific, you'll go straight to the game
@@ -162,19 +174,19 @@ If you entered a search query, you'll see `[Search: "your search term"] | Platfo
 
 **Navigation and Selection:**
 
-- Up/Down to scroll through games
-- Left/Right to skip entire pages
-- Press A to select a single game
-- Press Select to enter multi-select mode, then use A to select/deselect games
-- Press X to open the search keyboard
-- Press B to go back
+- `Up/Down` to scroll through games
+- `Left/Right` to skip entire pages
+- `A` to select a single game
+- `Select` to enter multi-select mode, then use `A` to select/deselect games
+- `X` to open the search keyboard
+- `B` to go back
 
 **Multi-Select Mode:**
-Press Select once to enable multi-select. You'll see checkboxes appear next to each game. Now when you press A on a
+Press `Select` once to enable multi-select. You'll see checkboxes appear next to each game. Now when you press `A` on a
 game, it toggles selection instead of immediately downloading. This is perfect when you want to grab a bunch of games at
 once.
 
-Check all the ones you want, then press start to confirm your selections.
+Check all the ones you want, then press `Start` to confirm your selections.
 
 ![Grout preview, games multi select](.github/resources/user_guide/multi_select.png "Grout preview, games multi select")
 
@@ -182,14 +194,14 @@ Check all the ones you want, then press start to confirm your selections.
 
 ### Search
 
-Press X from any game list to search.
+Press `X` from any game list to search.
 
 ![Grout preview, search](.github/resources/user_guide/search.png "Grout preview, search")
 
 Type your search term using the on-screen keyboard and confirm. The game list will filter to show only matching titles.
 The search is case-insensitive and matches anywhere in the game name.
 
-To clear a search, press B to go back to the full results.
+To clear a search, press `B` to go back to the full results.
 
 ---
 
@@ -210,8 +222,8 @@ You'll see:
 
 From here:
 
-- Press A to download the game
-- Press B to go back without downloading
+- `A` to download the game
+- `B` to go back without downloading
 
 ---
 
@@ -222,7 +234,7 @@ After you've selected games (either from the game list or game details screen), 
 ![Grout preview, game download](.github/resources/user_guide/download.png "Grout preview, game download")
 
 You'll see a progress bar and a list of games being downloaded. Grout downloads your ROMs directly from RomM to the
-appropriate directory on your device. Press Y to cancel the download.
+appropriate directory on your device. Press `Y` to cancel the download.
 
 **What Happens During Download:**
 
@@ -247,17 +259,14 @@ ready to play.
 
 ### Settings
 
-Press X from the main platform menu to access Settings.
+Press `X` from the main platform menu to access Settings.
 
 ![Grout preview, settings](.github/resources/user_guide/settings.png "Grout preview, settings")
 
 Here's what you can configure:
 
-**Edit Directory Mappings** – Change which device directories are mapped to which RomM platforms. This takes you back to
+**Directory Mappings** – Change which device directories are mapped to which RomM platforms. This takes you back to
 the platform mapping screen that appeared during setup.
-
-**Sync Saves** – Opens the save sync feature. This scans your device for save files and syncs them with your RomM
-instance. More on this below.
 
 **Show Game Details** - When enabled, selecting a game shows the details screen first. When disabled, selecting a game
 immediately starts the download. If you know what you want and just want to grab it fast, turn this off.
@@ -283,7 +292,7 @@ us know!
 
 **Log Level** – Set to Debug if you're troubleshooting issues and want detailed logs. Otherwise, Error is fine.
 
-Use left/right to cycle through options. Press Start to save your changes, or B to cancel.
+Use `Left/Right` to cycle through options. Press `Start` to save your changes, or `B` to cancel.
 
 ---
 
@@ -294,7 +303,7 @@ Use left/right to cycle through options. Press Start to save your changes, or B 
 
 Save Sync keeps your game saves synchronized between your RomM server and your handheld device.
 
-**Access:** Settings > "Sync Saves"
+To access save sync, press `Y` from the platform menu.
 
 #### How It Works
 
@@ -415,13 +424,13 @@ _Please help verify compatibility on other devices by reporting your results!_
    Knulli.
 3. Unzip the downloaded archive.
 4. Copy the Grout folder to your Tools directory (`/userdata/roms/tools`)
-5. On the main Knulli menu, press start, navigate to `Game Settings`, and select `Update Gameslist`.
+5. On the main Knulli menu, press `start`, navigate to `Game Settings`, and select `Update Gameslist`.
 6. Launch Grout from the `Tools` menu and enjoy!
 
 > [!IMPORTANT]
 > Grout requires a setting to be toggled in Knulli to enable art downloading.
 >
-> On the main Knulli menu, press start, 'System Settings', `Frontend Developer Options` (at the very bottom), and turn
+> On the main Knulli menu, press `start`, 'System Settings', `Frontend Developer Options` (at the very bottom), and turn
 `Search For Local Art` on.
 
 ---

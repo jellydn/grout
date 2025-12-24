@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	gaba "github.com/BrandonKowalski/gabagool/v2/pkg/gabagool"
+	"github.com/BrandonKowalski/gabagool/v2/pkg/gabagool/i18n"
 )
 
 type SearchInput struct {
@@ -21,7 +22,7 @@ func NewSearchScreen() *SearchScreen {
 }
 
 func (s *SearchScreen) Draw(input SearchInput) (ScreenResult[SearchOutput], error) {
-	res, err := gaba.Keyboard(input.InitialText)
+	res, err := gaba.Keyboard(input.InitialText, i18n.GetString("help_exit_text"))
 	if err != nil {
 		if errors.Is(err, gaba.ErrCancelled) {
 			return back(SearchOutput{}), nil

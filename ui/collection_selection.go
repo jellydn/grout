@@ -11,6 +11,7 @@ import (
 	"sync"
 
 	gaba "github.com/BrandonKowalski/gabagool/v2/pkg/gabagool"
+	buttons "github.com/BrandonKowalski/gabagool/v2/pkg/gabagool/constants"
 	"github.com/BrandonKowalski/gabagool/v2/pkg/gabagool/i18n"
 )
 
@@ -56,7 +57,7 @@ func (s *CollectionSelectionScreen) Draw(input CollectionSelectionInput) (Screen
 	var smartCollections []romm.Collection
 	var virtualCollections []romm.VirtualCollection
 
-	// Fetch regular and smart collections if enabled
+	// Fetch regular collections if enabled
 	if input.Config.ShowCollections {
 		// Use cached regular collections or fetch
 		if len(input.CachedRegularCollections) > 0 {
@@ -73,7 +74,10 @@ func (s *CollectionSelectionScreen) Draw(input CollectionSelectionInput) (Screen
 				}
 			}()
 		}
+	}
 
+	// Fetch smart collections if enabled
+	if input.Config.ShowSmartCollections {
 		// Use cached smart collections or fetch
 		if len(input.CachedSmartCollections) > 0 {
 			smartCollections = input.CachedSmartCollections
@@ -126,6 +130,9 @@ func (s *CollectionSelectionScreen) Draw(input CollectionSelectionInput) (Screen
 
 	if input.Config.ShowCollections {
 		collections = append(collections, regularCollections...)
+	}
+
+	if input.Config.ShowSmartCollections {
 		collections = append(collections, smartCollections...)
 	}
 
@@ -177,7 +184,7 @@ func (s *CollectionSelectionScreen) Draw(input CollectionSelectionInput) (Screen
 	}
 
 	options := gaba.DefaultListOptions(title, menuItems)
-	options.EnableAction = true
+	options.ActionButton = buttons.VirtualButtonX
 	options.FooterHelpItems = footerItems
 	options.SelectedIndex = input.LastSelectedIndex
 	options.VisibleStartIndex = max(0, input.LastSelectedIndex-input.LastSelectedPosition)

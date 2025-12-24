@@ -34,6 +34,10 @@ other = "Help"
 description = "Login button"
 other = "Login"
 
+[button_logout]
+description = "Logout button"
+other = "Logout"
+
 [button_menu]
 description = "Menu button"
 other = "Menu"
@@ -49,6 +53,10 @@ other = "Quit"
 [button_save]
 description = "Save button"
 other = "Save"
+
+[button_save_sync]
+description = "Button to trigger save sync"
+other = "Sync"
 
 [button_search]
 description = "Search button"
@@ -190,6 +198,10 @@ Select - Toggle multi-select mode
   - Press Start to confirm selections
 Menu - Show this help screen
 D-Pad - Navigate the game list"""
+
+[help_exit_text]
+description = "Message to close the help screen"
+other = "Press any button to close help"
 
 [log_level_debug]
 description = "Debug log level"
@@ -341,7 +353,31 @@ other = "Downloaded Games"
 
 [settings_edit_mappings]
 description = "Edit directory mappings option"
-other = "Edit Directory Mappings"
+other = "Directory Mappings"
+
+[settings_info]
+description = "Info option"
+other = "Grout Info"
+
+[info_title]
+description = "Info screen title"
+other = "Grout Info"
+
+[info_version]
+description = "Grout version label"
+other = "Version"
+
+[info_server]
+description = "Server URL label"
+other = "Server"
+
+[info_user]
+description = "Active user label"
+other = "User"
+
+[info_repository]
+description = "Repository QR code label"
+other = "GitHub Repository"
 
 [settings_language]
 description = "Language option"
@@ -366,6 +402,10 @@ other = "Log Level"
 [settings_show_collections]
 description = "Show collections option"
 other = "Show Collections"
+
+[settings_show_smart_collections]
+description = "Show smart collections option"
+other = "Show Smart Collections"
 
 [settings_show_game_details]
 description = "Show game details option"

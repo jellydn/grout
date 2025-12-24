@@ -11,6 +11,7 @@ import (
 	"time"
 
 	gaba "github.com/BrandonKowalski/gabagool/v2/pkg/gabagool"
+	buttons "github.com/BrandonKowalski/gabagool/v2/pkg/gabagool/constants"
 	"github.com/BrandonKowalski/gabagool/v2/pkg/gabagool/i18n"
 )
 
@@ -113,7 +114,7 @@ func (s *GameListScreen) Draw(input GameListInput) (ScreenResult[GameListOutput]
 	title := displayName
 	if input.SearchFilter != "" {
 		message := i18n.GetStringWithData("games_list_search_prefix", map[string]interface{}{"Query": input.SearchFilter})
-		title = fmt.Sprintf("[%s] | %s", message, displayName)
+		title = fmt.Sprintf("%s | %s", message, displayName)
 		displayGames = filterList(displayGames, input.SearchFilter)
 	}
 
@@ -147,15 +148,15 @@ func (s *GameListScreen) Draw(input GameListInput) (ScreenResult[GameListOutput]
 
 	options := gaba.DefaultListOptions(title, menuItems)
 	options.SmallTitle = true
-	options.EnableAction = true
-	options.EnableMultiSelect = true
-	options.EnableHelp = true
+	options.ActionButton = buttons.VirtualButtonX
+	options.MultiSelectButton = buttons.VirtualButtonSelect
+	options.HelpButton = buttons.VirtualButtonMenu
 
 	options.HelpTitle = i18n.GetString("games_list_help_title")
 	options.HelpText = strings.Split(i18n.GetString("games_list_help_body"), "\n")
+	options.HelpExitText = i18n.GetString("help_exit_text")
 
 	options.FooterHelpItems = []gaba.FooterHelpItem{
-		{ButtonName: "B", HelpText: i18n.GetString("button_back")},
 		{ButtonName: i18n.GetString("button_menu"), HelpText: i18n.GetString("button_help")},
 		{ButtonName: "X", HelpText: i18n.GetString("button_search")},
 		{ButtonName: "A", HelpText: i18n.GetString("button_select")},

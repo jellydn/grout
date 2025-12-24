@@ -5,7 +5,7 @@ import (
 )
 
 func ShowCollections(config *Config, host romm.Host) bool {
-	if !config.ShowCollections && !config.ShowVirtualCollections {
+	if !config.ShowCollections && !config.ShowSmartCollections && !config.ShowVirtualCollections {
 		return false
 	}
 
@@ -16,7 +16,9 @@ func ShowCollections(config *Config, host romm.Host) bool {
 		if err == nil && len(col) > 0 {
 			return true
 		}
+	}
 
+	if config.ShowSmartCollections {
 		smartCol, err := rc.GetSmartCollections()
 		if err == nil && len(smartCol) > 0 {
 			return true
