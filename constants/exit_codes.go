@@ -7,6 +7,8 @@ import (
 const (
 	ExitCodeEditMappings             gaba.ExitCode = 100
 	ExitCodeSaveSync                 gaba.ExitCode = 101
+	ExitCodeInfo                     gaba.ExitCode = 102
+	ExitCodeLogout                   gaba.ExitCode = 103
 	ExitCodeSearch                   gaba.ExitCode = 200
 	ExitCodeClearSearch              gaba.ExitCode = 201
 	ExitCodeCollections              gaba.ExitCode = 300

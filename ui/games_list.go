@@ -11,6 +11,7 @@ import (
 	"time"
 
 	gaba "github.com/BrandonKowalski/gabagool/v2/pkg/gabagool"
+	buttons "github.com/BrandonKowalski/gabagool/v2/pkg/gabagool/constants"
 	"github.com/BrandonKowalski/gabagool/v2/pkg/gabagool/i18n"
 )
 
@@ -147,9 +148,9 @@ func (s *GameListScreen) Draw(input GameListInput) (ScreenResult[GameListOutput]
 
 	options := gaba.DefaultListOptions(title, menuItems)
 	options.SmallTitle = true
-	options.EnableAction = true
-	options.EnableMultiSelect = true
-	options.EnableHelp = true
+	options.ActionButton = buttons.VirtualButtonX
+	options.MultiSelectButton = buttons.VirtualButtonSelect
+	options.HelpButton = buttons.VirtualButtonMenu
 
 	options.HelpTitle = i18n.GetString("games_list_help_title")
 	options.HelpText = strings.Split(i18n.GetString("games_list_help_body"), "\n")

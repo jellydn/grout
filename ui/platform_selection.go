@@ -6,6 +6,7 @@ import (
 	"grout/romm"
 
 	gaba "github.com/BrandonKowalski/gabagool/v2/pkg/gabagool"
+	buttons "github.com/BrandonKowalski/gabagool/v2/pkg/gabagool/constants"
 	"github.com/BrandonKowalski/gabagool/v2/pkg/gabagool/i18n"
 )
 
@@ -21,6 +22,7 @@ type PlatformSelectionOutput struct {
 	SelectedPlatform     romm.Platform
 	LastSelectedIndex    int
 	LastSelectedPosition int
+	ReorderedPlatforms   []romm.Platform
 }
 
 type PlatformSelectionScreen struct{}
@@ -43,10 +45,11 @@ func (s *PlatformSelectionScreen) Draw(input PlatformSelectionInput) (ScreenResu
 
 	if input.ShowCollections {
 		menuItems = append(menuItems, gaba.MenuItem{
-			Text:     i18n.GetString("platform_selection_collections"),
-			Selected: false,
-			Focused:  false,
-			Metadata: romm.Platform{Slug: "collections"},
+			Text:           i18n.GetString("platform_selection_collections"),
+			Selected:       false,
+			Focused:        false,
+			Metadata:       romm.Platform{Slug: "collections"},
+			NotReorderable: true,
 		})
 	}
 
@@ -64,6 +67,7 @@ func (s *PlatformSelectionScreen) Draw(input PlatformSelectionInput) (ScreenResu
 		footerItems = []gaba.FooterHelpItem{
 			{ButtonName: "B", HelpText: i18n.GetString("button_quit")},
 			{ButtonName: "X", HelpText: i18n.GetString("button_settings")},
+			{ButtonName: "Y", HelpText: i18n.GetString("button_save_sync")},
 			{ButtonName: "A", HelpText: i18n.GetString("button_select")},
 		}
 	} else {
@@ -74,12 +78,59 @@ func (s *PlatformSelectionScreen) Draw(input PlatformSelectionInput) (ScreenResu
 	}
 
 	options := gaba.DefaultListOptions("Grout", menuItems)
-	options.EnableAction = input.QuitOnBack
+	options.ActionButton = buttons.VirtualButtonX
+	options.SecondaryActionButton = buttons.VirtualButtonY
+	options.ReorderButton = buttons.VirtualButtonSelect
 	options.FooterHelpItems = footerItems
 	options.SelectedIndex = input.LastSelectedIndex
 	options.VisibleStartIndex = max(0, input.LastSelectedIndex-input.LastSelectedPosition)
 
 	sel, err := gaba.List(options)
+
+	// Check for reordering before handling errors
+	// This ensures we save the order even when user presses B (cancel)
+	platformsReordered := false
+	startIndex := 0
+	if input.ShowCollections {
+		startIndex = 1
+	}
+
+	if sel != nil && len(sel.Items) > 0 {
+		gaba.GetLogger().Debug("Checking for platform reordering",
+			"total_items", len(sel.Items),
+			"startIndex", startIndex,
+			"input_platforms_count", len(input.Platforms))
+
+		if len(sel.Items)-startIndex == len(input.Platforms) {
+			for i := 0; i < len(input.Platforms); i++ {
+				originalPlatform := input.Platforms[i]
+				returnedPlatform := sel.Items[i+startIndex].Metadata.(romm.Platform)
+				if originalPlatform.Slug != returnedPlatform.Slug {
+					gaba.GetLogger().Debug("Platform order changed detected",
+						"position", i,
+						"original", originalPlatform.Slug,
+						"returned", returnedPlatform.Slug)
+					platformsReordered = true
+					break
+				}
+			}
+		}
+
+		if platformsReordered {
+			var reorderedPlatforms []romm.Platform
+			for i := startIndex; i < len(sel.Items); i++ {
+				platform := sel.Items[i].Metadata.(romm.Platform)
+				reorderedPlatforms = append(reorderedPlatforms, platform)
+				gaba.GetLogger().Debug("Reordered platform", "position", i-startIndex, "slug", platform.Slug)
+			}
+			output.ReorderedPlatforms = reorderedPlatforms
+			gaba.GetLogger().Debug("Platform reordering detected", "count", len(reorderedPlatforms))
+		} else {
+			gaba.GetLogger().Debug("No platform reordering detected")
+		}
+	}
+
+	// Now handle errors
 	if err != nil {
 		if errors.Is(err, gaba.ErrCancelled) {
 			return back(output), nil
@@ -104,6 +155,11 @@ func (s *PlatformSelectionScreen) Draw(input PlatformSelectionInput) (ScreenResu
 	case gaba.ListActionTriggered:
 		if input.QuitOnBack {
 			return withCode(output, gaba.ExitCodeAction), nil
+		}
+
+	case gaba.ListActionSecondaryTriggered:
+		if input.QuitOnBack {
+			return withCode(output, constants.ExitCodeSaveSync), nil
 		}
 	}
 

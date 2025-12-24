@@ -25,6 +25,7 @@ const (
 	collectionSearch                           = "collection_search"
 	settings                                   = "settings"
 	settingsPlatformMapping                    = "platform_mapping"
+	info                                       = "info"
 	saveSync                                   = "save_sync"
 )
 
@@ -95,7 +96,7 @@ func setup() *utils.Config {
 
 	gaba.GetLogger().Debug("Loading configuration from config.json")
 	config, err := utils.LoadConfig()
-	if err != nil {
+	if err != nil || len(config.Hosts) == 0 {
 		gaba.GetLogger().Debug("No RomM Host Configured", "error", err)
 		gaba.GetLogger().Debug("Starting login flow for initial setup")
 		loginConfig, loginErr := ui.LoginFlow(romm.Host{})
@@ -169,6 +170,10 @@ func main() {
 		gaba.GetLogger().Error("Failed to load platforms", "error", err)
 		os.Exit(1)
 	}
+
+	// Sort platforms by saved order, or alphabetically if no order is saved
+	platforms = utils.SortPlatformsByOrder(platforms, config.PlatformOrder)
+
 	showCollections := utils.ShowCollections(config, config.Hosts[0])
 
 	fsm := buildFSM(config, cfw, platforms, quitOnBack, showCollections)
@@ -213,6 +218,34 @@ func buildFSM(config *utils.Config, cfw constants.CFW, platforms []romm.Platform
 			Pos:   result.Value.LastSelectedPosition,
 		})
 
+		// If platforms were reordered, save the new order to config and update context
+		gaba.GetLogger().Debug("Checking for reordered platforms", "count", len(result.Value.ReorderedPlatforms))
+		if len(result.Value.ReorderedPlatforms) > 0 {
+			config, _ := gaba.Get[*utils.Config](ctx)
+
+			// Extract slugs from reordered platforms
+			var platformOrder []string
+			for _, p := range result.Value.ReorderedPlatforms {
+				platformOrder = append(platformOrder, p.Slug)
+			}
+
+			gaba.GetLogger().Debug("Saving platform order to config", "order", platformOrder)
+
+			// Update config
+			config.PlatformOrder = platformOrder
+			if err := utils.SaveConfig(config); err != nil {
+				gaba.GetLogger().Error("Failed to save platform order", "error", err)
+			} else {
+				gaba.GetLogger().Info("Platform order saved successfully", "order", platformOrder)
+			}
+
+			// Update platforms in context
+			gaba.Set(ctx, result.Value.ReorderedPlatforms)
+			gaba.GetLogger().Debug("Updated platforms in context")
+		} else {
+			gaba.GetLogger().Debug("No reordered platforms to save")
+		}
+
 		return result.Value, result.ExitCode
 	}).
 		OnWithHook(gaba.ExitCodeSuccess, gameList, func(ctx *gaba.Context) error {
@@ -230,6 +263,7 @@ func buildFSM(config *utils.Config, cfw constants.CFW, platforms []romm.Platform
 			return nil
 		}).
 		On(gaba.ExitCodeAction, settings).
+		On(constants.ExitCodeSaveSync, saveSync).
 		Exit(gaba.ExitCodeQuit)
 
 	gaba.AddState(fsm, collectionList, func(ctx *gaba.Context) (ui.CollectionSelectionOutput, gaba.ExitCode) {
@@ -535,7 +569,7 @@ func buildFSM(config *utils.Config, cfw constants.CFW, platforms []romm.Platform
 			return nil
 		}).
 		On(constants.ExitCodeEditMappings, settingsPlatformMapping).
-		On(constants.ExitCodeSaveSync, saveSync).
+		On(constants.ExitCodeInfo, info).
 		OnWithHook(gaba.ExitCodeBack, platformSelection, func(ctx *gaba.Context) error {
 			gaba.Set(ctx, settingsPosition{Index: 0})
 			return nil
@@ -581,6 +615,37 @@ func buildFSM(config *utils.Config, cfw constants.CFW, platforms []romm.Platform
 		}).
 		On(gaba.ExitCodeBack, settings)
 
+	gaba.AddState(fsm, info, func(ctx *gaba.Context) (ui.InfoOutput, gaba.ExitCode) {
+		host, _ := gaba.Get[romm.Host](ctx)
+
+		screen := ui.NewInfoScreen()
+		result, err := screen.Draw(ui.InfoInput{
+			Host: host,
+		})
+
+		if err != nil {
+			return ui.InfoOutput{}, gaba.ExitCodeError
+		}
+
+		return result.Value, result.ExitCode
+	}).
+		On(gaba.ExitCodeBack, settings).
+		OnWithHook(constants.ExitCodeLogout, platformSelection, func(ctx *gaba.Context) error {
+			config, _ := gaba.Get[*utils.Config](ctx)
+			config.Hosts = nil
+			config.DirectoryMappings = nil
+			config.PlatformOrder = nil
+
+			if err := utils.SaveConfig(config); err != nil {
+				gaba.GetLogger().Error("Failed to save config after logout", "error", err)
+				return err
+			}
+
+			gaba.GetLogger().Info("User logged out successfully")
+			return nil
+		}).
+		Exit(constants.ExitCodeLogout)
+
 	gaba.AddState(fsm, saveSync, func(ctx *gaba.Context) (ui.SaveSyncOutput, gaba.ExitCode) {
 		config, _ := gaba.Get[*utils.Config](ctx)
 		host, _ := gaba.Get[romm.Host](ctx)
@@ -597,7 +662,7 @@ func buildFSM(config *utils.Config, cfw constants.CFW, platforms []romm.Platform
 
 		return result.Value, result.ExitCode
 	}).
-		On(gaba.ExitCodeBack, settings)
+		On(gaba.ExitCodeBack, platformSelection)
 
 	return fsm.Start(platformSelection)
 }

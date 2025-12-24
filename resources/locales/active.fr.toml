@@ -34,6 +34,10 @@ other = "Aide"
 description = "Bouton de connexion"
 other = "Connexion"
 
+[button_logout]
+description = "Bouton de déconnexion"
+other = "Déconnexion"
+
 [button_menu]
 description = "Bouton menu"
 other = "Menu"
@@ -49,6 +53,10 @@ other = "Quitter"
 [button_save]
 description = "Bouton sauvegarder"
 other = "Sauvegarder"
+
+[button_save_sync]
+description = "Bouton pour déclencher la synchronisation des sauvegardes"
+other = "Synchroniser"
 
 [button_search]
 description = "Bouton rechercher"
@@ -345,7 +353,31 @@ other = "Jeux téléchargés"
 
 [settings_edit_mappings]
 description = "Option d'édition des associations de dossiers"
-other = "Éditer les associations de dossiers"
+other = "Les associations de dossiers"
+
+[settings_info]
+description = "Option d'information"
+other = "Informations sur Grout"
+
+[info_title]
+description = "Titre de l'écran d'information"
+other = "Informations sur Grout"
+
+[info_version]
+description = "Étiquette de version de Grout"
+other = "Version"
+
+[info_server]
+description = "Étiquette de l'URL du serveur"
+other = "Serveur"
+
+[info_user]
+description = "Étiquette de l'utilisateur actif"
+other = "Utilisateur"
+
+[info_repository]
+description = "Étiquette du code QR du référentiel"
+other = "Dépôt GitHub"
 
 [settings_language]
 description = "Option de langue"
@@ -370,6 +402,10 @@ other = "Niveau de log"
 [settings_show_collections]
 description = "Option d'affichage des collections"
 other = "Afficher les Collections"
+
+[settings_show_smart_collections]
+description = "Option d'affichage des collections intelligentes"
+other = "Afficher les Collections Intelligentes"
 
 [settings_show_game_details]
 description = "Option d'affichage des détails du jeu"

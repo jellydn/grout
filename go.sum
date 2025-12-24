@@ -4,6 +4,12 @@ github.com/BrandonKowalski/gabagool/v2 v2.2.0 h1:PpFxTRfjwgBIh/rGVHSfI1nQYKZOLde
 github.com/BrandonKowalski/gabagool/v2 v2.2.0/go.mod h1:ZT6fwRrzuynf/hUDbIxizc8rGHi+kOxn0/1XGN0Rpt4=
 github.com/BrandonKowalski/gabagool/v2 v2.2.1 h1:KArQN9RNJpX5fdbqyodHnEgnsPZo8w1t5nj3iXmKqOA=
 github.com/BrandonKowalski/gabagool/v2 v2.2.1/go.mod h1:ZT6fwRrzuynf/hUDbIxizc8rGHi+kOxn0/1XGN0Rpt4=
+github.com/BrandonKowalski/gabagool/v2 v2.2.3 h1:tPK3XP/p5i/kTSCzyX8g+Mt705/Iyo678kRofgxyEZ4=
+github.com/BrandonKowalski/gabagool/v2 v2.2.3/go.mod h1:ZT6fwRrzuynf/hUDbIxizc8rGHi+kOxn0/1XGN0Rpt4=
+github.com/BrandonKowalski/gabagool/v2 v2.2.4 h1:PoTkKORpcpkwL1/8paYDucb5oLq2fkcjl/sI922yem0=
+github.com/BrandonKowalski/gabagool/v2 v2.2.4/go.mod h1:ZT6fwRrzuynf/hUDbIxizc8rGHi+kOxn0/1XGN0Rpt4=
+github.com/BrandonKowalski/gabagool/v2 v2.2.5 h1:XWRa+tMhIPOBz9xEODltDpmQgq65FjjeqrEd/9ue56I=
+github.com/BrandonKowalski/gabagool/v2 v2.2.5/go.mod h1:ZT6fwRrzuynf/hUDbIxizc8rGHi+kOxn0/1XGN0Rpt4=
 github.com/BurntSushi/toml v1.5.0 h1:W5quZX/G/csjUnuI8SUYlsHs9M38FC7znL0lIO+DvMg=
 github.com/BurntSushi/toml v1.5.0/go.mod h1:ukJfTF/6rtPPRCnwkur4qwRxa8vTRFBF0uk2lLoLwho=
 github.com/BurntSushi/toml v1.6.0 h1:dRaEfpa2VI55EwlIW72hMRHdWouJeRF7TPYhI+AUQjk=

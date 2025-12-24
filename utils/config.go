@@ -19,12 +19,14 @@ type Config struct {
 	DownloadArt                  bool                        `json:"download_art,omitempty"`
 	UnzipDownloads               bool                        `json:"unzip_downloads,omitempty"`
 	ShowCollections              bool                        `json:"show_collections"`
+	ShowSmartCollections         bool                        `json:"show_smart_collections"`
 	ShowVirtualCollections       bool                        `json:"show_virtual_collections"`
 	DownloadedGamesDisplayOption string                      `json:"downloaded_games_display_option,omitempty"`
 	ApiTimeout                   time.Duration               `json:"api_timeout"`
 	DownloadTimeout              time.Duration               `json:"download_timeout"`
 	LogLevel                     string                      `json:"log_level,omitempty"`
 	Language                     string                      `json:"language,omitempty"`
+	PlatformOrder                []string                    `json:"platform_order,omitempty"`
 }
 
 type DirectoryMapping struct {
@@ -47,6 +49,7 @@ func (c Config) ToLoggable() any {
 		"download_art":             c.DownloadArt,
 		"show_game_details":        c.ShowGameDetails,
 		"show_collections":         c.ShowCollections,
+		"show_smart_collections":   c.ShowSmartCollections,
 		"show_virtual_collections": c.ShowVirtualCollections,
 		"downloaded_games_action":  c.DownloadedGamesDisplayOption,
 		"log_level":                c.LogLevel,
@@ -114,4 +117,60 @@ func SaveConfig(config *Config) error {
 	}
 
 	return nil
+}
+
+// SortPlatformsByOrder sorts platforms based on the saved order in config.
+// If no order is saved, platforms are sorted alphabetically.
+func SortPlatformsByOrder(platforms []romm.Platform, order []string) []romm.Platform {
+	if len(order) == 0 {
+		// No saved order, return alphabetically sorted
+		return SortPlatformsAlphabetically(platforms)
+	}
+
+	// Create a map of slug to platform for quick lookup
+	platformMap := make(map[string]romm.Platform)
+	for _, p := range platforms {
+		platformMap[p.Slug] = p
+	}
+
+	// Create result slice with platforms in saved order
+	var result []romm.Platform
+	usedSlugs := make(map[string]bool)
+
+	// Add platforms in saved order
+	for _, slug := range order {
+		if platform, exists := platformMap[slug]; exists {
+			result = append(result, platform)
+			usedSlugs[slug] = true
+		}
+	}
+
+	// Add any new platforms that aren't in the saved order (alphabetically)
+	var newPlatforms []romm.Platform
+	for _, p := range platforms {
+		if !usedSlugs[p.Slug] {
+			newPlatforms = append(newPlatforms, p)
+		}
+	}
+	newPlatforms = SortPlatformsAlphabetically(newPlatforms)
+	result = append(result, newPlatforms...)
+
+	return result
+}
+
+// SortPlatformsAlphabetically sorts platforms by name
+func SortPlatformsAlphabetically(platforms []romm.Platform) []romm.Platform {
+	sorted := make([]romm.Platform, len(platforms))
+	copy(sorted, platforms)
+
+	// Simple bubble sort by name
+	for i := 0; i < len(sorted); i++ {
+		for j := i + 1; j < len(sorted); j++ {
+			if sorted[i].Name > sorted[j].Name {
+				sorted[i], sorted[j] = sorted[j], sorted[i]
+			}
+		}
+	}
+
+	return sorted
 }

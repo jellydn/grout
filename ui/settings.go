@@ -21,6 +21,7 @@ type SettingsInput struct {
 type SettingsOutput struct {
 	Config              *utils.Config
 	EditMappingsClicked bool
+	InfoClicked         bool
 	LastSelectedIndex   int
 }
 
@@ -95,8 +96,9 @@ func (s *SettingsScreen) Draw(input SettingsInput) (ScreenResult[SettingsOutput]
 		return withCode(output, constants.ExitCodeEditMappings), nil
 	}
 
-	if result.Selected == 1 {
-		return withCode(output, constants.ExitCodeSaveSync), nil
+	if result.Selected == len(items)-1 {
+		output.InfoClicked = true
+		return withCode(output, constants.ExitCodeInfo), nil
 	}
 
 	s.applySettings(config, result.Items)
@@ -112,11 +114,6 @@ func (s *SettingsScreen) buildMenuItems(config *utils.Config) []gaba.ItemWithOpt
 			Options: []gaba.Option{{Type: gaba.OptionTypeClickable}},
 		},
 		{
-			Item:    gaba.MenuItem{Text: i18n.GetString("settings_sync_saves")},
-			Options: []gaba.Option{{Type: gaba.OptionTypeClickable}},
-		},
-
-		{
 			Item: gaba.MenuItem{Text: i18n.GetString("settings_show_game_details")},
 			Options: []gaba.Option{
 				{DisplayName: i18n.GetString("common_true"), Value: true},
@@ -124,6 +121,8 @@ func (s *SettingsScreen) buildMenuItems(config *utils.Config) []gaba.ItemWithOpt
 			},
 			SelectedOption: boolToIndex(!config.ShowGameDetails),
 		},
+
+		// Collection Settings
 		{
 			Item: gaba.MenuItem{Text: i18n.GetString("settings_show_collections")},
 			Options: []gaba.Option{
@@ -133,6 +132,14 @@ func (s *SettingsScreen) buildMenuItems(config *utils.Config) []gaba.ItemWithOpt
 			SelectedOption: boolToIndex(!config.ShowCollections),
 		},
 		{
+			Item: gaba.MenuItem{Text: i18n.GetString("settings_show_smart_collections")},
+			Options: []gaba.Option{
+				{DisplayName: i18n.GetString("common_true"), Value: true},
+				{DisplayName: i18n.GetString("common_false"), Value: false},
+			},
+			SelectedOption: boolToIndex(!config.ShowSmartCollections),
+		},
+		{
 			Item: gaba.MenuItem{Text: i18n.GetString("settings_show_virtual_collections")},
 			Options: []gaba.Option{
 				{DisplayName: i18n.GetString("common_true"), Value: true},
@@ -140,6 +147,7 @@ func (s *SettingsScreen) buildMenuItems(config *utils.Config) []gaba.ItemWithOpt
 			},
 			SelectedOption: boolToIndex(!config.ShowVirtualCollections),
 		},
+
 		{
 			Item: gaba.MenuItem{Text: i18n.GetString("settings_downloaded_games")},
 			Options: []gaba.Option{
@@ -202,6 +210,10 @@ func (s *SettingsScreen) buildMenuItems(config *utils.Config) []gaba.ItemWithOpt
 			},
 			SelectedOption: logLevelToIndex(config.LogLevel),
 		},
+		{
+			Item:    gaba.MenuItem{Text: i18n.GetString("settings_info")},
+			Options: []gaba.Option{{Type: gaba.OptionTypeClickable}},
+		},
 	}
 }
 
@@ -253,6 +265,8 @@ func (s *SettingsScreen) applySettings(config *utils.Config, items []gaba.ItemWi
 			config.ShowGameDetails = item.SelectedOption == 0
 		case i18n.GetString("settings_show_collections"):
 			config.ShowCollections = item.SelectedOption == 0
+		case i18n.GetString("settings_show_smart_collections"):
+			config.ShowSmartCollections = item.SelectedOption == 0
 		case i18n.GetString("settings_show_virtual_collections"):
 			config.ShowVirtualCollections = item.SelectedOption == 0
 		case i18n.GetString("settings_api_timeout"):
