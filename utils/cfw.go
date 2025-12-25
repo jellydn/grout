@@ -82,7 +82,7 @@ func GetBIOSDirectory() string {
 	case constants.NextUI:
 		return filepath.Join(getBasePath(constants.NextUI), "Bios")
 	case constants.MuOS:
-		return filepath.Join(getBasePath(constants.MuOS), "BIOS")
+		return filepath.Join(getBasePath(constants.MuOS), "MUOS", "bios")
 	case constants.Knulli:
 		return filepath.Join(getBasePath(constants.Knulli), "bios")
 	}
@@ -90,28 +90,15 @@ func GetBIOSDirectory() string {
 	return ""
 }
 
-func GetBIOSFilePath(biosFile constants.BIOSFile, platformSlug string) string {
-	// Returns the first (primary) path for backwards compatibility
-	paths := GetBIOSFilePaths(biosFile, platformSlug)
-	if len(paths) > 0 {
-		return paths[0]
-	}
-	return filepath.Join(GetBIOSDirectory(), biosFile.RelativePath)
-}
-
 func GetBIOSFilePaths(biosFile constants.BIOSFile, platformSlug string) []string {
 	biosDir := GetBIOSDirectory()
 	cfw := GetCFW()
 
-	// For NextUI, BIOS files go into ALL platform-specific subdirectories
 	if cfw == constants.NextUI {
-		// Get the platform tags (e.g., ["GBA", "MGBA"] for gba platform)
 		tags, ok := constants.NextUISaveDirectories[platformSlug]
 		if ok && len(tags) > 0 {
 			paths := make([]string, 0, len(tags))
-			// Just use the filename, ignoring any subdirectory in RelativePath
 			filename := filepath.Base(biosFile.RelativePath)
-			// Create a path for each tag
 			for _, platformTag := range tags {
 				paths = append(paths, filepath.Join(biosDir, platformTag, filename))
 			}
@@ -187,12 +174,10 @@ func RomFolderBase(path string) string {
 }
 
 func getBasePath(cfw constants.CFW) string {
-	// Check for generic BASE_PATH first (for local development)
 	if basePath := os.Getenv("BASE_PATH"); basePath != "" {
 		return basePath
 	}
 
-	// Fall back to CFW-specific paths for production or legacy support
 	switch cfw {
 	case constants.MuOS:
 		if os.Getenv("MUOS_BASE_PATH") != "" {

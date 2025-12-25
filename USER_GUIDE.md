@@ -247,8 +247,6 @@ Press `X` from the main platform menu to access Settings.
 
 ![Grout preview, settings](.github/resources/user_guide/settings.png "Grout preview, settings")
 
-Settings are organized into logical groups for easier navigation:
-
 **Directory Mappings** – Change which device directories are mapped to which RomM platforms. This takes you back to
 the platform mapping screen that appeared during setup.
 

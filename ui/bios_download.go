@@ -187,7 +187,7 @@ func (s *BIOSDownloadScreen) draw(input BIOSDownloadInput) (ScreenResult[BIOSDow
 	headers["Authorization"] = input.Host.BasicAuthHeader()
 
 	res, err := gaba.DownloadManager(downloads, headers, gaba.DownloadManagerOptions{
-		AutoContinue: false,
+		AutoContinue: true,
 	})
 	if err != nil {
 		logger.Error("BIOS download failed", "error", err)
@@ -225,7 +225,7 @@ func (s *BIOSDownloadScreen) draw(input BIOSDownloadInput) (ScreenResult[BIOSDow
 
 		os.Remove(download.Location)
 		successCount++
-		logger.Debug("Successfully saved BIOS file", "file", biosFile.FileName, "path", utils.GetBIOSFilePath(biosFile, input.Platform.Slug))
+		logger.Debug("Successfully saved BIOS file", "file", biosFile.FileName, "paths", utils.GetBIOSFilePaths(biosFile, input.Platform.Slug))
 	}
 
 	// Show completion message to user
