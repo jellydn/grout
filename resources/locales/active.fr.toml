@@ -463,6 +463,22 @@ other = "Installé (Non Vérifié)"
 description = "Fichier BIOS manquant"
 other = "Non Installé"
 
+[bios_no_files_required]
+description = "Message lorsque la plateforme ne nécessite pas de fichiers BIOS"
+other = "Cette plateforme ne nécessite aucun fichier BIOS."
+
+[bios_download_complete]
+description = "Message lorsque le téléchargement BIOS est terminé avec succès"
+other = "%d fichier(s) BIOS téléchargé(s) avec succès."
+
+[bios_download_complete_with_warnings]
+description = "Message lorsque le téléchargement BIOS est terminé avec des avertissements MD5"
+other = "%d fichier(s) BIOS téléchargé(s) avec %d avertissement(s) de hash. Les fichiers peuvent ne pas être la bonne version."
+
+[bios_download_failed]
+description = "Message lorsque le téléchargement BIOS échoue"
+other = "Échec du téléchargement de %d fichier(s) BIOS."
+
 [settings_sync_saves]
 description = "Option de synchronisation des sauvegardes"
 other = "Synchroniser les sauvegardes"

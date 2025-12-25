@@ -463,6 +463,22 @@ other = "Installed (Unverified)"
 description = "BIOS file is missing"
 other = "Not Installed"
 
+[bios_no_files_required]
+description = "Message when platform doesn't require BIOS files"
+other = "This platform doesn't require any BIOS files."
+
+[bios_download_complete]
+description = "Message when BIOS download completes successfully"
+other = "Successfully downloaded %d BIOS file(s)."
+
+[bios_download_complete_with_warnings]
+description = "Message when BIOS download completes with MD5 warnings"
+other = "Downloaded %d BIOS file(s) with %d hash warning(s). Files may not be the correct version."
+
+[bios_download_failed]
+description = "Message when BIOS download fails"
+other = "Failed to download %d BIOS file(s)."
+
 [settings_sync_saves]
 description = "Sync saves option"
 other = "Sync Saves"

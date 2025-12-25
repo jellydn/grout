@@ -548,6 +548,22 @@ other = "Instalado (No Verificado)"
 description = "BIOS file is missing"
 other = "No Instalado"
 
+[bios_no_files_required]
+description = "Message when platform doesn't require BIOS files"
+other = "Esta plataforma no requiere archivos BIOS."
+
+[bios_download_complete]
+description = "Message when BIOS download completes successfully"
+other = "Se descargaron exitosamente %d archivo(s) BIOS."
+
+[bios_download_complete_with_warnings]
+description = "Message when BIOS download completes with MD5 warnings"
+other = "Se descargaron %d archivo(s) BIOS con %d advertencia(s) de hash. Los archivos pueden no ser la versión correcta."
+
+[bios_download_failed]
+description = "Message when BIOS download fails"
+other = "Fallo al descargar %d archivo(s) BIOS."
+
 [settings_sync_saves]
 description = "Sync saves option"
 hash = "sha1-e1df38fb283bcabf244aad41aed6f40c077b4a41"

@@ -6,6 +6,7 @@ import (
 	"grout/constants"
 	"grout/romm"
 	"grout/utils"
+	"path/filepath"
 	"slices"
 	"strings"
 	"time"
@@ -49,7 +50,6 @@ func NewGameListScreen() *GameListScreen {
 	return &GameListScreen{}
 }
 
-// isCollectionSet checks if a collection is set, accounting for all collection types
 func isCollectionSet(c romm.Collection) bool {
 	return c.ID != 0 || c.VirtualID != ""
 }
@@ -76,7 +76,6 @@ func (s *GameListScreen) Draw(input GameListInput) (ScreenResult[GameListOutput]
 
 	displayGames := utils.PrepareRomNames(games, *input.Config)
 
-	// Filter out downloaded games if configured to do so
 	if input.Config.DownloadedGamesDisplayOption == "filter" {
 		filteredGames := make([]romm.Rom, 0, len(displayGames))
 		for _, game := range displayGames {
@@ -152,8 +151,7 @@ func (s *GameListScreen) Draw(input GameListInput) (ScreenResult[GameListOutput]
 	options.MultiSelectButton = buttons.VirtualButtonSelect
 	options.HelpButton = buttons.VirtualButtonMenu
 
-	// Check if platform has BIOS requirements and show Y button (if enabled in settings)
-	hasBIOS := input.Config.ShowBIOS && input.Platform.ID != 0 && len(utils.GetBIOSFilesForPlatform(input.Platform.Slug)) > 0
+	hasBIOS := input.Config.ShowBIOS && input.Platform.ID != 0 && s.hasBIOSFilesInRomM(*input.Config, input.Host, input.Platform)
 	if hasBIOS {
 		options.SecondaryActionButton = buttons.VirtualButtonY
 	}
@@ -294,6 +292,73 @@ func (s *GameListScreen) showFilteredOutMessage(collectionName string) {
 			return nil, nil
 		},
 	)
+}
+
+func (s *GameListScreen) hasBIOSFilesInRomM(config utils.Config, host romm.Host, platform romm.Platform) bool {
+	// Get theoretical BIOS files for this platform
+	biosFiles := utils.GetBIOSFilesForPlatform(platform.Slug)
+	if len(biosFiles) == 0 {
+		return false
+	}
+
+	// Fetch firmware list from RomM
+	client := utils.GetRommClient(host, config.ApiTimeout)
+	firmwareList, err := client.GetFirmware(platform.ID)
+	if err != nil {
+		// If we can't fetch from RomM, don't show the button
+		return false
+	}
+
+	// Build firmware lookup maps (same logic as BIOS download screen)
+	firmwareByFileName := make(map[string]romm.Firmware)
+	firmwareByFilePath := make(map[string]romm.Firmware)
+	firmwareByBaseName := make(map[string]romm.Firmware)
+
+	for _, fw := range firmwareList {
+		firmwareByFileName[fw.FileName] = fw
+		firmwareByFilePath[fw.FilePath] = fw
+		baseName := filepath.Base(fw.FilePath)
+		firmwareByBaseName[baseName] = fw
+	}
+
+	// Check if any BIOS files exist in RomM
+	for _, biosFile := range biosFiles {
+		if s.firmwareExistsInRomM(biosFile, firmwareByFileName, firmwareByFilePath, firmwareByBaseName) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (s *GameListScreen) firmwareExistsInRomM(
+	biosFile constants.BIOSFile,
+	firmwareByFileName map[string]romm.Firmware,
+	firmwareByFilePath map[string]romm.Firmware,
+	firmwareByBaseName map[string]romm.Firmware,
+) bool {
+	// Try exact filename match
+	if _, found := firmwareByFileName[biosFile.FileName]; found {
+		return true
+	}
+
+	// Try relative path match
+	if _, found := firmwareByFilePath[biosFile.RelativePath]; found {
+		return true
+	}
+
+	// Try basename from filename
+	if _, found := firmwareByBaseName[biosFile.FileName]; found {
+		return true
+	}
+
+	// Try basename from relative path
+	baseName := filepath.Base(biosFile.RelativePath)
+	if _, found := firmwareByBaseName[baseName]; found {
+		return true
+	}
+
+	return false
 }
 
 func fetchList(config *utils.Config, host romm.Host, queryID int, fetchType fetchType) ([]romm.Rom, error) {
