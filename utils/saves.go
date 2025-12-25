@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	gaba "github.com/BrandonKowalski/gabagool/v2/pkg/gabagool"
@@ -96,41 +97,74 @@ func findSaveFiles(slug string) []localSave {
 		return []localSave{}
 	}
 
-	var allSaveFiles []localSave
+	// Use channels and goroutines to scan directories in parallel
+	type scanResult struct {
+		saves []localSave
+		path  string
+		count int
+	}
 
+	resultChan := make(chan scanResult, len(saveFolders))
+	var wg sync.WaitGroup
+
+	// Scan each save folder concurrently
 	for _, saveFolder := range saveFolders {
-		sd := filepath.Join(bsd, saveFolder)
+		wg.Add(1)
+		go func(folder string) {
+			defer wg.Done()
 
-		if _, err := os.Stat(sd); os.IsNotExist(err) {
-			continue
-		}
+			sd := filepath.Join(bsd, folder)
+			result := scanResult{path: sd, saves: []localSave{}}
 
-		entries, err := os.ReadDir(sd)
-		if err != nil {
-			logger.Error("Failed to read save directory", "path", sd, "error", err)
-			continue
-		}
+			if _, err := os.Stat(sd); os.IsNotExist(err) {
+				resultChan <- result
+				return
+			}
 
-		visibleFiles := FilterVisibleFiles(entries)
-		for _, entry := range visibleFiles {
-			savePath := filepath.Join(sd, entry.Name())
-
-			fileInfo, err := entry.Info()
+			entries, err := os.ReadDir(sd)
 			if err != nil {
-				logger.Warn("Failed to get file info", "file", entry.Name(), "error", err)
-				continue
+				logger.Error("Failed to read save directory", "path", sd, "error", err)
+				resultChan <- result
+				return
 			}
 
-			saveFile := localSave{
-				Slug:         slug,
-				Path:         savePath,
-				LastModified: fileInfo.ModTime(),
+			visibleFiles := FilterVisibleFiles(entries)
+			result.count = len(entries)
+			result.saves = make([]localSave, 0, len(visibleFiles))
+
+			for _, entry := range visibleFiles {
+				savePath := filepath.Join(sd, entry.Name())
+
+				fileInfo, err := entry.Info()
+				if err != nil {
+					logger.Warn("Failed to get file info", "file", entry.Name(), "error", err)
+					continue
+				}
+
+				saveFile := localSave{
+					Slug:         slug,
+					Path:         savePath,
+					LastModified: fileInfo.ModTime(),
+				}
+
+				result.saves = append(result.saves, saveFile)
 			}
 
-			allSaveFiles = append(allSaveFiles, saveFile)
-		}
+			resultChan <- result
+		}(saveFolder)
+	}
 
-		logger.Debug("Found save files in directory", "path", sd, "count", len(entries))
+	// Close channel once all goroutines complete
+	go func() {
+		wg.Wait()
+		close(resultChan)
+	}()
+
+	// Collect results from all goroutines
+	var allSaveFiles []localSave
+	for result := range resultChan {
+		allSaveFiles = append(allSaveFiles, result.saves...)
+		logger.Debug("Found save files in directory", "path", result.path, "count", result.count)
 	}
 
 	logger.Debug("Found total save files", "slug", slug, "count", len(allSaveFiles))
