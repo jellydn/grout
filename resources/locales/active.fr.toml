@@ -427,6 +427,42 @@ other = "Afficher les détails du jeu"
 description = "Option d'affichage des collections virtuelles"
 other = "Afficher les Collections Virtuelles"
 
+[settings_save_sync]
+description = "Option du mode de synchronisation des sauvegardes"
+other = "Synchronisation des Sauvegardes"
+
+[save_sync_mode_off]
+description = "Mode de synchronisation désactivé"
+other = "Désactivé"
+
+[save_sync_mode_manual]
+description = "Mode de synchronisation manuel"
+other = "Manuel"
+
+[save_sync_mode_daemon]
+description = "Mode de synchronisation automatique"
+other = "Automatique"
+
+[settings_show_bios]
+description = "Option d'affichage du bouton BIOS"
+other = "Afficher BIOS"
+
+[bios_status_ready]
+description = "Fichier BIOS installé et vérifié"
+other = "Prêt"
+
+[bios_status_wrong_version]
+description = "Le fichier BIOS existe mais le hash ne correspond pas"
+other = "Mauvaise Version"
+
+[bios_status_unverified]
+description = "Fichier BIOS installé mais ne peut pas être vérifié"
+other = "Installé (Non Vérifié)"
+
+[bios_status_not_installed]
+description = "Fichier BIOS manquant"
+other = "Non Installé"
+
 [settings_sync_saves]
 description = "Option de synchronisation des sauvegardes"
 other = "Synchroniser les sauvegardes"

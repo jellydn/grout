@@ -121,8 +121,6 @@ func (s *SettingsScreen) buildMenuItems(config *utils.Config) []gaba.ItemWithOpt
 			},
 			SelectedOption: boolToIndex(!config.ShowGameDetails),
 		},
-
-		// Collection Settings
 		{
 			Item: gaba.MenuItem{Text: i18n.GetString("settings_show_collections")},
 			Options: []gaba.Option{
@@ -147,7 +145,6 @@ func (s *SettingsScreen) buildMenuItems(config *utils.Config) []gaba.ItemWithOpt
 			},
 			SelectedOption: boolToIndex(!config.ShowVirtualCollections),
 		},
-
 		{
 			Item: gaba.MenuItem{Text: i18n.GetString("settings_downloaded_games")},
 			Options: []gaba.Option{
@@ -157,16 +154,23 @@ func (s *SettingsScreen) buildMenuItems(config *utils.Config) []gaba.ItemWithOpt
 			},
 			SelectedOption: s.downloadedGamesActionToIndex(config.DownloadedGamesDisplayOption),
 		},
-
-		// TODO Enable Later
-		//{
-		//	Item: gaba.MenuItem{Text: "Auto Sync Saves"},
-		//	Options: []gaba.Option{
-		//		{DisplayName: i18n.GetString("common_true"), Value: true},
-		//		{DisplayName: i18n.GetString("common_false"), Value: false},
-		//	},
-		//	SelectedOption: boolToIndex(!config.AutoSyncSaves),
-		//},
+		{
+			Item: gaba.MenuItem{Text: i18n.GetString("settings_save_sync")},
+			Options: []gaba.Option{
+				{DisplayName: i18n.GetString("save_sync_mode_off"), Value: "off"},
+				{DisplayName: i18n.GetString("save_sync_mode_manual"), Value: "manual"},
+				// {DisplayName: i18n.GetString("save_sync_mode_daemon"), Value: "daemon"},
+			},
+			SelectedOption: saveSyncModeToIndex(config.SaveSyncMode),
+		},
+		{
+			Item: gaba.MenuItem{Text: i18n.GetString("settings_show_bios")},
+			Options: []gaba.Option{
+				{DisplayName: i18n.GetString("common_true"), Value: true},
+				{DisplayName: i18n.GetString("common_false"), Value: false},
+			},
+			SelectedOption: boolToIndex(!config.ShowBIOS),
+		},
 		{
 			Item: gaba.MenuItem{Text: i18n.GetString("settings_download_art")},
 			Options: []gaba.Option{
@@ -184,14 +188,15 @@ func (s *SettingsScreen) buildMenuItems(config *utils.Config) []gaba.ItemWithOpt
 			SelectedOption: boolToIndex(!config.UnzipDownloads),
 		},
 		{
-			Item:           gaba.MenuItem{Text: i18n.GetString("settings_api_timeout")},
-			Options:        s.buildApiTimeoutOptions(),
-			SelectedOption: s.findApiTimeoutIndex(config.ApiTimeout),
-		},
-		{
 			Item:           gaba.MenuItem{Text: i18n.GetString("settings_download_timeout")},
 			Options:        s.buildDownloadTimeoutOptions(),
 			SelectedOption: s.findDownloadTimeoutIndex(config.DownloadTimeout),
+		},
+
+		{
+			Item:           gaba.MenuItem{Text: i18n.GetString("settings_api_timeout")},
+			Options:        s.buildApiTimeoutOptions(),
+			SelectedOption: s.findApiTimeoutIndex(config.ApiTimeout),
 		},
 		{
 			Item: gaba.MenuItem{Text: i18n.GetString("settings_language")},
@@ -259,6 +264,12 @@ func (s *SettingsScreen) applySettings(config *utils.Config, items []gaba.ItemWi
 			config.DownloadArt = item.SelectedOption == 0
 		case i18n.GetString("settings_auto_sync_saves"):
 			config.AutoSyncSaves = item.SelectedOption == 0
+		case i18n.GetString("settings_save_sync"):
+			if val, ok := item.Options[item.SelectedOption].Value.(string); ok {
+				config.SaveSyncMode = val
+			}
+		case i18n.GetString("settings_show_bios"):
+			config.ShowBIOS = item.SelectedOption == 0
 		case i18n.GetString("settings_unzip_downloads"):
 			config.UnzipDownloads = item.SelectedOption == 0
 		case i18n.GetString("settings_show_game_details"):
@@ -321,6 +332,19 @@ func languageToIndex(lang string) int {
 		return 1
 	case "fr":
 		return 2
+	default:
+		return 0
+	}
+}
+
+func saveSyncModeToIndex(mode string) int {
+	switch mode {
+	case "off":
+		return 0
+	case "manual":
+		return 1
+	// case "daemon":
+	// 	return 2
 	default:
 		return 0
 	}

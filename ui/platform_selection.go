@@ -14,6 +14,7 @@ type PlatformSelectionInput struct {
 	Platforms            []romm.Platform
 	QuitOnBack           bool
 	ShowCollections      bool
+	ShowSaveSync         bool
 	LastSelectedIndex    int
 	LastSelectedPosition int
 }
@@ -66,9 +67,11 @@ func (s *PlatformSelectionScreen) Draw(input PlatformSelectionInput) (ScreenResu
 	if input.QuitOnBack {
 		footerItems = []gaba.FooterHelpItem{
 			{ButtonName: "X", HelpText: i18n.GetString("button_settings")},
-			{ButtonName: "Y", HelpText: i18n.GetString("button_save_sync")},
-			{ButtonName: "A", HelpText: i18n.GetString("button_select")},
 		}
+		if input.ShowSaveSync {
+			footerItems = append(footerItems, gaba.FooterHelpItem{ButtonName: "Y", HelpText: i18n.GetString("button_save_sync")})
+		}
+		footerItems = append(footerItems, gaba.FooterHelpItem{ButtonName: "A", HelpText: i18n.GetString("button_select")})
 	} else {
 		footerItems = []gaba.FooterHelpItem{
 			{ButtonName: "B", HelpText: i18n.GetString("button_back")},
@@ -78,7 +81,9 @@ func (s *PlatformSelectionScreen) Draw(input PlatformSelectionInput) (ScreenResu
 
 	options := gaba.DefaultListOptions("Grout", menuItems)
 	options.ActionButton = buttons.VirtualButtonX
-	options.SecondaryActionButton = buttons.VirtualButtonY
+	if input.ShowSaveSync {
+		options.SecondaryActionButton = buttons.VirtualButtonY
+	}
 	options.ReorderButton = buttons.VirtualButtonSelect
 	options.FooterHelpItems = footerItems
 	options.SelectedIndex = input.LastSelectedIndex
@@ -123,13 +128,9 @@ func (s *PlatformSelectionScreen) Draw(input PlatformSelectionInput) (ScreenResu
 				gaba.GetLogger().Debug("Reordered platform", "position", i-startIndex, "slug", platform.Slug)
 			}
 			output.ReorderedPlatforms = reorderedPlatforms
-			gaba.GetLogger().Debug("Platform reordering detected", "count", len(reorderedPlatforms))
-		} else {
-			gaba.GetLogger().Debug("No platform reordering detected")
 		}
 	}
 
-	// Now handle errors
 	if err != nil {
 		if errors.Is(err, gaba.ErrCancelled) {
 			return back(output), nil
@@ -157,7 +158,7 @@ func (s *PlatformSelectionScreen) Draw(input PlatformSelectionInput) (ScreenResu
 		}
 
 	case gaba.ListActionSecondaryTriggered:
-		if input.QuitOnBack {
+		if input.QuitOnBack && input.ShowSaveSync {
 			return withCode(output, constants.ExitCodeSaveSync), nil
 		}
 	}

@@ -6,6 +6,7 @@ import (
 	"grout/utils"
 	"log/slog"
 	"os"
+	"path/filepath"
 	"time"
 
 	"grout/romm"
@@ -27,6 +28,7 @@ const (
 	settingsPlatformMapping                    = "platform_mapping"
 	info                                       = "info"
 	saveSync                                   = "save_sync"
+	biosDownload                               = "bios_download"
 )
 
 type (
@@ -70,6 +72,16 @@ type (
 
 func setup() *utils.Config {
 	cfw := utils.GetCFW()
+
+	// Check for input_mapping.json in CWD if running on muOS
+	if cfw == constants.MuOS && !utils.IsDevelopment() {
+		if cwd, err := os.Getwd(); err == nil {
+			cwdMappingPath := filepath.Join(cwd, "input_mapping.json")
+			if _, err := os.Stat(cwdMappingPath); err == nil {
+				os.Setenv("INPUT_MAPPING_PATH", cwdMappingPath)
+			}
+		}
+	}
 
 	gaba.Init(gaba.Options{
 		WindowTitle:          "Grout",
@@ -171,7 +183,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Sort platforms by saved order, or alphabetically if no order is saved
 	platforms = utils.SortPlatformsByOrder(platforms, config.PlatformOrder)
 
 	showCollections := utils.ShowCollections(config, config.Hosts[0])
@@ -201,10 +212,12 @@ func buildFSM(config *utils.Config, cfw constants.CFW, platforms []romm.Platform
 		platPos, _ := gaba.Get[platformListPosition](ctx)
 
 		screen := ui.NewPlatformSelectionScreen()
+		config, _ := gaba.Get[*utils.Config](ctx)
 		result, err := screen.Draw(ui.PlatformSelectionInput{
 			Platforms:            platforms,
 			QuitOnBack:           bool(quitOnBack),
 			ShowCollections:      bool(showCollections),
+			ShowSaveSync:         config.SaveSyncMode != "off",
 			LastSelectedIndex:    platPos.Index,
 			LastSelectedPosition: platPos.Pos,
 		})
@@ -218,12 +231,9 @@ func buildFSM(config *utils.Config, cfw constants.CFW, platforms []romm.Platform
 			Pos:   result.Value.LastSelectedPosition,
 		})
 
-		// If platforms were reordered, save the new order to config and update context
-		gaba.GetLogger().Debug("Checking for reordered platforms", "count", len(result.Value.ReorderedPlatforms))
 		if len(result.Value.ReorderedPlatforms) > 0 {
 			config, _ := gaba.Get[*utils.Config](ctx)
 
-			// Extract slugs from reordered platforms
 			var platformOrder []string
 			for _, p := range result.Value.ReorderedPlatforms {
 				platformOrder = append(platformOrder, p.Slug)
@@ -231,7 +241,6 @@ func buildFSM(config *utils.Config, cfw constants.CFW, platforms []romm.Platform
 
 			gaba.GetLogger().Debug("Saving platform order to config", "order", platformOrder)
 
-			// Update config
 			config.PlatformOrder = platformOrder
 			if err := utils.SaveConfig(config); err != nil {
 				gaba.GetLogger().Error("Failed to save platform order", "error", err)
@@ -239,11 +248,8 @@ func buildFSM(config *utils.Config, cfw constants.CFW, platforms []romm.Platform
 				gaba.GetLogger().Info("Platform order saved successfully", "order", platformOrder)
 			}
 
-			// Update platforms in context
 			gaba.Set(ctx, result.Value.ReorderedPlatforms)
 			gaba.GetLogger().Debug("Updated platforms in context")
-		} else {
-			gaba.GetLogger().Debug("No reordered platforms to save")
 		}
 
 		return result.Value, result.ExitCode
@@ -416,6 +422,7 @@ func buildFSM(config *utils.Config, cfw constants.CFW, platforms []romm.Platform
 	}).
 		On(gaba.ExitCodeSuccess, gameDetails).
 		On(constants.ExitCodeSearch, search).
+		On(constants.ExitCodeBIOS, biosDownload).
 		OnWithHook(constants.ExitCodeClearSearch, gameList, func(ctx *gaba.Context) error {
 			gaba.Set(ctx, searchFilterString(""))
 			fullGames, _ := gaba.Get[fullGamesList](ctx)
@@ -664,6 +671,26 @@ func buildFSM(config *utils.Config, cfw constants.CFW, platforms []romm.Platform
 		return result.Value, result.ExitCode
 	}).
 		On(gaba.ExitCodeBack, platformSelection)
+
+	gaba.AddState(fsm, biosDownload, func(ctx *gaba.Context) (ui.BIOSDownloadOutput, gaba.ExitCode) {
+		config, _ := gaba.Get[*utils.Config](ctx)
+		host, _ := gaba.Get[romm.Host](ctx)
+		platform, _ := gaba.Get[ui.PlatformSelectionOutput](ctx)
+		collectionPlatform, _ := gaba.Get[ui.CollectionPlatformSelectionOutput](ctx)
+
+		var selectedPlatform romm.Platform
+		if collectionPlatform.SelectedPlatform.ID != 0 {
+			selectedPlatform = collectionPlatform.SelectedPlatform
+		} else {
+			selectedPlatform = platform.SelectedPlatform
+		}
+
+		screen := ui.NewBIOSDownloadScreen()
+		output := screen.Execute(*config, host, selectedPlatform)
+
+		return output, gaba.ExitCodeBack
+	}).
+		On(gaba.ExitCodeBack, gameList)
 
 	return fsm.Start(platformSelection)
 }

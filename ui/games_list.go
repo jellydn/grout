@@ -152,15 +152,25 @@ func (s *GameListScreen) Draw(input GameListInput) (ScreenResult[GameListOutput]
 	options.MultiSelectButton = buttons.VirtualButtonSelect
 	options.HelpButton = buttons.VirtualButtonMenu
 
+	// Check if platform has BIOS requirements and show Y button (if enabled in settings)
+	hasBIOS := input.Config.ShowBIOS && input.Platform.ID != 0 && len(utils.GetBIOSFilesForPlatform(input.Platform.Slug)) > 0
+	if hasBIOS {
+		options.SecondaryActionButton = buttons.VirtualButtonY
+	}
+
 	options.HelpTitle = i18n.GetString("games_list_help_title")
 	options.HelpText = strings.Split(i18n.GetString("games_list_help_body"), "\n")
 	options.HelpExitText = i18n.GetString("help_exit_text")
 
-	options.FooterHelpItems = []gaba.FooterHelpItem{
+	footerItems := []gaba.FooterHelpItem{
 		{ButtonName: i18n.GetString("button_menu"), HelpText: i18n.GetString("button_help")},
 		{ButtonName: "X", HelpText: i18n.GetString("button_search")},
-		{ButtonName: "A", HelpText: i18n.GetString("button_select")},
 	}
+	if hasBIOS {
+		footerItems = append(footerItems, gaba.FooterHelpItem{ButtonName: "Y", HelpText: "BIOS"})
+	}
+
+	options.FooterHelpItems = footerItems
 
 	options.SelectedIndex = input.LastSelectedIndex
 	options.VisibleStartIndex = max(0, input.LastSelectedIndex-input.LastSelectedPosition)
@@ -198,6 +208,9 @@ func (s *GameListScreen) Draw(input GameListInput) (ScreenResult[GameListOutput]
 
 	case gaba.ListActionTriggered:
 		return withCode(output, constants.ExitCodeSearch), nil
+
+	case gaba.ListActionSecondaryTriggered:
+		return withCode(output, constants.ExitCodeBIOS), nil
 	}
 
 	if isCollectionSet(input.Collection) && input.Platform.ID != 0 {

@@ -427,6 +427,42 @@ other = "Show Game Details"
 description = "Show virtual collections option"
 other = "Show Virtual Collections"
 
+[settings_save_sync]
+description = "Save sync mode option"
+other = "Save Sync"
+
+[save_sync_mode_off]
+description = "Save sync mode off"
+other = "Off"
+
+[save_sync_mode_manual]
+description = "Save sync mode manual"
+other = "Manual"
+
+[save_sync_mode_daemon]
+description = "Save sync mode daemon"
+other = "Daemon"
+
+[settings_show_bios]
+description = "Show BIOS button option"
+other = "Show BIOS"
+
+[bios_status_ready]
+description = "BIOS file is installed and verified"
+other = "Ready"
+
+[bios_status_wrong_version]
+description = "BIOS file exists but hash doesn't match"
+other = "Wrong Version"
+
+[bios_status_unverified]
+description = "BIOS file is installed but cannot be verified"
+other = "Installed (Unverified)"
+
+[bios_status_not_installed]
+description = "BIOS file is missing"
+other = "Not Installed"
+
 [settings_sync_saves]
 description = "Sync saves option"
 other = "Sync Saves"

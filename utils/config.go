@@ -16,6 +16,8 @@ type Config struct {
 	DirectoryMappings            map[string]DirectoryMapping `json:"directory_mappings,omitempty"`
 	ShowGameDetails              bool                        `json:"show_game_details"`
 	AutoSyncSaves                bool                        `json:"auto_sync_saves"`
+	SaveSyncMode                 string                      `json:"save_sync_mode"`
+	ShowBIOS                     bool                        `json:"show_bios"`
 	DownloadArt                  bool                        `json:"download_art,omitempty"`
 	UnzipDownloads               bool                        `json:"unzip_downloads,omitempty"`
 	ShowCollections              bool                        `json:"show_collections"`
