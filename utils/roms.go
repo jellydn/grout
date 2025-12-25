@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
 	gaba "github.com/BrandonKowalski/gabagool/v2/pkg/gabagool"
@@ -179,34 +180,63 @@ func scanRomsByPlatform(baseRomDir string, platformMap map[string][]string, conf
 			}
 		}
 	} else {
+		// Parallelize platform scanning for MuOS and Knulli
+		type platformResult struct {
+			slug string
+			roms []localRomFile
+		}
+
+		resultChan := make(chan platformResult, len(platformMap))
+		var wg sync.WaitGroup
+
 		for slug := range platformMap {
-			romFolderName := ""
-			if config != nil {
-				if mapping, ok := config.DirectoryMappings[slug]; ok && mapping.RelativePath != "" {
-					romFolderName = mapping.RelativePath
+			wg.Add(1)
+			go func(s string) {
+				defer wg.Done()
+
+				romFolderName := ""
+				if config != nil {
+					if mapping, ok := config.DirectoryMappings[s]; ok && mapping.RelativePath != "" {
+						romFolderName = mapping.RelativePath
+					}
 				}
-			}
 
-			if romFolderName == "" {
-				romFolderName = RomMSlugToCFW(slug)
-			}
+				if romFolderName == "" {
+					romFolderName = RomMSlugToCFW(s)
+				}
 
-			if romFolderName == "" {
-				logger.Debug("No ROM folder mapping for slug", "slug", slug)
-				continue
-			}
+				if romFolderName == "" {
+					logger.Debug("No ROM folder mapping for slug", "slug", s)
+					resultChan <- platformResult{slug: s, roms: nil}
+					return
+				}
 
-			romDir := filepath.Join(baseRomDir, romFolderName)
+				romDir := filepath.Join(baseRomDir, romFolderName)
 
-			if _, err := os.Stat(romDir); os.IsNotExist(err) {
-				continue
-			}
+				if _, err := os.Stat(romDir); os.IsNotExist(err) {
+					resultChan <- platformResult{slug: s, roms: nil}
+					return
+				}
 
-			saveFileMap := buildSaveFileMap(slug)
-			roms := scanRomDirectory(slug, romDir, saveFileMap)
-			if len(roms) > 0 {
-				result[slug] = roms
-				logger.Debug("Found ROMs for platform", "slug", slug, "count", len(roms))
+				saveFileMap := buildSaveFileMap(s)
+				roms := scanRomDirectory(s, romDir, saveFileMap)
+				resultChan <- platformResult{slug: s, roms: roms}
+				if len(roms) > 0 {
+					logger.Debug("Found ROMs for platform", "slug", s, "count", len(roms))
+				}
+			}(slug)
+		}
+
+		// Close channel once all goroutines complete
+		go func() {
+			wg.Wait()
+			close(resultChan)
+		}()
+
+		// Collect results from all platforms
+		for pr := range resultChan {
+			if len(pr.roms) > 0 {
+				result[pr.slug] = pr.roms
 			}
 		}
 	}
