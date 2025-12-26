@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"errors"
 	"fmt"
 	"grout/constants"
 	"grout/utils"
@@ -25,8 +26,9 @@ type loginOutput struct {
 }
 
 type loginAttemptResult struct {
-	BadHost        bool
-	BadCredentials bool
+	ErrorType string // "dns", "connection", "timeout", "protocol", "credentials", "server", "unknown"
+	ErrorMsg  string // Localized error message key
+	Success   bool
 }
 
 type LoginScreen struct{}
@@ -179,54 +181,114 @@ func LoginFlow(existingHost romm.Host) (*utils.Config, error) {
 
 		loginResult := attemptLogin(host)
 
-		switch {
-		case loginResult.BadHost:
-			gabagool.ConfirmationMessage(i18n.GetString("login_error_connection"),
-				[]gabagool.FooterHelpItem{
-					{ButtonName: "A", HelpText: i18n.GetString("button_continue")},
-				},
-				gabagool.MessageOptions{})
-			existingHost = host
-			continue
-
-		case loginResult.BadCredentials:
-			gabagool.ConfirmationMessage(i18n.GetString("login_error_credentials"),
-				[]gabagool.FooterHelpItem{
-					{ButtonName: "A", HelpText: i18n.GetString("button_continue")},
-				},
-				gabagool.MessageOptions{})
-			existingHost = host
-			continue
+		if loginResult.Success {
+			config := &utils.Config{
+				Hosts: []romm.Host{host},
+			}
+			return config, nil
 		}
 
-		config := &utils.Config{
-			Hosts: []romm.Host{host},
-		}
-		return config, nil
+		// Display appropriate error message based on error type
+		gabagool.ConfirmationMessage(
+			i18n.GetString(loginResult.ErrorMsg),
+			[]gabagool.FooterHelpItem{
+				{ButtonName: "A", HelpText: i18n.GetString("button_continue")},
+			},
+			gabagool.MessageOptions{},
+		)
+		existingHost = host
 	}
 }
 
 func attemptLogin(host romm.Host) loginAttemptResult {
-	rc := utils.GetRommClient(host, constants.LoginTimeout)
+	// Phase 1: Quick validation with short timeout
+	validationClient := utils.GetRommClient(host, constants.ValidationTimeout)
 
-	result, _ := gabagool.ProcessMessage(i18n.GetString("login_logging_in"), gabagool.ProcessMessageOptions{}, func() (interface{}, error) {
-		lr := rc.Login(host.Username, host.Password)
-		if lr != nil {
-			// Check if the error is a connection error (host unreachable)
-			// Connection errors contain "failed to login:" or "failed to execute request"
-			// Auth errors contain "login failed with status"
-			errorMsg := lr.Error()
-			if strings.Contains(errorMsg, "failed to login:") ||
-				strings.Contains(errorMsg, "failed to execute request") ||
-				strings.Contains(errorMsg, "failed to create") {
-				return loginAttemptResult{BadHost: true}, nil
+	result, _ := gabagool.ProcessMessage(
+		i18n.GetString("login_validating"),
+		gabagool.ProcessMessageOptions{},
+		func() (interface{}, error) {
+			err := validationClient.ValidateConnection()
+			if err != nil {
+				return classifyLoginError(err), nil
 			}
-			return loginAttemptResult{BadCredentials: true}, nil
-		}
-		return loginAttemptResult{}, nil
-	})
+
+			// Phase 2: Full login with normal timeout
+			loginClient := utils.GetRommClient(host, constants.LoginTimeout)
+			err = loginClient.Login(host.Username, host.Password)
+			if err != nil {
+				return classifyLoginError(err), nil
+			}
+
+			return loginAttemptResult{Success: true}, nil
+		},
+	)
 
 	return result.(loginAttemptResult)
+}
+
+func classifyLoginError(err error) loginAttemptResult {
+	if err == nil {
+		return loginAttemptResult{Success: true}
+	}
+
+	var protocolErr *romm.ProtocolError
+	if errors.As(err, &protocolErr) {
+		if protocolErr.CorrectProtocol == "https" {
+			return loginAttemptResult{
+				ErrorType: "protocol",
+				ErrorMsg:  "login_error_use_https",
+			}
+		}
+		return loginAttemptResult{
+			ErrorType: "protocol",
+			ErrorMsg:  "login_error_use_http",
+		}
+	}
+
+	switch {
+	case errors.Is(err, romm.ErrInvalidHostname):
+		return loginAttemptResult{
+			ErrorType: "dns",
+			ErrorMsg:  "login_error_invalid_hostname",
+		}
+	case errors.Is(err, romm.ErrConnectionRefused):
+		return loginAttemptResult{
+			ErrorType: "connection",
+			ErrorMsg:  "login_error_connection_refused",
+		}
+	case errors.Is(err, romm.ErrTimeout):
+		return loginAttemptResult{
+			ErrorType: "timeout",
+			ErrorMsg:  "login_error_timeout",
+		}
+	case errors.Is(err, romm.ErrWrongProtocol):
+		return loginAttemptResult{
+			ErrorType: "protocol",
+			ErrorMsg:  "login_error_wrong_protocol",
+		}
+	case errors.Is(err, romm.ErrUnauthorized):
+		return loginAttemptResult{
+			ErrorType: "credentials",
+			ErrorMsg:  "login_error_credentials",
+		}
+	case errors.Is(err, romm.ErrForbidden):
+		return loginAttemptResult{
+			ErrorType: "forbidden",
+			ErrorMsg:  "login_error_forbidden",
+		}
+	case errors.Is(err, romm.ErrServerError):
+		return loginAttemptResult{
+			ErrorType: "server",
+			ErrorMsg:  "login_error_server",
+		}
+	default:
+		gabagool.GetLogger().Warn("Unclassified login error", "error", err)
+		return loginAttemptResult{
+			ErrorType: "unknown",
+			ErrorMsg:  "login_error_unexpected",
+		}
+	}
 }
 
 func removeScheme(rawURL string) string {

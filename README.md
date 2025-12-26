@@ -27,7 +27,7 @@ A RomM Client for <a href="https://muos.dev">muOS</a>, <a href="https://knulli.o
 
 - Download games wirelessly from your RomM instance
 - Download box art
-- Multi-file games with automatic M3U file creation
+- Download and verify BIOS files
 - Save Sync
 - Platform directory mapping configurable on device
 

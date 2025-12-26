@@ -270,9 +270,93 @@ description = "Unexpected error message"
 hash = "sha1-bbe54d32ae1098fce3b3b803b12eaaec4dc5be73"
 other = "Something unexpected happened!\nCheck the logs for more info."
 
+[login_error_invalid_hostname]
+description = "Invalid hostname/DNS error"
+other = "¡No se pudo resolver el nombre del host!\nPor favor, verifique que el nombre del host sea correcto."
+
+[login_error_connection_refused]
+description = "Connection refused error"
+other = "¡No se pudo conectar al host!\nPor favor, verifique que el nombre del host y el puerto sean correctos."
+
+[login_error_timeout]
+description = "Connection timeout error"
+other = "¡Tiempo de conexión agotado!\nPor favor, verifique su conexión de red y que el host sea accesible."
+
+[login_error_wrong_protocol]
+description = "Wrong protocol (http vs https) error"
+other = "¡Error de protocolo!\nIntente cambiar entre http y https."
+
+[login_error_use_https]
+description = "Server requires HTTPS"
+other = "¡Error de protocolo!\nPor favor, use HTTPS en lugar de HTTP."
+
+[login_error_use_http]
+description = "Server requires HTTP"
+other = "¡Error de protocolo!\nPor favor, use HTTP en lugar de HTTPS."
+
+[login_error_forbidden]
+description = "Access forbidden (403) error"
+other = "¡Acceso denegado!\nVerifique su nombre de usuario/contraseña e intente cambiar entre http y https."
+
+[login_error_server]
+description = "Server error (5xx) message"
+other = "¡Error del servidor RomM!\nPor favor, verifique los registros del servidor RomM."
+
+[login_validating]
+description = "Validating connection message"
+other = "Validando conexión..."
+
 [error_loading_platforms]
 description = "Error loading platforms from RomM"
 other = "¡Error al cargar las plataformas de RomM!\nPor favor, verifique su conexión e intente nuevamente."
+
+[startup_error_invalid_hostname]
+description = "Inicio: Error de nombre de host/DNS inválido"
+other = "¡No se pudo resolver el nombre del host!\nLa dirección del servidor configurada no se puede encontrar."
+
+[startup_error_connection_refused]
+description = "Inicio: Error de conexión rechazada"
+other = "¡No se pudo conectar al servidor!\nEl servidor puede estar fuera de línea o el puerto puede ser incorrecto."
+
+[startup_error_timeout]
+description = "Inicio: Error de tiempo de conexión agotado"
+other = "¡Tiempo de conexión agotado!\nEl servidor no responde. Verifique su conexión de red."
+
+[startup_error_wrong_protocol]
+description = "Inicio: Error de protocolo incorrecto (http vs https)"
+other = "¡Error de protocolo!\nEl servidor puede requerir http en lugar de https (o viceversa)."
+
+[startup_error_use_https]
+description = "Inicio: El servidor requiere HTTPS"
+other = "¡Error de protocolo!\nPor favor, cambie su configuración para usar HTTPS en lugar de HTTP."
+
+[startup_error_use_http]
+description = "Inicio: El servidor requiere HTTP"
+other = "¡Error de protocolo!\nPor favor, cambie su configuración para usar HTTP en lugar de HTTPS."
+
+[startup_error_credentials]
+description = "Inicio: Error de credenciales inválidas"
+other = "¡Autenticación fallida!\nSu nombre de usuario o contraseña puede haber cambiado en el servidor."
+
+[startup_error_forbidden]
+description = "Inicio: Error de acceso denegado (403)"
+other = "¡Acceso denegado!\nSus credenciales pueden haber cambiado, o el servidor puede requerir un protocolo diferente (http vs https)."
+
+[startup_error_server]
+description = "Inicio: Mensaje de error del servidor (5xx)"
+other = "¡Error del servidor RomM!\nEl servidor está experimentando problemas. Verifique los registros del servidor."
+
+[startup_error_action_retry]
+description = "Acción de error de inicio: Reintentar conexión"
+other = "Reintentar Conexión"
+
+[startup_error_action_relogin]
+description = "Acción de error de inicio: Volver a ingresar credenciales"
+other = "Volver a Ingresar Credenciales"
+
+[startup_error_action_exit]
+description = "Acción de error de inicio: Salir de la aplicación"
+other = "Salir"
 
 [login_hostname]
 description = "Hostname field label"

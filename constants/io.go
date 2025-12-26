@@ -9,5 +9,6 @@ const (
 
 const (
 	DefaultHTTPTimeout = 10 * time.Second
-	LoginTimeout       = 15 * time.Second
+	LoginTimeout       = 6 * time.Second // Timeout for login attempts
+	ValidationTimeout  = 3 * time.Second // Fast timeout for pre-flight connection checks
 )

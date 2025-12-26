@@ -219,13 +219,97 @@ other = "Could not connect to RomM!\nPlease check the hostname and port."
 description = "Invalid credentials error"
 other = "Invalid Username or Password."
 
+[login_error_forbidden]
+description = "Access forbidden (403) error"
+other = "Access Forbidden!\nCheck your username/password and try switching between http and https."
+
 [login_error_unexpected]
 description = "Unexpected error message"
 other = "Something unexpected happened!\nCheck the logs for more info."
 
+[login_error_invalid_hostname]
+description = "Invalid hostname/DNS error"
+other = "Could not resolve hostname!\nPlease check the hostname is correct."
+
+[login_error_connection_refused]
+description = "Connection refused error"
+other = "Could not connect to host!\nPlease check the hostname and port are correct."
+
+[login_error_timeout]
+description = "Connection timeout error"
+other = "Connection timed out!\nPlease check your network connection and that the host is reachable."
+
+[login_error_wrong_protocol]
+description = "Wrong protocol (http vs https) error"
+other = "Protocol mismatch!\nTry switching between http and https."
+
+[login_error_use_https]
+description = "Server requires HTTPS"
+other = "Protocol mismatch!\nPlease use HTTPS instead of HTTP."
+
+[login_error_use_http]
+description = "Server requires HTTP"
+other = "Protocol mismatch!\nPlease use HTTP instead of HTTPS."
+
+[login_error_server]
+description = "Server error (5xx) message"
+other = "RomM server error!\nPlease check the RomM server logs."
+
+[login_validating]
+description = "Validating connection message"
+other = "Validating connection..."
+
 [error_loading_platforms]
 description = "Error loading platforms from RomM"
 other = "Failed to load platforms from RomM!\nPlease check your connection and try again."
+
+[startup_error_invalid_hostname]
+description = "Startup: Invalid hostname/DNS error"
+other = "Could not resolve hostname!\nThe configured server address cannot be found."
+
+[startup_error_connection_refused]
+description = "Startup: Connection refused error"
+other = "Could not connect to server!\nThe server may be offline or the port may be incorrect."
+
+[startup_error_timeout]
+description = "Startup: Connection timeout error"
+other = "Connection timed out!\nThe server is not responding. Check your network connection."
+
+[startup_error_wrong_protocol]
+description = "Startup: Wrong protocol (http vs https) error"
+other = "Protocol mismatch!\nThe server may require http instead of https (or vice versa)."
+
+[startup_error_use_https]
+description = "Startup: Server requires HTTPS"
+other = "Protocol mismatch!\nPlease change your configuration to use HTTPS instead of HTTP."
+
+[startup_error_use_http]
+description = "Startup: Server requires HTTP"
+other = "Protocol mismatch!\nPlease change your configuration to use HTTP instead of HTTPS."
+
+[startup_error_credentials]
+description = "Startup: Invalid credentials error"
+other = "Authentication failed!\nYour username or password may have changed on the server."
+
+[startup_error_forbidden]
+description = "Startup: Access forbidden (403) error"
+other = "Access forbidden!\nYour credentials may have changed, or the server may require a different protocol (http vs https)."
+
+[startup_error_server]
+description = "Startup: Server error (5xx) message"
+other = "RomM server error!\nThe server is experiencing issues. Check the server logs."
+
+[startup_error_action_retry]
+description = "Startup error action: Retry connection"
+other = "Retry Connection"
+
+[startup_error_action_relogin]
+description = "Startup error action: Re-enter credentials"
+other = "Re-enter Login Credentials"
+
+[startup_error_action_exit]
+description = "Startup error action: Exit application"
+other = "Exit"
 
 [login_hostname]
 description = "Hostname field label"

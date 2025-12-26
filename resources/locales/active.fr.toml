@@ -223,9 +223,93 @@ other = "Nom de compte ou mot de passe incorrect."
 description = "Message d'erreur inattendu"
 other = "Erreur inattendue.\nRegardez les logs pour plus d'informations."
 
+[login_error_invalid_hostname]
+description = "Erreur de nom de domaine/DNS invalide"
+other = "Impossible de résoudre le nom de domaine!\nVeuillez vérifier que le nom de domaine est correct."
+
+[login_error_connection_refused]
+description = "Erreur de connexion refusée"
+other = "Impossible de se connecter à l'hôte!\nVeuillez vérifier que le nom de domaine et le port sont corrects."
+
+[login_error_timeout]
+description = "Erreur de délai de connexion"
+other = "Délai de connexion dépassé!\nVeuillez vérifier votre connexion réseau et que l'hôte est accessible."
+
+[login_error_wrong_protocol]
+description = "Erreur de protocole incorrect (http vs https)"
+other = "Incompatibilité de protocole!\nEssayez de basculer entre http et https."
+
+[login_error_use_https]
+description = "Le serveur nécessite HTTPS"
+other = "Incompatibilité de protocole!\nVeuillez utiliser HTTPS au lieu de HTTP."
+
+[login_error_use_http]
+description = "Le serveur nécessite HTTP"
+other = "Incompatibilité de protocole!\nVeuillez utiliser HTTP au lieu de HTTPS."
+
+[login_error_forbidden]
+description = "Erreur d'accès interdit (403)"
+other = "Accès interdit!\nVérifiez votre nom de compte/mot de passe et essayez de basculer entre http et https."
+
+[login_error_server]
+description = "Message d'erreur serveur (5xx)"
+other = "Erreur du serveur RomM!\nVeuillez vérifier les journaux du serveur RomM."
+
+[login_validating]
+description = "Message de validation de la connexion"
+other = "Validation de la connexion..."
+
 [error_loading_platforms]
 description = "Erreur lors du chargement des plateformes depuis RomM"
 other = "Erreur lors du chargement des plateformes depuis RomM.\nVeuillez vérifier la connexion."
+
+[startup_error_invalid_hostname]
+description = "Démarrage : Erreur de nom de domaine/DNS invalide"
+other = "Impossible de résoudre le nom de domaine!\nL'adresse du serveur configurée est introuvable."
+
+[startup_error_connection_refused]
+description = "Démarrage : Erreur de connexion refusée"
+other = "Impossible de se connecter au serveur!\nLe serveur est peut-être hors ligne ou le port est incorrect."
+
+[startup_error_timeout]
+description = "Démarrage : Erreur de délai de connexion"
+other = "Délai de connexion dépassé!\nLe serveur ne répond pas. Vérifiez votre connexion réseau."
+
+[startup_error_wrong_protocol]
+description = "Démarrage : Erreur de protocole incorrect (http vs https)"
+other = "Incompatibilité de protocole!\nLe serveur peut nécessiter http au lieu de https (ou vice versa)."
+
+[startup_error_use_https]
+description = "Démarrage : Le serveur nécessite HTTPS"
+other = "Incompatibilité de protocole!\nVeuillez modifier votre configuration pour utiliser HTTPS au lieu de HTTP."
+
+[startup_error_use_http]
+description = "Démarrage : Le serveur nécessite HTTP"
+other = "Incompatibilité de protocole!\nVeuillez modifier votre configuration pour utiliser HTTP au lieu de HTTPS."
+
+[startup_error_credentials]
+description = "Démarrage : Erreur d'identifiants invalides"
+other = "Échec de l'authentification!\nVotre nom d'utilisateur ou mot de passe a peut-être changé sur le serveur."
+
+[startup_error_forbidden]
+description = "Démarrage : Erreur d'accès interdit (403)"
+other = "Accès interdit!\nVos identifiants ont peut-être changé, ou le serveur peut nécessiter un protocole différent (http vs https)."
+
+[startup_error_server]
+description = "Démarrage : Message d'erreur serveur (5xx)"
+other = "Erreur du serveur RomM!\nLe serveur rencontre des problèmes. Vérifiez les journaux du serveur."
+
+[startup_error_action_retry]
+description = "Action d'erreur de démarrage : Réessayer la connexion"
+other = "Réessayer la Connexion"
+
+[startup_error_action_relogin]
+description = "Action d'erreur de démarrage : Ressaisir les identifiants"
+other = "Ressaisir les Identifiants"
+
+[startup_error_action_exit]
+description = "Action d'erreur de démarrage : Quitter l'application"
+other = "Quitter"
 
 [login_hostname]
 description = "Label du champ nom de domaine"
