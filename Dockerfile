@@ -54,9 +54,9 @@ RUN BUILD_TYPE="Dev"; \
              -X 'grout/version.BuildDate=$BUILD_DATE' \
              -X 'grout/version.BuildType=$BUILD_TYPE'"; \
     if [ "$USE_LOCAL_GABAGOOL" = "true" ]; then \
-        go build -gcflags="all=-N -l" -ldflags "$LDFLAGS" -v -o grout app/grout.go; \
+        go build -gcflags="all=-N -l" -ldflags "$LDFLAGS" -v -o grout ./app; \
     else \
-        GOWORK=off go build -gcflags="all=-N -l" -ldflags "$LDFLAGS" -v -o grout app/grout.go; \
+        GOWORK=off go build -gcflags="all=-N -l" -ldflags "$LDFLAGS" -v -o grout ./app; \
     fi
 
 CMD ["/bin/bash"]
