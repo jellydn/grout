@@ -15,6 +15,7 @@ This guide walks you through using Grout's interface to download games from your
 - [BIOS Files](#bios-files)
 - [Settings](#settings)
 - [Save Sync](#save-sync)
+- [Advanced Configuration](#advanced-configuration)
 
 ---
 
@@ -369,3 +370,13 @@ After syncing, you'll see a summary showing:
 - **User-specific:** Saves are tied to your RomM user account – keep this in mind if you share your RomM account
 - **Backup protection:** When a save is downloaded from RomM, the current save is backed up with a timestamp appended to
   the filename to aid in recovery
+
+---
+
+## Advanced Configuration
+
+### Override Files
+
+For advanced users and developers, Grout supports overriding embedded configuration files with local copies. This allows you to test new platform mappings, add custom BIOS requirements, or modify input mappings without recompiling the application.
+
+For complete documentation on how to use override files, see [OVERRIDES.md](OVERRIDES.md).

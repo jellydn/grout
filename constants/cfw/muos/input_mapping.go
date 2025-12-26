@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 )
 
@@ -68,6 +69,13 @@ func GetInputMappingBytesForDevice(device Device) ([]byte, error) {
 		filename = "input_mappings/anbernic.json"
 	}
 
+	// Check for override file in current working directory
+	overridePath := filepath.Join("overrides", "cfw", "muos", filename)
+	if data, err := os.ReadFile(overridePath); err == nil {
+		return data, nil
+	}
+
+	// Fall back to embedded file
 	data, err := embeddedInputMappings.ReadFile(filename)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read embedded input mapping %s: %w", filename, err)

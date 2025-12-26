@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"grout/constants"
 	"grout/romm"
@@ -79,15 +80,15 @@ func (s *BIOSDownloadScreen) draw(input BIOSDownloadInput) (ScreenResult[BIOSDow
 	// Try to get BIOS metadata to enrich the firmware list (optional)
 	biosFiles := utils.GetBIOSFilesForPlatform(input.Platform.Slug)
 
-	// Build metadata lookup by filename for enrichment
+	// Build metadata lookup by filename for enrichment (case-insensitive)
 	biosMetadataByFileName := make(map[string]constants.BIOSFile)
 	biosMetadataByRelPath := make(map[string]constants.BIOSFile)
 	for _, biosFile := range biosFiles {
-		biosMetadataByFileName[biosFile.FileName] = biosFile
-		biosMetadataByRelPath[biosFile.RelativePath] = biosFile
+		biosMetadataByFileName[strings.ToLower(biosFile.FileName)] = biosFile
+		biosMetadataByRelPath[strings.ToLower(biosFile.RelativePath)] = biosFile
 		baseName := filepath.Base(biosFile.RelativePath)
 		if baseName != biosFile.RelativePath {
-			biosMetadataByFileName[baseName] = biosFile
+			biosMetadataByFileName[strings.ToLower(baseName)] = biosFile
 		}
 	}
 
@@ -101,13 +102,13 @@ func (s *BIOSDownloadScreen) draw(input BIOSDownloadInput) (ScreenResult[BIOSDow
 	for _, fw := range firmwareList {
 		item := firmwareWithMetadata{firmware: fw}
 
-		// Try to find matching metadata
+		// Try to find matching metadata (case-insensitive)
 		baseName := filepath.Base(fw.FilePath)
-		if metadata, found := biosMetadataByFileName[fw.FileName]; found {
+		if metadata, found := biosMetadataByFileName[strings.ToLower(fw.FileName)]; found {
 			item.metadata = &metadata
-		} else if metadata, found := biosMetadataByRelPath[fw.FilePath]; found {
+		} else if metadata, found := biosMetadataByRelPath[strings.ToLower(fw.FilePath)]; found {
 			item.metadata = &metadata
-		} else if metadata, found := biosMetadataByFileName[baseName]; found {
+		} else if metadata, found := biosMetadataByFileName[strings.ToLower(baseName)]; found {
 			item.metadata = &metadata
 		}
 
@@ -193,7 +194,7 @@ func (s *BIOSDownloadScreen) draw(input BIOSDownloadInput) (ScreenResult[BIOSDow
 	options.StartInMultiSelectMode = true
 	options.FooterHelpItems = []gaba.FooterHelpItem{
 		{ButtonName: "B", HelpText: i18n.GetString("button_back")},
-		{ButtonName: "Start", HelpText: i18n.GetString("button_download")},
+		{ButtonName: "Start", HelpText: i18n.GetString("button_download"), IsConfirmButton: true},
 	}
 
 	sel, err := gaba.List(options)
