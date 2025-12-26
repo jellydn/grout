@@ -14,6 +14,10 @@ other = "Annuler"
 description = "Bouton fermer"
 other = "Fermer"
 
+[button_confirm]
+description = "Bouton confirmer"
+other = "Confirmer"
+
 [button_continue]
 description = "Bouton continuer"
 other = "Continuer"
@@ -41,6 +45,10 @@ other = "Déconnexion"
 [button_menu]
 description = "Bouton menu"
 other = "Menu"
+
+[logout_confirm_message]
+description = "Message de confirmation de déconnexion"
+other = "Êtes-vous sûr de vouloir vous déconnecter ?"
 
 [button_multi]
 description = "Bouton sélection multiple"
@@ -81,6 +89,14 @@ other = "{{.Name}} - Platformes"
 [common_false]
 description = "Valeur fausse"
 other = "Faux"
+
+[common_hide]
+description = "Valeur masquer"
+other = "Masquer"
+
+[common_show]
+description = "Valeur afficher"
+other = "Afficher"
 
 [common_skip]
 description = "Valeur passer"
@@ -496,20 +512,20 @@ description = "Option du niveau de log"
 other = "Niveau de log"
 
 [settings_show_collections]
-description = "Option d'affichage des collections"
-other = "Afficher les Collections"
+description = "Option des collections"
+other = "Collections"
 
 [settings_show_smart_collections]
-description = "Option d'affichage des collections intelligentes"
-other = "Afficher les Collections Intelligentes"
+description = "Option des collections intelligentes"
+other = "Collections Intelligentes"
 
 [settings_show_game_details]
-description = "Option d'affichage des détails du jeu"
-other = "Afficher les détails du jeu"
+description = "Option des détails du jeu"
+other = "Détails du jeu"
 
 [settings_show_virtual_collections]
-description = "Option d'affichage des collections virtuelles"
-other = "Afficher les Collections Virtuelles"
+description = "Option des collections virtuelles"
+other = "Collections Virtuelles"
 
 [settings_save_sync]
 description = "Option du mode de synchronisation des sauvegardes"
@@ -528,8 +544,8 @@ description = "Mode de synchronisation automatique"
 other = "Automatique"
 
 [settings_show_bios]
-description = "Option d'affichage du bouton BIOS"
-other = "Afficher BIOS"
+description = "Option de téléchargement BIOS"
+other = "Téléchargement BIOS"
 
 [bios_status_ready]
 description = "Fichier BIOS installé et vérifié"

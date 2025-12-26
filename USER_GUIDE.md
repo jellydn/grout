@@ -169,7 +169,7 @@ To clear a search, press `B` to go back to the full results.
 ## Game Details
 
 > [!IMPORTANT]
-> This screen will only show if you've enabled "Show Game Details" in Settings.
+> This screen will only show if you've enabled "Game Details" in Settings.
 
 ![Grout preview, game details](.github/resources/user_guide/game_details.png "Grout preview, game details")
 
@@ -250,14 +250,14 @@ Press `X` from the main platform menu to access Settings.
 **Directory Mappings** – Change which device directories are mapped to which RomM platforms. This takes you back to
 the platform mapping screen that appeared during setup.
 
-**Show Game Details** - When enabled, selecting a game shows the details screen first. When disabled, selecting a game
-immediately starts the download. If you know what you want and just want to grab it fast, turn this off.
+**Game Details** - When set to show, selecting a game shows the details screen first. When set to hide, selecting a game
+immediately starts the download. If you know what you want and just want to grab it fast, set this to hide.
 
-**Show Collections** - When enabled, Grout displays regular collections in the main menu.
+**Collections** - When set to show, Grout displays regular collections in the main menu.
 
-**Show Smart Collections** - When enabled, Grout displays smart collections in the main menu.
+**Smart Collections** - When set to show, Grout displays smart collections in the main menu.
 
-**Show Virtual Collections** - When enabled, Grout displays virtual collections in the main menu.
+**Virtual Collections** - When set to show, Grout displays virtual collections in the main menu.
 
 **Downloaded Games** - Controls how already-downloaded games appear in game lists:
 
@@ -270,7 +270,7 @@ immediately starts the download. If you know what you want and just want to grab
 - **Off** – Save sync is completely disabled
 - **Manual** – Save sync is available via the `Y` button from the platform menu
 
-**Show BIOS** - When enabled, adds a BIOS download option to the platform menu, allowing you to download required BIOS
+**BIOS Download** - When set to show, adds a BIOS download option to the platform menu, allowing you to download required BIOS
 files for emulators directly from your RomM server.
 
 **Download Art** – When enabled, Grout downloads box art for games after downloading the ROMs. The art goes into your

@@ -53,7 +53,7 @@ func (s *InfoScreen) Draw(input InfoInput) (ScreenResult[InfoOutput], error) {
 
 	if result.Action == gaba.DetailActionTriggered {
 		output.LogoutRequested = true
-		return withCode(output, constants.ExitCodeLogout), nil
+		return withCode(output, constants.ExitCodeLogoutConfirm), nil
 	}
 
 	return back(output), nil

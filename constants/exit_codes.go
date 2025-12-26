@@ -10,6 +10,7 @@ const (
 	ExitCodeInfo                     gaba.ExitCode = 102
 	ExitCodeLogout                   gaba.ExitCode = 103
 	ExitCodeBIOS                     gaba.ExitCode = 104
+	ExitCodeLogoutConfirm            gaba.ExitCode = 105
 	ExitCodeSearch                   gaba.ExitCode = 200
 	ExitCodeClearSearch              gaba.ExitCode = 201
 	ExitCodeCollections              gaba.ExitCode = 300

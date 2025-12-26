@@ -116,32 +116,32 @@ func (s *SettingsScreen) buildMenuItems(config *utils.Config) []gaba.ItemWithOpt
 		{
 			Item: gaba.MenuItem{Text: i18n.GetString("settings_show_game_details")},
 			Options: []gaba.Option{
-				{DisplayName: i18n.GetString("common_true"), Value: true},
-				{DisplayName: i18n.GetString("common_false"), Value: false},
+				{DisplayName: i18n.GetString("common_show"), Value: true},
+				{DisplayName: i18n.GetString("common_hide"), Value: false},
 			},
-			SelectedOption: boolToIndex(!config.ShowGameDetails),
+			SelectedOption: boolToIndex(!config.GameDetails),
 		},
 		{
 			Item: gaba.MenuItem{Text: i18n.GetString("settings_show_collections")},
 			Options: []gaba.Option{
-				{DisplayName: i18n.GetString("common_true"), Value: true},
-				{DisplayName: i18n.GetString("common_false"), Value: false},
+				{DisplayName: i18n.GetString("common_show"), Value: true},
+				{DisplayName: i18n.GetString("common_hide"), Value: false},
 			},
 			SelectedOption: boolToIndex(!config.ShowCollections),
 		},
 		{
 			Item: gaba.MenuItem{Text: i18n.GetString("settings_show_smart_collections")},
 			Options: []gaba.Option{
-				{DisplayName: i18n.GetString("common_true"), Value: true},
-				{DisplayName: i18n.GetString("common_false"), Value: false},
+				{DisplayName: i18n.GetString("common_show"), Value: true},
+				{DisplayName: i18n.GetString("common_hide"), Value: false},
 			},
 			SelectedOption: boolToIndex(!config.ShowSmartCollections),
 		},
 		{
 			Item: gaba.MenuItem{Text: i18n.GetString("settings_show_virtual_collections")},
 			Options: []gaba.Option{
-				{DisplayName: i18n.GetString("common_true"), Value: true},
-				{DisplayName: i18n.GetString("common_false"), Value: false},
+				{DisplayName: i18n.GetString("common_show"), Value: true},
+				{DisplayName: i18n.GetString("common_hide"), Value: false},
 			},
 			SelectedOption: boolToIndex(!config.ShowVirtualCollections),
 		},
@@ -152,7 +152,7 @@ func (s *SettingsScreen) buildMenuItems(config *utils.Config) []gaba.ItemWithOpt
 				{DisplayName: i18n.GetString("downloaded_games_mark"), Value: "mark"},
 				{DisplayName: i18n.GetString("downloaded_games_filter"), Value: "filter"},
 			},
-			SelectedOption: s.downloadedGamesActionToIndex(config.DownloadedGamesDisplayOption),
+			SelectedOption: s.downloadedGamesActionToIndex(config.DownloadedGames),
 		},
 		{
 			Item: gaba.MenuItem{Text: i18n.GetString("settings_save_sync")},
@@ -166,10 +166,10 @@ func (s *SettingsScreen) buildMenuItems(config *utils.Config) []gaba.ItemWithOpt
 		{
 			Item: gaba.MenuItem{Text: i18n.GetString("settings_show_bios")},
 			Options: []gaba.Option{
-				{DisplayName: i18n.GetString("common_true"), Value: true},
-				{DisplayName: i18n.GetString("common_false"), Value: false},
+				{DisplayName: i18n.GetString("common_show"), Value: true},
+				{DisplayName: i18n.GetString("common_hide"), Value: false},
 			},
-			SelectedOption: boolToIndex(!config.ShowBIOS),
+			SelectedOption: boolToIndex(!config.ShowBIOSDownload),
 		},
 		{
 			Item: gaba.MenuItem{Text: i18n.GetString("settings_download_art")},
@@ -269,11 +269,11 @@ func (s *SettingsScreen) applySettings(config *utils.Config, items []gaba.ItemWi
 				config.SaveSyncMode = val
 			}
 		case i18n.GetString("settings_show_bios"):
-			config.ShowBIOS = item.SelectedOption == 0
+			config.ShowBIOSDownload = item.SelectedOption == 0
 		case i18n.GetString("settings_unzip_downloads"):
 			config.UnzipDownloads = item.SelectedOption == 0
 		case i18n.GetString("settings_show_game_details"):
-			config.ShowGameDetails = item.SelectedOption == 0
+			config.GameDetails = item.SelectedOption == 0
 		case i18n.GetString("settings_show_collections"):
 			config.ShowCollections = item.SelectedOption == 0
 		case i18n.GetString("settings_show_smart_collections"):
@@ -300,7 +300,7 @@ func (s *SettingsScreen) applySettings(config *utils.Config, items []gaba.ItemWi
 			}
 		case i18n.GetString("settings_downloaded_games"):
 			if val, ok := item.Options[item.SelectedOption].Value.(string); ok {
-				config.DownloadedGamesDisplayOption = val
+				config.DownloadedGames = val
 			}
 		}
 	}

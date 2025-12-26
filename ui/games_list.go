@@ -75,7 +75,7 @@ func (s *GameListScreen) Draw(input GameListInput) (ScreenResult[GameListOutput]
 
 	displayGames := utils.PrepareRomNames(games, *input.Config)
 
-	if input.Config.DownloadedGamesDisplayOption == "filter" {
+	if input.Config.DownloadedGames == "filter" {
 		filteredGames := make([]romm.Rom, 0, len(displayGames))
 		for _, game := range displayGames {
 			if !utils.IsGameDownloadedLocally(game, *input.Config) {
@@ -150,7 +150,7 @@ func (s *GameListScreen) Draw(input GameListInput) (ScreenResult[GameListOutput]
 	options.MultiSelectButton = buttons.VirtualButtonSelect
 	options.HelpButton = buttons.VirtualButtonMenu
 
-	hasBIOS := input.Config.ShowBIOS && input.Platform.ID != 0 && s.hasBIOSFilesInRomM(*input.Config, input.Host, input.Platform)
+	hasBIOS := input.Config.ShowBIOSDownload && input.Platform.ID != 0 && s.hasBIOSFilesInRomM(*input.Config, input.Host, input.Platform)
 	if hasBIOS {
 		options.SecondaryActionButton = buttons.VirtualButtonY
 	}
@@ -164,7 +164,7 @@ func (s *GameListScreen) Draw(input GameListInput) (ScreenResult[GameListOutput]
 		{ButtonName: "X", HelpText: i18n.GetString("button_search")},
 	}
 	if hasBIOS {
-		footerItems = append(footerItems, gaba.FooterHelpItem{ButtonName: "Y", HelpText: "BIOS"})
+		footerItems = append(footerItems, gaba.FooterHelpItem{ButtonName: "Y", HelpText: "ShowBIOSDownload"})
 	}
 
 	options.FooterHelpItems = footerItems
@@ -302,7 +302,7 @@ func (s *GameListScreen) hasBIOSFilesInRomM(config utils.Config, host romm.Host,
 		return false
 	}
 
-	// Show BIOS button if RomM has any firmware files for this platform
+	// Show ShowBIOSDownload button if RomM has any firmware files for this platform
 	return len(firmwareList) > 0
 }
 

@@ -20,6 +20,7 @@ const (
 	settings                                   = "settings"
 	settingsPlatformMapping                    = "platform_mapping"
 	info                                       = "info"
+	logoutConfirmation                         = "logout_confirmation"
 	saveSync                                   = "save_sync"
 	biosDownload                               = "bios_download"
 )
@@ -315,7 +316,7 @@ func buildFSM(config *utils.Config, cfw constants.CFW, platforms []romm.Platform
 		host, _ := gaba.Get[romm.Host](ctx)
 		gameListOutput, _ := gaba.Get[ui.GameListOutput](ctx)
 
-		if !config.ShowGameDetails || len(gameListOutput.SelectedGames) != 1 {
+		if !config.GameDetails || len(gameListOutput.SelectedGames) != 1 {
 			filter, _ := gaba.Get[searchFilterString](ctx)
 			downloadScreen := ui.NewDownloadScreen()
 			downloadOutput := downloadScreen.Execute(*config, host, gameListOutput.Platform, gameListOutput.SelectedGames, gameListOutput.AllGames, string(filter))
@@ -507,8 +508,24 @@ func buildFSM(config *utils.Config, cfw constants.CFW, platforms []romm.Platform
 		return result.Value, result.ExitCode
 	}).
 		On(gaba.ExitCodeBack, settings).
+		On(constants.ExitCodeLogoutConfirm, logoutConfirmation)
+
+	gaba.AddState(fsm, logoutConfirmation, func(ctx *gaba.Context) (ui.LogoutConfirmationOutput, gaba.ExitCode) {
+		screen := ui.NewLogoutConfirmationScreen()
+		result, err := screen.Draw()
+
+		if err != nil {
+			return ui.LogoutConfirmationOutput{}, gaba.ExitCodeError
+		}
+
+		return result.Value, result.ExitCode
+	}).
+		On(gaba.ExitCodeBack, info).
 		OnWithHook(constants.ExitCodeLogout, platformSelection, func(ctx *gaba.Context) error {
 			config, _ := gaba.Get[*utils.Config](ctx)
+			cfw, _ := gaba.Get[constants.CFW](ctx)
+
+			// Clear config and save
 			config.Hosts = nil
 			config.DirectoryMappings = nil
 			config.PlatformOrder = nil
@@ -519,9 +536,59 @@ func buildFSM(config *utils.Config, cfw constants.CFW, platforms []romm.Platform
 			}
 
 			gaba.GetLogger().Info("User logged out successfully")
+
+			// Trigger login flow inline with empty host (no pre-filled values)
+			loginConfig, err := ui.LoginFlow(romm.Host{})
+			if err != nil {
+				gaba.GetLogger().Error("Login flow failed after logout", "error", err)
+				// LoginFlow calls os.Exit(1) on cancel, so this only happens on errors
+				return err
+			}
+
+			// Update config with new login
+			config.Hosts = loginConfig.Hosts
+			if err := utils.SaveConfig(config); err != nil {
+				gaba.GetLogger().Error("Failed to save config after re-login", "error", err)
+				return err
+			}
+
+			// Update context with new config and host
+			gaba.Set(ctx, config)
+			gaba.Set(ctx, config.Hosts[0])
+
+			// Check if platform mappings exist, prompt if needed
+			if len(config.DirectoryMappings) == 0 {
+				screen := ui.NewPlatformMappingScreen()
+				result, err := screen.Draw(ui.PlatformMappingInput{
+					Host:           config.Hosts[0],
+					ApiTimeout:     config.ApiTimeout,
+					CFW:            cfw,
+					RomDirectory:   utils.GetRomDirectory(),
+					AutoSelect:     false,
+					HideBackButton: true,
+				})
+
+				if err == nil && result.ExitCode == gaba.ExitCodeSuccess {
+					config.DirectoryMappings = result.Value.Mappings
+					utils.SaveConfig(config)
+				}
+			}
+
+			// Load platforms
+			platforms, err := utils.GetMappedPlatforms(config.Hosts[0], config.DirectoryMappings)
+			if err != nil {
+				gaba.GetLogger().Error("Failed to load platforms after re-login", "error", err)
+				return err
+			}
+			gaba.Set(ctx, platforms)
+
+			// Clear state to start fresh
+			gaba.Set(ctx, searchFilterString(""))
+			gaba.Set(ctx, currentGamesList(nil))
+			gaba.Set(ctx, platformListPosition{Index: 0, Pos: 0})
+
 			return nil
-		}).
-		Exit(constants.ExitCodeLogout)
+		})
 
 	gaba.AddState(fsm, saveSync, func(ctx *gaba.Context) (ui.SaveSyncOutput, gaba.ExitCode) {
 		config, _ := gaba.Get[*utils.Config](ctx)

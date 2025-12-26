@@ -84,7 +84,7 @@ func PrepareRomNames(games []romm.Rom, config Config) []romm.Rom {
 			games[i].DisplayName = dn
 		}
 
-		if config.DownloadedGamesDisplayOption == "mark" && IsGameDownloadedLocally(games[i], config) {
+		if config.DownloadedGames == "mark" && IsGameDownloadedLocally(games[i], config) {
 			games[i].DisplayName = fmt.Sprintf("%s %s", Downloaded, games[i].DisplayName)
 		}
 

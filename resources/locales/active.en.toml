@@ -14,6 +14,10 @@ other = "Cancel"
 description = "Close button"
 other = "Close"
 
+[button_confirm]
+description = "Confirm button"
+other = "Confirm"
+
 [button_continue]
 description = "Continue button"
 other = "Continue"
@@ -41,6 +45,10 @@ other = "Logout"
 [button_menu]
 description = "Menu button"
 other = "Menu"
+
+[logout_confirm_message]
+description = "Logout confirmation message"
+other = "Are you sure you want to logout?"
 
 [button_multi]
 description = "Multi select button"
@@ -81,6 +89,14 @@ other = "{{.Name}} - Platforms"
 [common_false]
 description = "False value"
 other = "False"
+
+[common_hide]
+description = "Hide value"
+other = "Hide"
+
+[common_show]
+description = "Show value"
+other = "Show"
 
 [common_skip]
 description = "Skip option"
@@ -496,20 +512,20 @@ description = "Log level option"
 other = "Log Level"
 
 [settings_show_collections]
-description = "Show collections option"
-other = "Show Collections"
+description = "Collections option"
+other = "Collections"
 
 [settings_show_smart_collections]
-description = "Show smart collections option"
-other = "Show Smart Collections"
+description = "Smart collections option"
+other = "Smart Collections"
 
 [settings_show_game_details]
-description = "Show game details option"
-other = "Show Game Details"
+description = "Game details option"
+other = "Game Details"
 
 [settings_show_virtual_collections]
-description = "Show virtual collections option"
-other = "Show Virtual Collections"
+description = "Virtual collections option"
+other = "Virtual Collections"
 
 [settings_save_sync]
 description = "Save sync mode option"
@@ -528,8 +544,8 @@ description = "Save sync mode daemon"
 other = "Daemon"
 
 [settings_show_bios]
-description = "Show BIOS button option"
-other = "Show BIOS"
+description = "BIOS download option"
+other = "BIOS Download"
 
 [bios_status_ready]
 description = "BIOS file is installed and verified"

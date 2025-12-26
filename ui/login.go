@@ -26,8 +26,8 @@ type loginOutput struct {
 }
 
 type loginAttemptResult struct {
-	ErrorType string // "dns", "connection", "timeout", "protocol", "credentials", "server", "unknown"
-	ErrorMsg  string // Localized error message key
+	ErrorType string
+	ErrorMsg  string
 	Success   bool
 }
 
@@ -63,6 +63,14 @@ func (s *LoginScreen) draw(input loginInput) (ScreenResult[loginOutput], error) 
 			Options: []gabagool.Option{
 				{
 					Type:           gabagool.OptionTypeKeyboard,
+					KeyboardLayout: gabagool.KeyboardLayoutURL,
+					URLShortcuts: []gabagool.URLShortcut{
+						{Value: "romm.", SymbolValue: "romm."},
+						{Value: ".com", SymbolValue: ".com"},
+						{Value: ".org", SymbolValue: ".org"},
+						{Value: ".net", SymbolValue: ".net"},
+						{Value: ".local", SymbolValue: ".ts.net"},
+					},
 					DisplayName:    removeScheme(host.RootURI),
 					KeyboardPrompt: removeScheme(host.RootURI),
 					Value:          removeScheme(host.RootURI),
@@ -75,7 +83,8 @@ func (s *LoginScreen) draw(input loginInput) (ScreenResult[loginOutput], error) 
 			},
 			Options: []gabagool.Option{
 				{
-					Type: gabagool.OptionTypeKeyboard,
+					Type:           gabagool.OptionTypeKeyboard,
+					KeyboardLayout: gabagool.KeyboardLayoutNumeric,
 					KeyboardPrompt: func() string {
 						if host.Port == 0 {
 							return ""
@@ -188,7 +197,6 @@ func LoginFlow(existingHost romm.Host) (*utils.Config, error) {
 			return config, nil
 		}
 
-		// Display appropriate error message based on error type
 		gabagool.ConfirmationMessage(
 			i18n.GetString(loginResult.ErrorMsg),
 			[]gabagool.FooterHelpItem{

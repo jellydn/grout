@@ -18,6 +18,10 @@ description = "Close button"
 hash = "sha1-247d1e79fac03870ebcf4657ac07f2a299bf9ad7"
 other = "Cerrar"
 
+[button_confirm]
+description = "Confirm button"
+other = "Confirmar"
+
 [button_continue]
 description = "Continue button"
 hash = "sha1-38657fb0c449b7301e78131f246e393ad3abf187"
@@ -49,6 +53,10 @@ other = "Cerrar sesión"
 [button_menu]
 description = "Menu button"
 other = "Menú"
+
+[logout_confirm_message]
+description = "Logout confirmation message"
+other = "¿Está seguro de que desea cerrar sesión?"
 
 [button_multi]
 description = "Multi select button"
@@ -98,6 +106,14 @@ other = "{{.Name}} - Plataformas"
 description = "False value"
 hash = "sha1-264c4a2dae9767990348836621bdb761e0d47ddc"
 other = "Falso"
+
+[common_hide]
+description = "Hide value"
+other = "Ocultar"
+
+[common_show]
+description = "Show value"
+other = "Mostrar"
 
 [common_skip]
 description = "Skip option"
@@ -578,23 +594,23 @@ hash = "sha1-d4b9f81b67c0923ee427be359a66fdfa670bb6da"
 other = "Nivel de Log"
 
 [settings_show_collections]
-description = "Show collections option"
+description = "Collections option"
 hash = "sha1-a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b1"
-other = "Mostrar Colecciones"
+other = "Colecciones"
 
 [settings_show_smart_collections]
-description = "Show smart collections option"
-other = "Mostrar Colecciones Inteligentes"
+description = "Smart collections option"
+other = "Colecciones Inteligentes"
 
 [settings_show_game_details]
-description = "Show game details option"
+description = "Game details option"
 hash = "sha1-497138b5c11902c4ce86469b37a653906f8b22d3"
-other = "Mostrar Detalles de Juego"
+other = "Detalles de Juego"
 
 [settings_show_virtual_collections]
-description = "Show virtual collections option"
+description = "Virtual collections option"
 hash = "sha1-b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c1"
-other = "Mostrar Colecciones Virtuales"
+other = "Colecciones Virtuales"
 
 [settings_save_sync]
 description = "Save sync mode option"
@@ -613,8 +629,8 @@ description = "Save sync mode daemon"
 other = "Automático"
 
 [settings_show_bios]
-description = "Show BIOS button option"
-other = "Mostrar BIOS"
+description = "BIOS download option"
+other = "Descarga de BIOS"
 
 [bios_status_ready]
 description = "BIOS file is installed and verified"

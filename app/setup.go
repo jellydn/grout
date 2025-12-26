@@ -69,6 +69,31 @@ func setup() *utils.Config {
 
 	gaba.GetLogger().Debug("Loading configuration from config.json")
 	config, err := utils.LoadConfig()
+	isFirstLaunch := err != nil || (len(config.Hosts) == 0 && config.Language == "")
+
+	if isFirstLaunch {
+		gaba.GetLogger().Debug("First launch detected, showing language selection")
+		languageScreen := ui.NewLanguageSelectionScreen()
+		selectedLanguage, langErr := languageScreen.Draw()
+		if langErr != nil {
+			gaba.GetLogger().Error("Language selection failed", "error", langErr)
+			// Default to English if selection fails
+			selectedLanguage = "en"
+		}
+		gaba.GetLogger().Debug("Language selected", "language", selectedLanguage)
+
+		// Set the language immediately
+		if err := i18n.SetWithCode(selectedLanguage); err != nil {
+			gaba.GetLogger().Error("Failed to set language", "error", err, "language", selectedLanguage)
+		}
+
+		// Update config with selected language
+		if config == nil {
+			config = &utils.Config{}
+		}
+		config.Language = selectedLanguage
+	}
+
 	if err != nil || len(config.Hosts) == 0 {
 		gaba.GetLogger().Debug("No RomM Host Configured", "error", err)
 		gaba.GetLogger().Debug("Starting login flow for initial setup")
@@ -78,7 +103,7 @@ func setup() *utils.Config {
 			utils.LogStandardFatal("Login failed", loginErr)
 		}
 		gaba.GetLogger().Debug("Login successful, saving configuration")
-		config = loginConfig
+		config.Hosts = loginConfig.Hosts
 		utils.SaveConfig(config)
 	} else {
 		gaba.GetLogger().Debug("Configuration loaded successfully", "host_count", len(config.Hosts))
@@ -88,7 +113,7 @@ func setup() *utils.Config {
 		gaba.SetRawLogLevel(config.LogLevel)
 	}
 
-	if config.Language != "" {
+	if config.Language != "" && !isFirstLaunch {
 		if err := i18n.SetWithCode(config.Language); err != nil {
 			gaba.GetLogger().Error("Failed to set language", "error", err, "language", config.Language)
 		}

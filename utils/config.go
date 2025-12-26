@@ -12,23 +12,24 @@ import (
 )
 
 type Config struct {
-	Hosts                        []romm.Host                 `json:"hosts,omitempty"`
-	DirectoryMappings            map[string]DirectoryMapping `json:"directory_mappings,omitempty"`
-	ShowGameDetails              bool                        `json:"show_game_details"`
-	AutoSyncSaves                bool                        `json:"auto_sync_saves"`
-	SaveSyncMode                 string                      `json:"save_sync_mode"`
-	ShowBIOS                     bool                        `json:"show_bios"`
-	DownloadArt                  bool                        `json:"download_art,omitempty"`
-	UnzipDownloads               bool                        `json:"unzip_downloads,omitempty"`
-	ShowCollections              bool                        `json:"show_collections"`
-	ShowSmartCollections         bool                        `json:"show_smart_collections"`
-	ShowVirtualCollections       bool                        `json:"show_virtual_collections"`
-	DownloadedGamesDisplayOption string                      `json:"downloaded_games_display_option,omitempty"`
-	ApiTimeout                   time.Duration               `json:"api_timeout"`
-	DownloadTimeout              time.Duration               `json:"download_timeout"`
-	LogLevel                     string                      `json:"log_level,omitempty"`
-	Language                     string                      `json:"language,omitempty"`
-	PlatformOrder                []string                    `json:"platform_order,omitempty"`
+	Hosts                  []romm.Host                 `json:"hosts,omitempty"`
+	DirectoryMappings      map[string]DirectoryMapping `json:"directory_mappings,omitempty"`
+	GameDetails            bool                        `json:"show_game_details"`
+	AutoSyncSaves          bool                        `json:"auto_sync_saves"`
+	SaveSyncMode           string                      `json:"save_sync_mode"`
+	ShowBIOSDownload       bool                        `json:"show_bios"`
+	DownloadArt            bool                        `json:"download_art,omitempty"`
+	UnzipDownloads         bool                        `json:"unzip_downloads,omitempty"`
+	ShowCollections        bool                        `json:"show_collections"`
+	ShowSmartCollections   bool                        `json:"show_smart_collections"`
+	ShowVirtualCollections bool                        `json:"show_virtual_collections"`
+	DownloadedGames        string                      `json:"downloaded_games,omitempty"`
+	ApiTimeout             time.Duration               `json:"api_timeout"`
+	DownloadTimeout        time.Duration               `json:"download_timeout"`
+	LogLevel               string                      `json:"log_level,omitempty"`
+	Language               string                      `json:"language,omitempty"`
+
+	PlatformOrder []string `json:"platform_order,omitempty"`
 }
 
 type DirectoryMapping struct {
@@ -43,18 +44,18 @@ func (c Config) ToLoggable() any {
 	}
 
 	return map[string]any{
-		"hosts":                    safeHosts,
-		"directory_mappings":       c.DirectoryMappings,
-		"api_timeout":              c.ApiTimeout,
-		"download_timeout":         c.DownloadTimeout,
-		"unzip_downloads":          c.UnzipDownloads,
-		"download_art":             c.DownloadArt,
-		"show_game_details":        c.ShowGameDetails,
-		"show_collections":         c.ShowCollections,
-		"show_smart_collections":   c.ShowSmartCollections,
-		"show_virtual_collections": c.ShowVirtualCollections,
-		"downloaded_games_action":  c.DownloadedGamesDisplayOption,
-		"log_level":                c.LogLevel,
+		"hosts":                   safeHosts,
+		"directory_mappings":      c.DirectoryMappings,
+		"api_timeout":             c.ApiTimeout,
+		"download_timeout":        c.DownloadTimeout,
+		"unzip_downloads":         c.UnzipDownloads,
+		"download_art":            c.DownloadArt,
+		"game_details":            c.GameDetails,
+		"collections":             c.ShowCollections,
+		"smart_collections":       c.ShowSmartCollections,
+		"virtual_collections":     c.ShowVirtualCollections,
+		"downloaded_games_action": c.DownloadedGames,
+		"log_level":               c.LogLevel,
 	}
 }
 
@@ -81,8 +82,8 @@ func LoadConfig() (*Config, error) {
 		config.Language = "en"
 	}
 
-	if config.DownloadedGamesDisplayOption == "" {
-		config.DownloadedGamesDisplayOption = "do_nothing"
+	if config.DownloadedGames == "" {
+		config.DownloadedGames = "do_nothing"
 	}
 
 	return &config, nil
@@ -97,8 +98,8 @@ func SaveConfig(config *Config) error {
 		config.Language = "en"
 	}
 
-	if config.DownloadedGamesDisplayOption == "" {
-		config.DownloadedGamesDisplayOption = "do_nothing"
+	if config.DownloadedGames == "" {
+		config.DownloadedGames = "do_nothing"
 	}
 
 	gaba.SetRawLogLevel(config.LogLevel)
