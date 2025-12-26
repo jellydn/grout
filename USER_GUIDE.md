@@ -303,7 +303,7 @@ artwork directory so your frontend can display it.
 automatically cached in the background as you browse. This provides a visual preview similar to your frontend's game
 library view.
 
-**Sync Artwork** - Select this option to manually sync artwork for all games across all mapped platforms. Grout will scan
+**Cache Artwork** - Select this option to pre-cache artwork for all games across all mapped platforms. Grout will scan
 your platforms, identify games that don't have cached artwork, and download cover art from RomM. Useful for pre-caching
 artwork or updating your library after adding new games.
 

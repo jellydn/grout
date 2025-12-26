@@ -200,6 +200,20 @@ func (s *GameDetailsScreen) buildSections(input GameDetailsInput) []gaba.Section
 }
 
 func (s *GameDetailsScreen) fetchCoverImage(host romm.Host, game romm.Rom) []byte {
+	logger := gaba.GetLogger()
+
+	// First, check if artwork is in the cache
+	if utils.ArtworkExists(game.PlatformSlug, game.ID) {
+		cachePath := utils.GetArtworkCachePath(game.PlatformSlug, game.ID)
+		data, err := os.ReadFile(cachePath)
+		if err == nil {
+			logger.Debug("Using cached artwork for game details", "game", game.Name)
+			return data
+		}
+		logger.Debug("Failed to read cached artwork, will fetch from server", "error", err)
+	}
+
+	// Not in cache, fetch from server
 	var coverPath string
 	if game.PathCoverLarge != "" {
 		coverPath = game.PathCoverLarge
@@ -212,7 +226,20 @@ func (s *GameDetailsScreen) fetchCoverImage(host romm.Host, game romm.Rom) []byt
 	}
 
 	coverURL := host.URL() + coverPath
-	return s.fetchImageFromURL(host, coverURL)
+	imageData := s.fetchImageFromURL(host, coverURL)
+
+	// Cache the artwork for future use
+	if imageData != nil {
+		if err := utils.EnsureArtworkCacheDir(game.PlatformSlug); err == nil {
+			cachePath := utils.GetArtworkCachePath(game.PlatformSlug, game.ID)
+			if err := os.WriteFile(cachePath, imageData, 0644); err == nil {
+				utils.ProcessArtImage(cachePath)
+				logger.Debug("Cached artwork from game details", "game", game.Name)
+			}
+		}
+	}
+
+	return imageData
 }
 
 func (s *GameDetailsScreen) fetchImageFromURL(host romm.Host, imageURL string) []byte {

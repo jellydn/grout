@@ -26,10 +26,10 @@ func (s *ClearCacheConfirmationScreen) Draw() (ScreenResult[ClearCacheConfirmati
 		i18n.GetString("clear_cache_confirm_message"),
 		[]gaba.FooterHelpItem{
 			{ButtonName: "B", HelpText: i18n.GetString("button_cancel")},
-			{ButtonName: "Y", HelpText: i18n.GetString("button_confirm")},
+			{ButtonName: "X", HelpText: i18n.GetString("button_confirm")},
 		},
 		gaba.MessageOptions{
-			ConfirmButton: buttons.VirtualButtonY,
+			ConfirmButton: buttons.VirtualButtonX,
 		},
 	)
 

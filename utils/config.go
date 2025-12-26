@@ -117,6 +117,10 @@ func SaveConfig(config *Config) error {
 		config.CollectionView = "platform"
 	}
 
+	if config.SaveSyncMode == "" {
+		config.SaveSyncMode = "off"
+	}
+
 	gaba.SetRawLogLevel(config.LogLevel)
 
 	if err := i18n.SetWithCode(config.Language); err != nil {

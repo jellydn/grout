@@ -455,6 +455,10 @@ other = "Télécharger les illustrations"
 description = "Option d'illustration de jaquette dans la liste"
 other = "Illustrations"
 
+[settings_sync_artwork]
+description = "Cache artwork option"
+other = "Mettre en cache"
+
 [settings_download_timeout]
 description = "Option de délai d'attente de téléchargement"
 other = "Délai d'attente de téléchargement"

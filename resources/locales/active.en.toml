@@ -636,8 +636,8 @@ description = "Box art in games list option"
 other = "Box Art"
 
 [settings_sync_artwork]
-description = "Sync artwork option"
-other = "Sync Artwork"
+description = "Cache artwork option"
+other = "Cache Artwork"
 
 [artwork_sync_no_platforms]
 description = "No platforms mapped message"

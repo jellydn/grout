@@ -531,6 +531,10 @@ other = "Descargar Arte"
 description = "Box art in games list option"
 other = "Arte de Caja"
 
+[settings_sync_artwork]
+description = "Cache artwork option"
+other = "Almacenar Artwork"
+
 [settings_download_timeout]
 description = "Download timeout option"
 hash = "sha1-5859619d51d182c0c1164f95eedb59132de7c090"

@@ -5,11 +5,11 @@
 - **Knulli Support**: Support for Knulli CFW alongside muOS and NextUI
 
 - **Save Sync**: Automatic save file synchronization with RomM server
-    - Smart conflict detection (upload/download/skip logic)
-    - Emulator selection for ambiguous save folders
-    - Detailed sync reports
-    - Local backup creation before downloads
-    - Parallelized save scanning for faster sync operations
+  - Smart conflict detection (upload/download/skip logic)
+  - Emulator selection for ambiguous save folders
+  - Detailed sync reports
+  - Local backup creation before downloads
+  - Parallelized save scanning for faster sync operations
 
 - **BIOS Downloader**: Download BIOS files directly through Grout, auto-generated from libretro info files
 
@@ -38,16 +38,16 @@
 
 ## i18n
 
-- **Spanish Translation**: Complete Spanish language support
-- **French Translation**: Complete French language support (contributed by @pawndev)
-- **German Translation**: Complete German language support
-- **Italian Translation**: Complete Italian language support
-- **Portuguese Translation**: Complete Portuguese language support
-- **Japanese Translation**: Complete Japanese language support
-- **Russian Translation**: Complete Russian language support
+- **Spanish Translation**
+- **French Translation** (contributed by @pawndev)
+- **German Translation**
+- **Italian Translation**
+- **Portuguese Translation**
+- **Japanese Translation**
+- **Russian Translation**
 
 > [!WARNING]
-> Claude was used to help localize Grout. Any and all help with these localizations will be greatly appreciated.
+> Claude was used to help localize Grout. Any and all help with these translations will be greatly appreciated.
 
 ## Bug Fixes
 
@@ -78,3 +78,5 @@
 
 > [!IMPORTANT]
 > Grout `v1.3.0` requires RomM `v4.5.0` as it has API endpoints that facilitate save syncing.
+
+---
