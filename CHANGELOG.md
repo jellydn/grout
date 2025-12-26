@@ -46,6 +46,9 @@
 - **Japanese Translation**: Complete Japanese language support
 - **Russian Translation**: Complete Russian language support
 
+> [!WARNING]
+> Claude was used to help localize Grout. Any and all help with these localizations will be greatly appreciated.
+
 ## Bug Fixes
 
 - Fixed incorrect platform slug names in constants
