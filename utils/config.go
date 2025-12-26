@@ -93,6 +93,10 @@ func LoadConfig() (*Config, error) {
 		config.CollectionView = "platform"
 	}
 
+	if config.SaveSyncMode == "" {
+		config.SaveSyncMode = "off"
+	}
+
 	return &config, nil
 }
 
