@@ -21,8 +21,6 @@ This guide walks you through using Grout's interface to download games from your
 
 ## First Launch and Login
 
-When you first launch Grout, you'll be greeted with this login screen.
-
 ![Grout preview, login flow](.github/resources/user_guide/login.png "Grout preview, login flow")
 
 1. **Protocol** – Choose between HTTP and HTTPS.
@@ -46,7 +44,7 @@ to the next step. If something goes wrong, you'll get a message telling you what
 
 ## Platform Directory Mapping
 
-After logging in successfully for the first time, you'll need to map your RomM platforms to directories on your device.
+On this screen you map your RomM platforms to directories on your device.
 This tells Grout where to put the games that you download.
 
 ![Grout preview, platform mapping](.github/resources/user_guide/platform_mapping.png "Grout preview, platform mapping")
@@ -70,9 +68,6 @@ You can change these mappings later from the Settings menu.
 
 ## Main Menu – Platform Selection
 
-Once you've logged in and set up your mappings, you'll land on the main menu. This is your home base for browsing your
-RomM collection.
-
 ![Grout preview, main menu (platforms)](.github/resources/user_guide/platforms.png "Grout preview, main menu (platforms)")
 
 At the top, you'll see "Collections" (if you have any collections set up in RomM). Below that, you'll see all your RomM
@@ -91,39 +86,33 @@ platforms – NES, SNES, PlayStation, whatever you've got.
 
 ![Grout preview, reordering platforms](.github/resources/user_guide/reordering_platforms.png "Grout preview, reordering")
 
-Press `Select` to enter reordering mode. You'll see a ↕ indicator next to the currently selected platform. Use the D-pad
-to this platform up and down:
+Press `Select` to enter reordering mode. `↕` will appear next to the currently selected platform.
+
+While in this mode:
 
 - `Up/Down` to move the platform one position
 - `Left/Right` to move the platform one page at a time
+- `A` to place the platform into its new position
 
-Press `A` to place the selected platform into its new position. Your custom platform order is automatically saved to the
-config and will persist across sessions. New platforms you add to RomM later will appear alphabetically at the end of
-your custom order.
+Your custom platform order is automatically saved to the config and will persist across sessions.
 
 ---
 
 ## Collections
 
-Collections are custom groupings you can create in RomM - like "My Favorites," "Beat 'em Ups," or "Franchises."
-They're a great way to organize games across multiple platforms.
-
 ![Grout preview, collections list](.github/resources/user_guide/collections.png "Grout preview, collections list")
 
 After selecting Collections from the main menu, you'll see all your collections. Pick one and press `A`.
 
-If your collection has games from multiple platforms, you'll see a platform selection screen next. This lets you filter
-the collection to just one platform at a time. If the collection is platform-specific, you'll go straight to the game
-list.
-
 > [!IMPORTANT]
 > If you skipped a platform in the mapping screen, you won't see games for that platform in your collections.
+
+> [!IMPORTANT]
+> Regular collections, smart collections, and virtual collections can be toggled on / off in settings.
 
 ---
 
 ## Game List
-
-The game list is where you browse and select games to download.
 
 ![Grout preview, games list](.github/resources/user_guide/games_list.png "Grout preview, games list")
 
@@ -230,9 +219,6 @@ the correct location on your device.
 From the main platform menu, press `A` on a platform that requires BIOS files. If BIOS files are available for that
 platform in your RomM library, you'll see a "BIOS" option in the platform submenu.
 
-> [!NOTE]
-> Files marked as **(Optional)** are not required for the emulator to function but may enable additional features.
-
 ### Important Notes
 
 - BIOS files must already be uploaded to your RomM server's firmware library
@@ -259,6 +245,11 @@ immediately starts the download. If you know what you want and just want to grab
 
 **Virtual Collections** - When set to show, Grout displays virtual collections in the main menu.
 
+**Collection View** - Controls how collections display their games:
+
+- **Platform** – After selecting a collection, you'll see a platform selection screen showing all platforms in that collection. Select a platform to view games from only that platform.
+- **Unified** – After selecting a collection, you'll immediately see all games from all platforms with platform slugs shown as prefixes (e.g., `[nes] Tecmo Bowl`, `[snes] Super Mario World`)
+
 **Downloaded Games** - Controls how already-downloaded games appear in game lists:
 
 - **Do Nothing** – No special treatment for downloaded games
@@ -270,7 +261,8 @@ immediately starts the download. If you know what you want and just want to grab
 - **Off** – Save sync is completely disabled
 - **Manual** – Save sync is available via the `Y` button from the platform menu
 
-**BIOS Download** - When set to show, adds a BIOS download option to the platform menu, allowing you to download required BIOS
+**BIOS Download** - When set to show, adds a BIOS download option to the platform menu, allowing you to download
+required BIOS
 files for emulators directly from your RomM server.
 
 **Download Art** – When enabled, Grout downloads box art for games after downloading the ROMs. The art goes into your
@@ -377,6 +369,8 @@ After syncing, you'll see a summary showing:
 
 ### Override Files
 
-For advanced users and developers, Grout supports overriding embedded configuration files with local copies. This allows you to test new platform mappings, add custom BIOS requirements, or modify input mappings without recompiling the application.
+For advanced users and developers, Grout supports overriding embedded configuration files with local copies. This allows
+you to test new platform mappings, add custom BIOS requirements, or modify input mappings without recompiling the
+application.
 
 For complete documentation on how to use override files, see [OVERRIDES.md](OVERRIDES.md).

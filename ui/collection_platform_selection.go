@@ -83,6 +83,21 @@ func (s *CollectionPlatformSelectionScreen) Draw(input CollectionPlatformSelecti
 		}
 	}
 
+	// Handle unified mode - skip platform selection and return all games
+	if input.Config.CollectionView == "unified" {
+		// Filter games to only include those with mapped platforms
+		filteredGames := make([]romm.Rom, 0)
+		for _, game := range allGames {
+			if _, hasMapping := input.Config.DirectoryMappings[game.PlatformSlug]; hasMapping {
+				filteredGames = append(filteredGames, game)
+			}
+		}
+
+		output.AllGames = filteredGames
+		output.SelectedPlatform = romm.Platform{ID: 0} // ID=0 signals unified mode
+		return success(output), nil
+	}
+
 	platformMap := make(map[int]romm.Platform)
 	for _, game := range allGames {
 		if _, exists := platformMap[game.PlatformID]; !exists {

@@ -531,6 +531,18 @@ other = "Détails du jeu"
 description = "Option des collections virtuelles"
 other = "Collections Virtuelles"
 
+[settings_collection_view]
+description = "Option du mode d'affichage des collections"
+other = "Vue de Collection"
+
+[collection_view_platform]
+description = "Mode d'affichage des collections par plateforme"
+other = "Plateforme"
+
+[collection_view_unified]
+description = "Mode d'affichage des collections unifié"
+other = "Unifiée"
+
 [settings_save_sync]
 description = "Option du mode de synchronisation des sauvegardes"
 other = "Synchronisation des Sauvegardes"

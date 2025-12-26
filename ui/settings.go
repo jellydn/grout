@@ -146,6 +146,14 @@ func (s *SettingsScreen) buildMenuItems(config *utils.Config) []gaba.ItemWithOpt
 			SelectedOption: boolToIndex(!config.ShowVirtualCollections),
 		},
 		{
+			Item: gaba.MenuItem{Text: i18n.GetString("settings_collection_view")},
+			Options: []gaba.Option{
+				{DisplayName: i18n.GetString("collection_view_platform"), Value: "platform"},
+				{DisplayName: i18n.GetString("collection_view_unified"), Value: "unified"},
+			},
+			SelectedOption: collectionViewToIndex(config.CollectionView),
+		},
+		{
 			Item: gaba.MenuItem{Text: i18n.GetString("settings_downloaded_games")},
 			Options: []gaba.Option{
 				{DisplayName: i18n.GetString("downloaded_games_do_nothing"), Value: "do_nothing"},
@@ -302,6 +310,10 @@ func (s *SettingsScreen) applySettings(config *utils.Config, items []gaba.ItemWi
 			if val, ok := item.Options[item.SelectedOption].Value.(string); ok {
 				config.DownloadedGames = val
 			}
+		case i18n.GetString("settings_collection_view"):
+			if val, ok := item.Options[item.SelectedOption].Value.(string); ok {
+				config.CollectionView = val
+			}
 		}
 	}
 }
@@ -358,6 +370,17 @@ func (s *SettingsScreen) downloadedGamesActionToIndex(action string) int {
 		return 1
 	case "filter":
 		return 2
+	default:
+		return 0
+	}
+}
+
+func collectionViewToIndex(view string) int {
+	switch view {
+	case "platform":
+		return 0
+	case "unified":
+		return 1
 	default:
 		return 0
 	}

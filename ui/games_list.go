@@ -102,10 +102,32 @@ func (s *GameListScreen) Draw(input GameListInput) (ScreenResult[GameListOutput]
 
 		if input.Platform.ID == 0 {
 			for i := range displayGames {
-				displayGames[i].DisplayName = fmt.Sprintf("[%s] %s", displayGames[i].PlatformSlug, displayGames[i].DisplayName)
+				// Add download indicator before platform slug if needed
+				prefix := ""
+				if input.Config.DownloadedGames == "mark" && utils.IsGameDownloadedLocally(displayGames[i], *input.Config) {
+					prefix = utils.Downloaded + " "
+				}
+				displayGames[i].DisplayName = fmt.Sprintf("%s[%s] %s", prefix, displayGames[i].PlatformSlug, displayGames[i].DisplayName)
 			}
 		} else {
 			displayName = fmt.Sprintf("%s - %s", input.Collection.Name, input.Platform.Name)
+			// For collection platform mode, add download indicator
+			if input.Config.DownloadedGames == "mark" {
+				for i := range displayGames {
+					if utils.IsGameDownloadedLocally(displayGames[i], *input.Config) {
+						displayGames[i].DisplayName = fmt.Sprintf("%s %s", utils.Downloaded, displayGames[i].DisplayName)
+					}
+				}
+			}
+		}
+	} else {
+		// For non-collection views, add download indicator if needed
+		if input.Config.DownloadedGames == "mark" {
+			for i := range displayGames {
+				if utils.IsGameDownloadedLocally(displayGames[i], *input.Config) {
+					displayGames[i].DisplayName = fmt.Sprintf("%s %s", utils.Downloaded, displayGames[i].DisplayName)
+				}
+			}
 		}
 	}
 

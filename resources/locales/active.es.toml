@@ -616,6 +616,18 @@ description = "Virtual collections option"
 hash = "sha1-b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c1"
 other = "Colecciones Virtuales"
 
+[settings_collection_view]
+description = "Collection view mode option"
+other = "Vista de Colección"
+
+[collection_view_platform]
+description = "Platform collection view mode"
+other = "Plataforma"
+
+[collection_view_unified]
+description = "Unified collection view mode"
+other = "Unificada"
+
 [settings_save_sync]
 description = "Save sync mode option"
 other = "Sincronización de Guardados"

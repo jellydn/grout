@@ -531,6 +531,18 @@ other = "Game Details"
 description = "Virtual collections option"
 other = "Virtual Collections"
 
+[settings_collection_view]
+description = "Collection view mode option"
+other = "Collection View"
+
+[collection_view_platform]
+description = "Platform collection view mode"
+other = "Platform"
+
+[collection_view_unified]
+description = "Unified collection view mode"
+other = "Unified"
+
 [settings_save_sync]
 description = "Save sync mode option"
 other = "Save Sync"

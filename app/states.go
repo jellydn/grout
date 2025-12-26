@@ -227,17 +227,27 @@ func buildFSM(config *utils.Config, cfw constants.CFW, platforms []romm.Platform
 	}).
 		OnWithHook(gaba.ExitCodeSuccess, gameList, func(ctx *gaba.Context) error {
 			output, _ := gaba.Get[ui.CollectionPlatformSelectionOutput](ctx)
+			config, _ := gaba.Get[*utils.Config](ctx)
 
-			filteredGames := make([]romm.Rom, 0)
-			for _, game := range output.AllGames {
-				if game.PlatformID == output.SelectedPlatform.ID {
-					filteredGames = append(filteredGames, game)
+			var finalGames []romm.Rom
+
+			// In unified mode with Platform.ID == 0, use all games
+			if config.CollectionView == "unified" && output.SelectedPlatform.ID == 0 {
+				finalGames = output.AllGames
+			} else {
+				// Platform mode: filter by selected platform
+				filteredGames := make([]romm.Rom, 0)
+				for _, game := range output.AllGames {
+					if game.PlatformID == output.SelectedPlatform.ID {
+						filteredGames = append(filteredGames, game)
+					}
 				}
+				finalGames = filteredGames
 			}
 
 			gaba.Set(ctx, searchFilterString(""))
-			gaba.Set(ctx, fullGamesList(filteredGames))
-			gaba.Set(ctx, currentGamesList(filteredGames))
+			gaba.Set(ctx, fullGamesList(finalGames))
+			gaba.Set(ctx, currentGamesList(finalGames))
 			gaba.Set(ctx, gameListPosition{Index: 0, Pos: 0})
 			return nil
 		}).

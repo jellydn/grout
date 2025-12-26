@@ -28,6 +28,7 @@ type Config struct {
 	DownloadTimeout        time.Duration               `json:"download_timeout"`
 	LogLevel               string                      `json:"log_level,omitempty"`
 	Language               string                      `json:"language,omitempty"`
+	CollectionView         string                      `json:"collection_view,omitempty"`
 
 	PlatformOrder []string `json:"platform_order,omitempty"`
 }
@@ -86,6 +87,10 @@ func LoadConfig() (*Config, error) {
 		config.DownloadedGames = "do_nothing"
 	}
 
+	if config.CollectionView == "" {
+		config.CollectionView = "platform"
+	}
+
 	return &config, nil
 }
 
@@ -100,6 +105,10 @@ func SaveConfig(config *Config) error {
 
 	if config.DownloadedGames == "" {
 		config.DownloadedGames = "do_nothing"
+	}
+
+	if config.CollectionView == "" {
+		config.CollectionView = "platform"
 	}
 
 	gaba.SetRawLogLevel(config.LogLevel)
