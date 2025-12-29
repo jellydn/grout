@@ -30,6 +30,7 @@ type GameListInput struct {
 	Platform             romm.Platform
 	Collection           romm.Collection
 	Games                []romm.Rom
+	HasBIOS              bool
 	SearchFilter         string
 	LastSelectedIndex    int
 	LastSelectedPosition int
@@ -58,7 +59,7 @@ func isCollectionSet(c romm.Collection) bool {
 
 func (s *GameListScreen) Draw(input GameListInput) (ScreenResult[GameListOutput], error) {
 	games := input.Games
-	var hasBIOS bool
+	hasBIOS := input.HasBIOS
 
 	if len(games) == 0 {
 		loaded, err := s.loadGames(input)

@@ -7,7 +7,6 @@ import (
 	"sort"
 
 	gaba "github.com/BrandonKowalski/gabagool/v2/pkg/gabagool"
-	icons "github.com/BrandonKowalski/gabagool/v2/pkg/gabagool/constants"
 	"github.com/BrandonKowalski/gabagool/v2/pkg/gabagool/i18n"
 	goi18n "github.com/nicksnyder/go-i18n/v2/i18n"
 )
@@ -42,9 +41,9 @@ func (s *SaveSyncSettingsScreen) Draw(input SaveSyncSettingsInput) (ScreenResult
 		i18n.Localize(&goi18n.Message{ID: "save_sync_settings_title", Other: "Save Sync Settings"}, nil),
 		gaba.OptionListSettings{
 			FooterHelpItems: []gaba.FooterHelpItem{
-				{ButtonName: "B", HelpText: i18n.Localize(&goi18n.Message{ID: "button_back", Other: "Back"}, nil)},
-				{ButtonName: icons.LeftRight, HelpText: i18n.Localize(&goi18n.Message{ID: "button_cycle", Other: "Cycle"}, nil)},
-				{ButtonName: icons.Start, HelpText: i18n.Localize(&goi18n.Message{ID: "button_save", Other: "Save"}, nil)},
+				FooterBack(),
+				FooterCycle(),
+				FooterSave(),
 			},
 			InitialSelectedIndex: 0,
 			StatusBar:            utils.StatusBar(),

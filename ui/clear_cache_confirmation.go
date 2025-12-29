@@ -61,9 +61,9 @@ func (s *ClearCacheScreen) Draw() (ScreenResult[ClearCacheOutput], error) {
 		items,
 	)
 	options.FooterHelpItems = []gaba.FooterHelpItem{
-		{ButtonName: "B", HelpText: i18n.Localize(&goi18n.Message{ID: "button_cancel", Other: "Cancel"}, nil)},
-		{ButtonName: "A", HelpText: i18n.Localize(&goi18n.Message{ID: "button_select", Other: "Select"}, nil)},
-		{ButtonName: "Start", HelpText: i18n.Localize(&goi18n.Message{ID: "button_confirm", Other: "Confirm"}, nil)},
+		FooterCancel(),
+		FooterSelect(),
+		FooterStartConfirm(),
 	}
 	options.StartInMultiSelectMode = true
 	options.StatusBar = utils.StatusBar()

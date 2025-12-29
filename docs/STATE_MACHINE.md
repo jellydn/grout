@@ -61,19 +61,31 @@ flowchart TD
 flowchart TD
     PS[Platform Selection]
     SET[Settings]
+    GSET[General Settings]
     CSET[Collections Settings]
     SSSET[Save Sync Settings]
     ASET[Advanced Settings]
+    INFO[Info]
+    LOGOUT[Logout Confirm]
 
     PS -->|"Settings"| SET
     SET -->|"Save/Back"| PS
+    SET --> GSET
     SET --> CSET
     SET --> SSSET
     SET --> ASET
+    SET --> INFO
 
+    GSET --> SET
     CSET --> SET
     SSSET --> SET
     ASET --> SET
+
+    INFO -->|"Back"| SET
+    INFO --> LOGOUT
+
+    LOGOUT -->|"Cancel"| INFO
+    LOGOUT -->|"Confirm"| PS
 ```
 
 ## Advanced Settings Flow
@@ -85,27 +97,16 @@ flowchart TD
     PM[Platform Mapping]
     CC[Clear Cache]
     ART[Artwork Sync]
-    INFO[Info]
-    LOGOUT[Logout Confirm]
-    PS[Platform Selection]
 
     SET --> ASET
     ASET -->|"Back"| SET
     ASET --> PM
     ASET --> CC
     ASET --> ART
-    ASET --> INFO
 
     PM --> ASET
     CC --> ASET
     ART --> ASET
-
-    INFO -->|"Back"| SET
-    INFO -.->|"Back (from adv)"| ASET
-    INFO --> LOGOUT
-
-    LOGOUT -->|"Cancel"| INFO
-    LOGOUT -->|"Confirm"| PS
 ```
 
 ## State Descriptions
@@ -120,7 +121,8 @@ flowchart TD
 | Collection List | List of available collections |
 | Collection Platform Selection | Platform filter within a collection |
 | Collection Search | On-screen keyboard for collection search |
-| Settings | Main settings menu |
+| Settings | Main settings menu with save sync toggle |
+| General Settings | Box art, download behavior, language |
 | Collections Settings | Collection display options |
 | Save Sync Settings | Per-platform save directory config |
 | Advanced Settings | Timeouts, cache, mappings |
@@ -138,26 +140,22 @@ The FSM maintains state in a single `NavState` struct:
 
 ```go
 type NavState struct {
-    // Game browsing
     CurrentGames, FullGames []romm.Rom
     SearchFilter            string
     HasBIOS                 bool
     GameListPos             ListPosition
 
-    // Collections
     CollectionSearchFilter  string
     CollectionGames         []romm.Rom
     CollectionListPos       ListPosition
     CollectionPlatformPos   ListPosition
 
-    // List positions
     PlatformListPos         ListPosition
     SettingsPos             ListPosition
+    GeneralSettingsPos      ListPosition
     CollectionsSettingsPos  ListPosition
     AdvancedSettingsPos     ListPosition
 
-    // Flags
     QuitOnBack, ShowCollections bool
-    InfoPreviousState           gaba.StateName
 }
 ```
