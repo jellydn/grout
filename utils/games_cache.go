@@ -118,7 +118,24 @@ func saveMetadata(metadata CacheMetadata) error {
 
 // CheckCacheFreshness checks if the cache for a given key is still fresh
 // Returns true if cache is fresh (can use cached data), false if stale (need to refetch)
+// This function first checks the pre-validated state from startup, avoiding network calls during navigation
 func CheckCacheFreshness(host romm.Host, config *Config, cacheKey string, query romm.GetRomsQuery) (bool, error) {
+	logger := gaba.GetLogger()
+
+	// First, check if we have a pre-validated result from startup
+	if cr := GetCacheRefresh(); cr != nil {
+		if isFresh, wasValidated := cr.IsCacheFresh(cacheKey); wasValidated {
+			logger.Debug("Using pre-validated cache freshness", "key", cacheKey, "fresh", isFresh)
+			return isFresh, nil
+		}
+	}
+
+	// Fall back to network check if not pre-validated
+	return checkCacheFreshnessInternal(host, config, cacheKey, query)
+}
+
+// checkCacheFreshnessInternal performs the actual network check for cache freshness
+func checkCacheFreshnessInternal(host romm.Host, config *Config, cacheKey string, query romm.GetRomsQuery) (bool, error) {
 	logger := gaba.GetLogger()
 
 	// Load metadata to get the stored last_updated_at
@@ -244,6 +261,11 @@ func SaveGamesToCache(cacheKey string, games []romm.Rom) error {
 	if err := saveMetadata(metadata); err != nil {
 		logger.Debug("Failed to save metadata", "error", err)
 		return err
+	}
+
+	// Mark the cache as fresh in the refresh cache
+	if cr := GetCacheRefresh(); cr != nil {
+		cr.MarkCacheFresh(cacheKey)
 	}
 
 	logger.Debug("Saved games to cache", "key", cacheKey, "count", len(games), "latestUpdatedAt", latestUpdatedAt)

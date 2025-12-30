@@ -3,8 +3,9 @@ module grout
 go 1.24.1
 
 require (
-	github.com/BrandonKowalski/gabagool/v2 v2.3.6
+	github.com/BrandonKowalski/gabagool/v2 v2.3.7
 	github.com/UncleJunVIP/certifiable v1.2.0
+	github.com/nicksnyder/go-i18n/v2 v2.6.0
 	github.com/sonh/qs v0.6.4
 	github.com/yeqown/go-qrcode/v2 v2.2.5
 	github.com/yeqown/go-qrcode/writer/standard v1.3.0
@@ -17,7 +18,6 @@ require (
 	github.com/fogleman/gg v1.3.0 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/holoplot/go-evdev v0.0.0-20250804134636-ab1d56a1fe83 // indirect
-	github.com/nicksnyder/go-i18n/v2 v2.6.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/srwiley/oksvg v0.0.0-20221011165216-be6e8873101c // indirect
 	github.com/srwiley/rasterx v0.0.0-20220730225603-2ab79fcdd4ef // indirect
