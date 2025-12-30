@@ -22,12 +22,14 @@ type AutoUpdate struct {
 func NewAutoUpdate(cfw constants.CFW) *AutoUpdate {
 	return &AutoUpdate{
 		cfw:  cfw,
-		icon: gaba.NewDynamicStatusBarIcon(""),
 		done: make(chan struct{}),
 	}
 }
 
 func (a *AutoUpdate) Icon() gaba.StatusBarIcon {
+	if a.icon == nil {
+		return gaba.StatusBarIcon{}
+	}
 	return gaba.StatusBarIcon{
 		Dynamic: a.icon,
 	}
@@ -71,7 +73,8 @@ func (a *AutoUpdate) run() {
 	if info.UpdateAvailable {
 		logger.Debug("AutoUpdate: Update available", "current", info.CurrentVersion, "latest", info.LatestVersion)
 		a.updateAvailable.Store(true)
-		a.icon.SetText(updateIcon)
+		a.icon = gaba.NewDynamicStatusBarIcon(updateIcon)
+		AddIcon(a.Icon())
 	} else {
 		logger.Debug("AutoUpdate: Already up to date", "version", info.CurrentVersion)
 	}

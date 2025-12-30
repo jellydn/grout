@@ -124,7 +124,6 @@ func buildFSM(config *utils.Config, cfw constants.CFW, platforms []romm.Platform
 		if cfw != constants.NextUI {
 			autoUpdateOnce.Do(func() {
 				autoUpdate = utils.NewAutoUpdate(cfw)
-				utils.AddIcon(autoUpdate.Icon())
 				autoUpdate.Start()
 			})
 		}

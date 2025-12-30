@@ -168,7 +168,7 @@ func (s *GameListScreen) Draw(input GameListInput) (ScreenResult[GameListOutput]
 	for i, game := range displayGames {
 		imageFilename := ""
 		if input.Config.ShowBoxArt {
-			imageFilename = utils.GetCachedArtworkForRom(game)
+			imageFilename = utils.GetArtworkCachePath(game.PlatformSlug, game.ID)
 		}
 		menuItems[i] = gaba.MenuItem{
 			Text:          game.DisplayName,
