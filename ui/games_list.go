@@ -186,7 +186,7 @@ func (s *GameListScreen) Draw(input GameListInput) (ScreenResult[GameListOutput]
 	options.MultiSelectButton = buttons.VirtualButtonSelect
 	options.HelpButton = buttons.VirtualButtonMenu
 
-	if hasBIOS {
+	if hasBIOS && !utils.IsKidModeEnabled() {
 		options.SecondaryActionButton = buttons.VirtualButtonY
 	}
 
@@ -198,7 +198,7 @@ func (s *GameListScreen) Draw(input GameListInput) (ScreenResult[GameListOutput]
 		{ButtonName: i18n.Localize(&goi18n.Message{ID: "button_menu", Other: "Menu"}, nil), HelpText: i18n.Localize(&goi18n.Message{ID: "button_help", Other: "Help"}, nil)},
 	}
 
-	if hasBIOS {
+	if hasBIOS && !utils.IsKidModeEnabled() {
 		footerItems = append(footerItems, gaba.FooterHelpItem{ButtonName: "Y", HelpText: i18n.Localize(&goi18n.Message{ID: "button_bios", Other: "BIOS"}, nil)})
 	}
 

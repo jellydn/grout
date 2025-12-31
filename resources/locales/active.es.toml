@@ -349,6 +349,12 @@ other = "Depuración"
 hash = "sha1-7f2f6a15cf8da2b27e5a4af47b58e7ad71c0b3d9"
 other = "Error"
 
+[option_disabled]
+other = "Desactivado"
+
+[option_enabled]
+other = "Activado"
+
 [login_error_connection_refused]
 hash = "sha1-90890854b1679ae152ec1b4316cde81c1c7bdcff"
 other = "¡No se pudo conectar al host!\nPor favor, verifique que el nombre del host y el puerto sean correctos."
@@ -559,6 +565,9 @@ other = "General"
 [settings_info]
 hash = "sha1-539fd998d1d49832e77eec5bf350485f054da400"
 other = "Información de Grout"
+
+[settings_kid_mode]
+other = "Modo Niños"
 
 [settings_language]
 hash = "sha1-89b86ab0e66f527166d98df92ddbcf5416ed58f6"

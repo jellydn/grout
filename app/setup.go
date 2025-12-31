@@ -11,8 +11,10 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"time"
 
 	gaba "github.com/BrandonKowalski/gabagool/v2/pkg/gabagool"
+	buttons "github.com/BrandonKowalski/gabagool/v2/pkg/gabagool/constants"
 	"github.com/BrandonKowalski/gabagool/v2/pkg/gabagool/i18n"
 	goi18n "github.com/nicksnyder/go-i18n/v2/i18n"
 )
@@ -82,6 +84,25 @@ func setup() SetupResult {
 		LogFilename:          "grout.log",
 	})
 
+	gaba.RegisterChord("unlock-kid-mode", []buttons.VirtualButton{
+		buttons.VirtualButtonL1,
+		buttons.VirtualButtonR1,
+		buttons.VirtualButtonMenu,
+	}, gaba.ChordOptions{
+		Window: time.Millisecond * 1500,
+		OnTrigger: func() {
+			if utils.IsKidModeEnabled() {
+				utils.SetKidMode(false)
+				config, err := utils.LoadConfig()
+				if err == nil {
+					config.KidMode = false
+					utils.SaveConfig(config)
+				}
+				gaba.GetLogger().Info("Kid Mode unlocked")
+			}
+		},
+	})
+
 	gaba.SetLogLevel(slog.LevelDebug)
 	logger := gaba.GetLogger()
 
@@ -140,6 +161,28 @@ func setup() SetupResult {
 			logger.Error("Failed to set language", "error", err, "language", config.Language)
 		}
 	}
+
+	utils.InitKidMode(config)
+
+	if utils.IsKidModeEnabled() {
+		splashBytes, _ := resources.GetSplashImageBytes()
+		gaba.ProcessMessage("", gaba.ProcessMessageOptions{
+			ImageBytes:   splashBytes,
+			ImageWidth:   768,
+			ImageHeight:  540,
+			ProcessInput: true,
+		}, func() (interface{}, error) {
+			for i := 0; i < 20; i++ {
+				time.Sleep(100 * time.Millisecond)
+				if !utils.IsKidModeEnabled() {
+					break
+				}
+			}
+			return nil, nil
+		})
+	}
+
+	gaba.UnregisterCombo("unlock-kid-mode")
 
 	if config.DirectoryMappings == nil || len(config.DirectoryMappings) == 0 {
 		screen := ui.NewPlatformMappingScreen()
