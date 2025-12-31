@@ -93,12 +93,7 @@ func setup() SetupResult {
 		OnTrigger: func() {
 			if utils.IsKidModeEnabled() {
 				utils.SetKidMode(false)
-				config, err := utils.LoadConfig()
-				if err == nil {
-					config.KidMode = false
-					utils.SaveConfig(config)
-				}
-				gaba.GetLogger().Info("Kid Mode unlocked")
+				gaba.GetLogger().Info("Kid Mode unlocked for this session")
 			}
 		},
 	})
