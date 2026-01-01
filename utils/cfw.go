@@ -180,7 +180,6 @@ func RomFolderBase(path string) string {
 	case constants.NextUI:
 		return ParseTag(path)
 	case constants.Spruce:
-		// TODO: Is this correct for Spruce? To test
 		return path
 	default:
 		return path
