@@ -240,7 +240,7 @@ func BaseSavePath() string {
 	case constants.Knulli:
 		return filepath.Join(getBasePath(cfw), "saves")
 	case constants.Spruce:
-		return filepath.Join(getBasePath(cfw), "Saves")
+		return filepath.Join(getBasePath(cfw), "Saves", "saves")
 	}
 
 	return ""
