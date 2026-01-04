@@ -27,7 +27,7 @@ type PlatformRomCache struct {
 }
 
 type RomCache struct {
-	platforms map[string]*PlatformRomCache
+	platforms map[string]*PlatformRomCache // keyed by platform fs_slug
 	mu        sync.RWMutex
 }
 
@@ -44,8 +44,8 @@ func GetRomCacheDir() string {
 	return filepath.Join(wd, ".cache", "roms")
 }
 
-func getRomCacheFilePath(slug string) string {
-	return filepath.Join(GetRomCacheDir(), slug+".json")
+func getRomCacheFilePath(fsSlug string) string {
+	return filepath.Join(GetRomCacheDir(), fsSlug+".json")
 }
 
 func getRomCache() *RomCache {
@@ -57,40 +57,40 @@ func getRomCache() *RomCache {
 	return romCache
 }
 
-func (rc *RomCache) getPlatformCache(slug string) *PlatformRomCache {
+func (rc *RomCache) getPlatformCache(fsSlug string) *PlatformRomCache {
 	rc.mu.RLock()
-	pc, exists := rc.platforms[slug]
+	pc, exists := rc.platforms[fsSlug]
 	rc.mu.RUnlock()
 
 	if exists {
 		return pc
 	}
 
-	pc = rc.loadPlatform(slug)
+	pc = rc.loadPlatform(fsSlug)
 
 	rc.mu.Lock()
-	rc.platforms[slug] = pc
+	rc.platforms[fsSlug] = pc
 	rc.mu.Unlock()
 
 	return pc
 }
 
-func (rc *RomCache) loadPlatform(slug string) *PlatformRomCache {
+func (rc *RomCache) loadPlatform(fsSlug string) *PlatformRomCache {
 	logger := gaba.GetLogger()
 	pc := &PlatformRomCache{
 		Entries: make(map[string]RomCacheEntry),
 	}
 
-	data, err := os.ReadFile(getRomCacheFilePath(slug))
+	data, err := os.ReadFile(getRomCacheFilePath(fsSlug))
 	if err != nil {
 		if !os.IsNotExist(err) {
-			logger.Debug("Failed to read ROM cache", "slug", slug, "error", err)
+			logger.Debug("Failed to read ROM cache", "fsSlug", fsSlug, "error", err)
 		}
 		return pc
 	}
 
 	if err := json.Unmarshal(data, pc); err != nil {
-		logger.Debug("Failed to parse ROM cache", "slug", slug, "error", err)
+		logger.Debug("Failed to parse ROM cache", "fsSlug", fsSlug, "error", err)
 		return &PlatformRomCache{Entries: make(map[string]RomCacheEntry)}
 	}
 
@@ -98,11 +98,11 @@ func (rc *RomCache) loadPlatform(slug string) *PlatformRomCache {
 		pc.Entries = make(map[string]RomCacheEntry)
 	}
 
-	logger.Debug("Loaded ROM cache", "slug", slug, "entries", len(pc.Entries))
+	logger.Debug("Loaded ROM cache", "fsSlug", fsSlug, "entries", len(pc.Entries))
 	return pc
 }
 
-func (rc *RomCache) savePlatform(slug string, pc *PlatformRomCache) error {
+func (rc *RomCache) savePlatform(fsSlug string, pc *PlatformRomCache) error {
 	logger := gaba.GetLogger()
 
 	if err := os.MkdirAll(GetRomCacheDir(), 0755); err != nil {
@@ -114,17 +114,17 @@ func (rc *RomCache) savePlatform(slug string, pc *PlatformRomCache) error {
 		return err
 	}
 
-	if err := os.WriteFile(getRomCacheFilePath(slug), data, 0644); err != nil {
+	if err := os.WriteFile(getRomCacheFilePath(fsSlug), data, 0644); err != nil {
 		return err
 	}
 
-	logger.Debug("Saved ROM cache", "slug", slug, "entries", len(pc.Entries))
+	logger.Debug("Saved ROM cache", "fsSlug", fsSlug, "entries", len(pc.Entries))
 	return nil
 }
 
-func GetCachedRomIDByFilename(slug, filename string) (int, string, bool) {
+func GetCachedRomIDByFilename(fsSlug, filename string) (int, string, bool) {
 	rc := getRomCache()
-	pc := rc.getPlatformCache(slug)
+	pc := rc.getPlatformCache(fsSlug)
 
 	key := stripExtension(filename)
 
@@ -138,10 +138,10 @@ func GetCachedRomIDByFilename(slug, filename string) (int, string, bool) {
 	return 0, "", false
 }
 
-func StoreRomID(slug, filename string, romID int, romName string) {
+func StoreRomID(fsSlug, filename string, romID int, romName string) {
 	logger := gaba.GetLogger()
 	rc := getRomCache()
-	pc := rc.getPlatformCache(slug)
+	pc := rc.getPlatformCache(fsSlug)
 
 	key := stripExtension(filename)
 
@@ -159,8 +159,8 @@ func StoreRomID(slug, filename string, romID int, romName string) {
 	rc.mu.Unlock()
 
 	pcCopy := &PlatformRomCache{Entries: entriesCopy}
-	if err := rc.savePlatform(slug, pcCopy); err != nil {
-		logger.Debug("Failed to save ROM cache", "slug", slug, "error", err)
+	if err := rc.savePlatform(fsSlug, pcCopy); err != nil {
+		logger.Debug("Failed to save ROM cache", "fsSlug", fsSlug, "error", err)
 	}
 }
 

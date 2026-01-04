@@ -17,7 +17,7 @@ import (
 const backupTimestampFormat = "2006-01-02 15-04-05"
 
 type LocalSave struct {
-	Slug         string
+	FSSlug       string
 	Path         string
 	LastModified time.Time
 }
@@ -43,15 +43,15 @@ func (lc LocalSave) backup() error {
 	return fileutil.CopyFile(lc.Path, dest)
 }
 
-func ResolveSavePath(slug string, gameID int, config *internal.Config) (string, error) {
+func ResolveSavePath(fsSlug string, gameID int, config *internal.Config) (string, error) {
 	logger := gaba.GetLogger()
-	logger.Debug("ResolveSavePath called", "slug", slug, "gameID", gameID)
+	logger.Debug("ResolveSavePath called", "fsSlug", fsSlug, "gameID", gameID)
 	basePath := cfw.BaseSavePath()
 
-	emulatorFolders := cfw.EmulatorFoldersForSlug(slug)
+	emulatorFolders := cfw.EmulatorFoldersForFSSlug(fsSlug)
 
 	if len(emulatorFolders) == 0 {
-		return "", fmt.Errorf("no save folder mapping for slug: %s", slug)
+		return "", fmt.Errorf("no save folder mapping for fsSlug: %s", fsSlug)
 	}
 
 	selectedFolder := emulatorFolders[0]
@@ -60,7 +60,7 @@ func ResolveSavePath(slug string, gameID int, config *internal.Config) (string, 
 	// Priority 1: Check per-game override
 	if config != nil && gameID > 0 && config.GameSaveOverrides != nil {
 		if override, ok := config.GameSaveOverrides[gameID]; ok && override != "" {
-			// Verify the override is a valid folder for this slug
+			// Verify the override is a valid folder for this fsSlug
 			for _, folder := range emulatorFolders {
 				if folder == override {
 					selectedFolder = override
@@ -68,21 +68,21 @@ func ResolveSavePath(slug string, gameID int, config *internal.Config) (string, 
 					goto createDir
 				}
 			}
-			logger.Warn("Per-game override not valid for slug, ignoring", "gameID", gameID, "override", override, "slug", slug)
+			logger.Warn("Per-game override not valid for fsSlug, ignoring", "gameID", gameID, "override", override, "fsSlug", fsSlug)
 		}
 	}
 
 	// Priority 2: Check platform-level mapping from config
 	if config != nil && config.SaveDirectoryMappings != nil {
-		if mapping, ok := config.SaveDirectoryMappings[slug]; ok && mapping != "" {
+		if mapping, ok := config.SaveDirectoryMappings[fsSlug]; ok && mapping != "" {
 			for _, folder := range emulatorFolders {
 				if folder == mapping {
 					selectedFolder = mapping
-					logger.Debug("Using platform mapping from config", "slug", slug, "folder", mapping)
+					logger.Debug("Using platform mapping from config", "fsSlug", fsSlug, "folder", mapping)
 					goto createDir
 				}
 			}
-			logger.Warn("Platform mapping not valid for slug, ignoring", "mapping", mapping, "slug", slug)
+			logger.Warn("Platform mapping not valid for fsSlug, ignoring", "mapping", mapping, "fsSlug", fsSlug)
 		}
 	}
 
@@ -98,14 +98,14 @@ createDir:
 	return saveDir, nil
 }
 
-func findSaveFiles(slug string) []LocalSave {
+func findSaveFiles(fsSlug string) []LocalSave {
 	logger := gaba.GetLogger()
 
 	basePath := cfw.BaseSavePath()
-	emulatorFolders := cfw.EmulatorFoldersForSlug(slug)
+	emulatorFolders := cfw.EmulatorFoldersForFSSlug(fsSlug)
 
 	if len(emulatorFolders) == 0 {
-		logger.Debug("No save folder mapping for slug", "slug", slug)
+		logger.Debug("No save folder mapping for fsSlug", "fsSlug", fsSlug)
 		return []LocalSave{}
 	}
 
@@ -153,7 +153,7 @@ func findSaveFiles(slug string) []LocalSave {
 				}
 
 				saveFile := LocalSave{
-					Slug:         slug,
+					FSSlug:       fsSlug,
 					Path:         savePath,
 					LastModified: fileInfo.ModTime(),
 				}

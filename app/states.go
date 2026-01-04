@@ -1,6 +1,7 @@
 package main
 
 import (
+	"grout/artwork"
 	"grout/cache"
 	"grout/cfw"
 	"grout/constants"
@@ -101,7 +102,7 @@ func buildFSM(config *internal.Config, c cfw.CFW, platforms []romm.Platform, qui
 	cache.InitRefresh(config.Hosts[0], config, platforms)
 
 	// Validate artwork cache in background
-	go cache.ValidateArtworkCache()
+	go artwork.ValidateCache()
 
 	gaba.AddState(fsm, platformSelection, func(ctx *gaba.Context) (ui.PlatformSelectionOutput, gaba.ExitCode) {
 		platforms, _ := gaba.Get[[]romm.Platform](ctx)

@@ -1,4 +1,4 @@
-package cache
+package artwork
 
 import (
 	"grout/internal/fileutil"
@@ -10,7 +10,7 @@ import (
 	gaba "github.com/BrandonKowalski/gabagool/v2/pkg/gabagool"
 )
 
-func GetArtworkCacheDir() string {
+func GetCacheDir() string {
 	wd, err := os.Getwd()
 	if err != nil {
 		return filepath.Join(os.TempDir(), ".cache", "artwork")
@@ -18,8 +18,8 @@ func GetArtworkCacheDir() string {
 	return filepath.Join(wd, ".cache", "artwork")
 }
 
-func ClearArtworkCache() error {
-	cacheDir := GetArtworkCacheDir()
+func ClearCache() error {
+	cacheDir := GetCacheDir()
 
 	if !fileutil.FileExists(cacheDir) {
 		return nil
@@ -28,8 +28,8 @@ func ClearArtworkCache() error {
 	return os.RemoveAll(cacheDir)
 }
 
-func HasArtworkCache() bool {
-	cacheDir := GetArtworkCacheDir()
+func HasCache() bool {
+	cacheDir := GetCacheDir()
 
 	entries, err := os.ReadDir(cacheDir)
 	if err != nil {
@@ -39,23 +39,23 @@ func HasArtworkCache() bool {
 	return len(entries) > 0
 }
 
-func GetArtworkCachePath(platformSlug string, romID int) string {
-	return filepath.Join(GetArtworkCacheDir(), platformSlug, strconv.Itoa(romID)+".png")
+func GetCachePath(platformFSSlug string, romID int) string {
+	return filepath.Join(GetCacheDir(), platformFSSlug, strconv.Itoa(romID)+".png")
 }
 
-func ArtworkExists(platformSlug string, romID int) bool {
-	return fileutil.FileExists(GetArtworkCachePath(platformSlug, romID))
+func Exists(platformFSSlug string, romID int) bool {
+	return fileutil.FileExists(GetCachePath(platformFSSlug, romID))
 }
 
-func EnsureArtworkCacheDir(platformSlug string) error {
-	dir := filepath.Join(GetArtworkCacheDir(), platformSlug)
+func EnsureCacheDir(platformFSSlug string) error {
+	dir := filepath.Join(GetCacheDir(), platformFSSlug)
 	return os.MkdirAll(dir, 0755)
 }
 
-func ValidateArtworkCache() {
+func ValidateCache() {
 	go func() {
 		logger := gaba.GetLogger()
-		cacheDir := GetArtworkCacheDir()
+		cacheDir := GetCacheDir()
 
 		platformDirs, err := os.ReadDir(cacheDir)
 		if err != nil {

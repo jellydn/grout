@@ -94,7 +94,12 @@ func (s *PlatformMappingScreen) Draw(input PlatformMappingInput) (ScreenResult[P
 
 func (s *PlatformMappingScreen) fetchPlatforms(input PlatformMappingInput) ([]romm.Platform, error) {
 	client := romm.NewClientFromHost(input.Host, input.ApiTimeout)
-	return client.GetPlatforms()
+	platforms, err := client.GetPlatforms()
+	if err != nil {
+		return nil, err
+	}
+	romm.DisambiguatePlatformNames(platforms)
+	return platforms, nil
 }
 
 func (s *PlatformMappingScreen) getRomDirectories(romDir string) ([]os.DirEntry, error) {
@@ -122,7 +127,7 @@ func (s *PlatformMappingScreen) buildMappingOptions(
 		options = append(options, gaba.ItemWithOptions{
 			Item: gaba.MenuItem{
 				Text:     platform.Name,
-				Metadata: platform.Slug,
+				Metadata: platform.FSSlug,
 			},
 			Options:        platformOptions,
 			SelectedOption: selectedIndex,
@@ -140,7 +145,7 @@ func (s *PlatformMappingScreen) buildPlatformOptions(
 	options := []gaba.Option{{DisplayName: i18n.Localize(&goi18n.Message{ID: "common_skip", Other: "Skip"}, nil), Value: ""}}
 	selectedIndex := 0
 
-	cfwDirectories := s.getCFWDirectoriesForPlatform(platform.Slug, input.CFW)
+	cfwDirectories := s.getCFWDirectoriesForPlatform(platform.FSSlug, input.CFW)
 
 	createOptionAdded := false
 	for _, cfwDir := range cfwDirectories {
@@ -197,23 +202,26 @@ func (s *PlatformMappingScreen) directoryMatchesPlatform(
 	dirName string,
 	c cfw.CFW,
 ) bool {
-	cfwSlug := cfw.RomMSlugToCFW(platform.Slug)
+	cfwFSSlug := cfw.RomMFSSlugToCFW(platform.FSSlug)
 	romFolderBase := cfw.RomFolderBase(dirName, stringutil.ParseTag)
 
 	switch c {
 	case cfw.NextUI:
-		return stringutil.ParseTag(cfwSlug) == romFolderBase
+		return stringutil.ParseTag(cfwFSSlug) == romFolderBase
 	default:
-		return cfwSlug == romFolderBase
+		return cfwFSSlug == romFolderBase
 	}
 }
 
-func (s *PlatformMappingScreen) getCFWDirectoriesForPlatform(slug string, c cfw.CFW) []string {
+func (s *PlatformMappingScreen) getCFWDirectoriesForPlatform(fsSlug string, c cfw.CFW) []string {
 	platformMap := cfw.GetPlatformMap(c)
-	if platformMap == nil {
-		return []string{}
+	if platformMap != nil {
+		if dirs, ok := platformMap[fsSlug]; ok && len(dirs) > 0 {
+			return dirs
+		}
 	}
-	return platformMap[slug]
+	// Fall back to FSSlug if no CFW-specific mapping exists
+	return []string{fsSlug}
 }
 
 func (s *PlatformMappingScreen) directoriesMatch(dir1, dir2 string, c cfw.CFW) bool {

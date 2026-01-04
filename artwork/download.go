@@ -1,8 +1,7 @@
-package utils
+package artwork
 
 import (
 	"fmt"
-	"grout/cache"
 	"grout/constants"
 	"grout/internal/imageutil"
 	"grout/romm"
@@ -16,13 +15,13 @@ import (
 	gaba "github.com/BrandonKowalski/gabagool/v2/pkg/gabagool"
 )
 
-func GetMissingArtwork(roms []romm.Rom) []romm.Rom {
+func GetMissing(roms []romm.Rom) []romm.Rom {
 	var missing []romm.Rom
 	for _, rom := range roms {
-		if !HasArtworkURL(rom) {
+		if !HasURL(rom) {
 			continue
 		}
-		if !cache.ArtworkExists(rom.PlatformSlug, rom.ID) {
+		if !Exists(rom.PlatformFSSlug, rom.ID) {
 			missing = append(missing, rom)
 		}
 	}
@@ -57,15 +56,15 @@ func CheckRemoteLastModified(url string, authHeader string) (time.Time, error) {
 	return http.ParseTime(lastModified)
 }
 
-func ArtworkNeedsUpdate(rom romm.Rom, host romm.Host) bool {
-	cachePath := cache.GetArtworkCachePath(rom.PlatformSlug, rom.ID)
+func NeedsUpdate(rom romm.Rom, host romm.Host) bool {
+	cachePath := GetCachePath(rom.PlatformFSSlug, rom.ID)
 
 	localInfo, err := os.Stat(cachePath)
 	if err != nil {
 		return true
 	}
 
-	coverPath := GetArtworkCoverPath(rom)
+	coverPath := GetCoverPath(rom)
 	if coverPath == "" {
 		return false
 	}
@@ -81,24 +80,24 @@ func ArtworkNeedsUpdate(rom romm.Rom, host romm.Host) bool {
 	return remoteModTime.After(localInfo.ModTime())
 }
 
-func GetOutdatedArtwork(roms []romm.Rom, host romm.Host) []romm.Rom {
+func GetOutdated(roms []romm.Rom, host romm.Host) []romm.Rom {
 	var outdated []romm.Rom
 	for _, rom := range roms {
-		if !HasArtworkURL(rom) {
+		if !HasURL(rom) {
 			continue
 		}
-		if cache.ArtworkExists(rom.PlatformSlug, rom.ID) && ArtworkNeedsUpdate(rom, host) {
+		if Exists(rom.PlatformFSSlug, rom.ID) && NeedsUpdate(rom, host) {
 			outdated = append(outdated, rom)
 		}
 	}
 	return outdated
 }
 
-func HasArtworkURL(rom romm.Rom) bool {
+func HasURL(rom romm.Rom) bool {
 	return rom.PathCoverSmall != "" || rom.PathCoverLarge != "" || rom.URLCover != ""
 }
 
-func GetArtworkCoverPath(rom romm.Rom) string {
+func GetCoverPath(rom romm.Rom) string {
 	if rom.PathCoverSmall != "" {
 		return rom.PathCoverSmall
 	}
@@ -108,19 +107,19 @@ func GetArtworkCoverPath(rom romm.Rom) string {
 	return rom.URLCover
 }
 
-func DownloadAndCacheArtwork(rom romm.Rom, host romm.Host) error {
+func DownloadAndCache(rom romm.Rom, host romm.Host) error {
 	logger := gaba.GetLogger()
 
-	coverPath := GetArtworkCoverPath(rom)
+	coverPath := GetCoverPath(rom)
 	if coverPath == "" {
 		return nil // No artwork available
 	}
 
-	if err := cache.EnsureArtworkCacheDir(rom.PlatformSlug); err != nil {
+	if err := EnsureCacheDir(rom.PlatformFSSlug); err != nil {
 		return fmt.Errorf("failed to create cache directory: %w", err)
 	}
 
-	cachePath := cache.GetArtworkCachePath(rom.PlatformSlug, rom.ID)
+	cachePath := GetCachePath(rom.PlatformFSSlug, rom.ID)
 
 	artURL := host.URL() + coverPath
 	artURL = strings.ReplaceAll(artURL, " ", "%20")
@@ -174,16 +173,16 @@ func DownloadAndCacheArtwork(rom romm.Rom, host romm.Host) error {
 	return nil
 }
 
-func SyncArtworkInBackground(host romm.Host, games []romm.Rom) {
+func SyncInBackground(host romm.Host, games []romm.Rom) {
 	logger := gaba.GetLogger()
 
-	missing := GetMissingArtwork(games)
+	missing := GetMissing(games)
 	if len(missing) == 0 {
 		return
 	}
 
 	for _, rom := range missing {
-		if err := DownloadAndCacheArtwork(rom, host); err != nil {
+		if err := DownloadAndCache(rom, host); err != nil {
 			logger.Debug("Failed to download artwork", "rom", rom.Name, "error", err)
 		}
 	}

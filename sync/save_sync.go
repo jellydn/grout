@@ -18,7 +18,7 @@ import (
 type SaveSync struct {
 	RomID    int
 	RomName  string
-	Slug     string
+	FSSlug   string
 	GameBase string
 	Local    *LocalSave
 	Remote   romm.Save
@@ -45,7 +45,7 @@ type SyncResult struct {
 
 type UnmatchedSave struct {
 	SavePath string
-	Slug     string
+	FSSlug   string
 }
 
 func (s *SaveSync) Execute(host romm.Host, config *internal.Config) SyncResult {
@@ -118,7 +118,7 @@ func (s *SaveSync) download(host romm.Host, config *internal.Config) (string, er
 		destDir = filepath.Dir(s.Local.Path)
 	} else {
 		var err error
-		destDir, err = ResolveSavePath(s.Slug, s.RomID, config)
+		destDir, err = ResolveSavePath(s.FSSlug, s.RomID, config)
 		if err != nil {
 			return "", fmt.Errorf("cannot determine save location: %w", err)
 		}
@@ -197,8 +197,8 @@ func lookupRomID(romFile *LocalRomFile, romsByFilename map[string]romm.Rom) (int
 	logger := gaba.GetLogger()
 
 	// Check cache first
-	if romID, romName, found := cache.GetCachedRomIDByFilename(romFile.Slug, romFile.FileName); found {
-		logger.Debug("ROM lookup from cache", "slug", romFile.Slug, "file", romFile.FileName, "romID", romID, "name", romName)
+	if romID, romName, found := cache.GetCachedRomIDByFilename(romFile.FSSlug, romFile.FileName); found {
+		logger.Debug("ROM lookup from cache", "fsSlug", romFile.FSSlug, "file", romFile.FileName, "romID", romID, "name", romName)
 		return romID, romName
 	}
 
@@ -206,12 +206,12 @@ func lookupRomID(romFile *LocalRomFile, romsByFilename map[string]romm.Rom) (int
 	key := stringutil.StripExtension(romFile.FileName)
 	if rom, found := romsByFilename[key]; found {
 		// Cache the result for next time
-		cache.StoreRomID(romFile.Slug, romFile.FileName, rom.ID, rom.Name)
-		logger.Debug("ROM lookup from RomM", "slug", romFile.Slug, "file", romFile.FileName, "romID", rom.ID, "name", rom.Name)
+		cache.StoreRomID(romFile.FSSlug, romFile.FileName, rom.ID, rom.Name)
+		logger.Debug("ROM lookup from RomM", "fsSlug", romFile.FSSlug, "file", romFile.FileName, "romID", rom.ID, "name", rom.Name)
 		return rom.ID, rom.Name
 	}
 
-	logger.Debug("No ROM found for file", "slug", romFile.Slug, "file", romFile.FileName)
+	logger.Debug("No ROM found for file", "fsSlug", romFile.FSSlug, "file", romFile.FileName)
 	return 0, ""
 }
 
@@ -228,21 +228,21 @@ func FindSaveSyncsFromScan(host romm.Host, config *internal.Config, scanLocal Lo
 
 	logger.Debug("FindSaveSyncs: Scanned local ROMs", "platformCount", len(scanLocal))
 
-	// Get all platforms to build slug -> platformID map
+	// Get all platforms to build fsSlug -> platformID map
 	platforms, err := rc.GetPlatforms()
 	if err != nil {
 		logger.Error("FindSaveSyncs: Could not retrieve platforms", "error", err)
 		return []SaveSync{}, nil, err
 	}
 
-	slugToPlatformID := make(map[string]int)
+	fsSlugToPlatformID := make(map[string]int)
 	for _, p := range platforms {
-		slugToPlatformID[p.Slug] = p.ID
+		fsSlugToPlatformID[p.FSSlug] = p.ID
 	}
 
 	// Fetch saves and ROMs per platform in parallel
 	type platformFetchResult struct {
-		slug     string
+		fsSlug   string
 		saves    []romm.Save
 		roms     map[string]romm.Rom
 		hasError bool
@@ -251,32 +251,32 @@ func FindSaveSyncsFromScan(host romm.Host, config *internal.Config, scanLocal Lo
 	resultChan := make(chan platformFetchResult, len(scanLocal))
 	var wg gosync.WaitGroup
 
-	for slug := range scanLocal {
-		platformID, ok := slugToPlatformID[slug]
+	for fsSlug := range scanLocal {
+		platformID, ok := fsSlugToPlatformID[fsSlug]
 		if !ok {
-			logger.Debug("FindSaveSyncs: No platform ID for slug", "slug", slug)
+			logger.Debug("FindSaveSyncs: No platform ID for fsSlug", "fsSlug", fsSlug)
 			continue
 		}
 
 		wg.Add(1)
-		go func(slug string, platformID int) {
+		go func(fsSlug string, platformID int) {
 			defer wg.Done()
 
 			result := platformFetchResult{
-				slug: slug,
-				roms: make(map[string]romm.Rom),
+				fsSlug: fsSlug,
+				roms:   make(map[string]romm.Rom),
 			}
 
 			// Fetch saves for this platform
 			platformSaves, err := rc.GetSaves(romm.SaveQuery{PlatformID: platformID})
 			if err != nil {
-				logger.Warn("FindSaveSyncs: Could not retrieve saves for platform", "slug", slug, "error", err)
+				logger.Warn("FindSaveSyncs: Could not retrieve saves for platform", "fsSlug", fsSlug, "error", err)
 				result.hasError = true
 				resultChan <- result
 				return
 			}
 			result.saves = platformSaves
-			logger.Debug("FindSaveSyncs: Retrieved saves for platform", "slug", slug, "count", len(platformSaves))
+			logger.Debug("FindSaveSyncs: Retrieved saves for platform", "fsSlug", fsSlug, "count", len(platformSaves))
 
 			// Fetch all ROMs for this platform to build filename map
 			page := 1
@@ -287,7 +287,7 @@ func FindSaveSyncsFromScan(host romm.Host, config *internal.Config, scanLocal Lo
 					Limit:      100,
 				})
 				if err != nil {
-					logger.Warn("FindSaveSyncs: Could not retrieve ROMs for platform", "slug", slug, "error", err)
+					logger.Warn("FindSaveSyncs: Could not retrieve ROMs for platform", "fsSlug", fsSlug, "error", err)
 					break
 				}
 
@@ -301,10 +301,10 @@ func FindSaveSyncsFromScan(host romm.Host, config *internal.Config, scanLocal Lo
 				}
 				page++
 			}
-			logger.Debug("FindSaveSyncs: Built ROM filename map", "slug", slug, "count", len(result.roms))
+			logger.Debug("FindSaveSyncs: Built ROM filename map", "fsSlug", fsSlug, "count", len(result.roms))
 
 			resultChan <- result
-		}(slug, platformID)
+		}(fsSlug, platformID)
 	}
 
 	go func() {
@@ -325,19 +325,19 @@ func FindSaveSyncsFromScan(host romm.Host, config *internal.Config, scanLocal Lo
 			savesByRomID[s.RomID] = append(savesByRomID[s.RomID], s)
 		}
 
-		romsByFilename[result.slug] = result.roms
+		romsByFilename[result.fsSlug] = result.roms
 	}
 
 	// Match local ROMs to remote ROMs by filename
 	var unmatched []UnmatchedSave
-	for slug, localRoms := range scanLocal {
-		platformRoms := romsByFilename[slug]
+	for fsSlug, localRoms := range scanLocal {
+		platformRoms := romsByFilename[fsSlug]
 		if platformRoms == nil {
 			platformRoms = make(map[string]romm.Rom)
 		}
 
 		for idx := range localRoms {
-			romFile := &scanLocal[slug][idx]
+			romFile := &scanLocal[fsSlug][idx]
 
 			// Skip if no save file and no remote saves exist
 			if romFile.SaveFile == nil && len(savesByRomID) == 0 {
@@ -350,12 +350,12 @@ func FindSaveSyncsFromScan(host romm.Host, config *internal.Config, scanLocal Lo
 				if romFile.SaveFile != nil {
 					unmatched = append(unmatched, UnmatchedSave{
 						SavePath: romFile.SaveFile.Path,
-						Slug:     slug,
+						FSSlug:   fsSlug,
 					})
 					logger.Info("Save has local ROM but not in RomM",
 						"save", filepath.Base(romFile.SaveFile.Path),
 						"romFile", romFile.FileName,
-						"slug", slug)
+						"fsSlug", fsSlug)
 				}
 				continue
 			}
@@ -371,9 +371,9 @@ func FindSaveSyncsFromScan(host romm.Host, config *internal.Config, scanLocal Lo
 	}
 
 	// Build sync list from ROMs that need syncing
-	// Use a map to deduplicate by save file path (multiple slugs may share saves)
+	// Use a map to deduplicate by save file path (multiple fs_slugs may share saves)
 	syncMap := make(map[string]SaveSync) // key: save file path or romID for downloads
-	for slug, roms := range scanLocal {
+	for fsSlug, roms := range scanLocal {
 		for _, r := range roms {
 			if r.RomID > 0 {
 				logger.Debug("Evaluating ROM for sync",
@@ -396,7 +396,7 @@ func FindSaveSyncsFromScan(host romm.Host, config *internal.Config, scanLocal Lo
 					key = fmt.Sprintf("download_%d", r.RomID)
 				}
 
-				// Skip if already added (happens when multiple slugs share same save dir)
+				// Skip if already added (happens when multiple fs_slugs share same save dir)
 				if _, exists := syncMap[key]; exists {
 					continue
 				}
@@ -404,7 +404,7 @@ func FindSaveSyncsFromScan(host romm.Host, config *internal.Config, scanLocal Lo
 				syncMap[key] = SaveSync{
 					RomID:    r.RomID,
 					RomName:  r.RomName,
-					Slug:     slug,
+					FSSlug:   fsSlug,
 					GameBase: baseName,
 					Local:    r.SaveFile,
 					Remote:   r.lastRemoteSave(),

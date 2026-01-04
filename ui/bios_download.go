@@ -83,7 +83,7 @@ func (s *BIOSDownloadScreen) draw(input BIOSDownloadInput) (ScreenResult[BIOSDow
 	logger.Debug("Fetched firmware from RomM", "count", len(firmwareList), "platform_id", input.Platform.ID)
 
 	// Try to get BIOS metadata to enrich the firmware list (optional)
-	biosFiles := utils.GetBIOSFilesForPlatform(input.Platform.Slug)
+	biosFiles := utils.GetBIOSFilesForPlatform(input.Platform.FSSlug)
 
 	// Build metadata lookup by filename for enrichment (case-insensitive)
 	biosMetadataByFileName := make(map[string]constants.BIOSFile)
@@ -135,7 +135,7 @@ func (s *BIOSDownloadScreen) draw(input BIOSDownloadInput) (ScreenResult[BIOSDow
 
 		if item.metadata != nil {
 			// We have metadata - show enriched information
-			status := utils.CheckBIOSFileStatus(*item.metadata, input.Platform.Slug)
+			status := utils.CheckBIOSFileStatus(*item.metadata, input.Platform.FSSlug)
 
 			var statusText string
 			switch status.Status {
@@ -282,7 +282,7 @@ func (s *BIOSDownloadScreen) draw(input BIOSDownloadInput) (ScreenResult[BIOSDow
 		// Save the file
 		if info.metadata != nil {
 			// We have metadata - use SaveBIOSFile to handle subdirectories
-			if err := utils.SaveBIOSFile(*info.metadata, input.Platform.Slug, data); err != nil {
+			if err := utils.SaveBIOSFile(*info.metadata, input.Platform.FSSlug, data); err != nil {
 				logger.Error("Failed to save BIOS file", "file", info.metadata.FileName, "error", err)
 				continue
 			}

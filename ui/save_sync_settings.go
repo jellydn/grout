@@ -75,15 +75,15 @@ func (s *SaveSyncSettingsScreen) Draw(input SaveSyncSettingsInput) (ScreenResult
 func (s *SaveSyncSettingsScreen) buildMenuItems(config *internal.Config) []gaba.ItemWithOptions {
 	items := make([]gaba.ItemWithOptions, 0)
 
-	// Get all platform slugs from directory mappings
-	slugs := make([]string, 0, len(config.DirectoryMappings))
-	for slug := range config.DirectoryMappings {
-		slugs = append(slugs, slug)
+	// Get all platform fsSlugs from directory mappings
+	fsSlugs := make([]string, 0, len(config.DirectoryMappings))
+	for fsSlug := range config.DirectoryMappings {
+		fsSlugs = append(fsSlugs, fsSlug)
 	}
-	sort.Strings(slugs)
+	sort.Strings(fsSlugs)
 
-	for _, slug := range slugs {
-		saveDirectories := cfw.EmulatorFoldersForSlug(slug)
+	for _, fsSlug := range fsSlugs {
+		saveDirectories := cfw.EmulatorFoldersForFSSlug(fsSlug)
 		if len(saveDirectories) == 0 {
 			continue
 		}
@@ -107,7 +107,7 @@ func (s *SaveSyncSettingsScreen) buildMenuItems(config *internal.Config) []gaba.
 		// Determine currently selected option
 		selectedIndex := 0
 		if config.SaveDirectoryMappings != nil {
-			if currentMapping, ok := config.SaveDirectoryMappings[slug]; ok && currentMapping != "" {
+			if currentMapping, ok := config.SaveDirectoryMappings[fsSlug]; ok && currentMapping != "" {
 				for i, opt := range options {
 					if val, ok := opt.Value.(string); ok && val == currentMapping {
 						selectedIndex = i
@@ -118,7 +118,7 @@ func (s *SaveSyncSettingsScreen) buildMenuItems(config *internal.Config) []gaba.
 		}
 
 		items = append(items, gaba.ItemWithOptions{
-			Item:           gaba.MenuItem{Text: slug},
+			Item:           gaba.MenuItem{Text: fsSlug},
 			Options:        options,
 			SelectedOption: selectedIndex,
 		})
@@ -133,13 +133,13 @@ func (s *SaveSyncSettingsScreen) applySettings(config *internal.Config, items []
 	}
 
 	for _, item := range items {
-		slug := item.Item.Text
+		fsSlug := item.Item.Text
 		if val, ok := item.Options[item.SelectedOption].Value.(string); ok {
 			if val == "" {
 				// Remove from map if set to default
-				delete(config.SaveDirectoryMappings, slug)
+				delete(config.SaveDirectoryMappings, fsSlug)
 			} else {
-				config.SaveDirectoryMappings[slug] = val
+				config.SaveDirectoryMappings[fsSlug] = val
 			}
 		}
 	}

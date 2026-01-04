@@ -154,9 +154,9 @@ func (s *DownloadScreen) draw(input downloadInput) (ScreenResult[downloadOutput]
 		gamePlatform := input.Platform
 		if input.Platform.ID == 0 && g.PlatformID != 0 {
 			gamePlatform = romm.Platform{
-				ID:   g.PlatformID,
-				Slug: g.PlatformSlug,
-				Name: g.PlatformDisplayName,
+				ID:     g.PlatformID,
+				FSSlug: g.PlatformFSSlug,
+				Name:   g.PlatformDisplayName,
 			}
 		}
 
@@ -219,9 +219,9 @@ func (s *DownloadScreen) draw(input downloadInput) (ScreenResult[downloadOutput]
 			gamePlatform := input.Platform
 			if input.Platform.ID == 0 && g.PlatformID != 0 {
 				gamePlatform = romm.Platform{
-					ID:   g.PlatformID,
-					Slug: g.PlatformSlug,
-					Name: g.PlatformDisplayName,
+					ID:     g.PlatformID,
+					FSSlug: g.PlatformFSSlug,
+					Name:   g.PlatformDisplayName,
 				}
 			}
 
@@ -276,7 +276,7 @@ func (s *DownloadScreen) draw(input downloadInput) (ScreenResult[downloadOutput]
 				cacheFilename = g.Files[0].FileName
 			}
 			if cacheFilename != "" {
-				cache.StoreRomID(g.PlatformSlug, cacheFilename, g.ID, g.Name)
+				cache.StoreRomID(g.PlatformFSSlug, cacheFilename, g.ID, g.Name)
 				logger.Debug("Cached ROM filename", "name", g.Name, "filename", cacheFilename, "id", g.ID)
 			}
 		}
@@ -316,9 +316,9 @@ func (s *DownloadScreen) buildDownloads(config internal.Config, host romm.Host, 
 		gamePlatform := platform
 		if platform.ID == 0 && g.PlatformID != 0 {
 			gamePlatform = romm.Platform{
-				ID:   g.PlatformID,
-				Slug: g.PlatformSlug,
-				Name: g.PlatformDisplayName,
+				ID:     g.PlatformID,
+				FSSlug: g.PlatformFSSlug,
+				Name:   g.PlatformDisplayName,
 			}
 		}
 

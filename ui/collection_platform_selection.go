@@ -140,7 +140,7 @@ func (s *CollectionPlatformSelectionScreen) Draw(input CollectionPlatformSelecti
 		// Filter games to only include those with mapped platforms
 		filteredGames := make([]romm.Rom, 0)
 		for _, game := range allGames {
-			if _, hasMapping := input.Config.DirectoryMappings[game.PlatformSlug]; hasMapping {
+			if _, hasMapping := input.Config.DirectoryMappings[game.PlatformFSSlug]; hasMapping {
 				filteredGames = append(filteredGames, game)
 			}
 		}
@@ -153,11 +153,11 @@ func (s *CollectionPlatformSelectionScreen) Draw(input CollectionPlatformSelecti
 	platformMap := make(map[int]romm.Platform)
 	for _, game := range allGames {
 		if _, exists := platformMap[game.PlatformID]; !exists {
-			if _, hasMapping := input.Config.DirectoryMappings[game.PlatformSlug]; hasMapping {
+			if _, hasMapping := input.Config.DirectoryMappings[game.PlatformFSSlug]; hasMapping {
 				platformMap[game.PlatformID] = romm.Platform{
-					ID:   game.PlatformID,
-					Slug: game.PlatformSlug,
-					Name: game.PlatformDisplayName,
+					ID:     game.PlatformID,
+					FSSlug: game.PlatformFSSlug,
+					Name:   game.PlatformDisplayName,
 				}
 			}
 		}
@@ -186,7 +186,7 @@ func (s *CollectionPlatformSelectionScreen) Draw(input CollectionPlatformSelecti
 
 	gameCounts := make(map[int]int)
 	for _, game := range allGames {
-		if _, hasMapping := input.Config.DirectoryMappings[game.PlatformSlug]; hasMapping {
+		if _, hasMapping := input.Config.DirectoryMappings[game.PlatformFSSlug]; hasMapping {
 			gameCounts[game.PlatformID]++
 		}
 	}

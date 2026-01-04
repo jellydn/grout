@@ -10,6 +10,7 @@ type Platform struct {
 	Slug                string     `json:"slug"`
 	FSSlug              string     `json:"fs_slug"`
 	Name                string     `json:"name"`
+	CustomName          string     `json:"custom_name"`
 	ShortName           string     `json:"short_name"`
 	LogoPath            string     `json:"logo_path"`
 	ROMCount            int        `json:"rom_count"`
@@ -23,6 +24,14 @@ type Platform struct {
 	SupportedExtensions []string   `json:"supported_extensions"`
 }
 
+// DisplayName returns the platform's display name, preferring CustomName if set
+func (p Platform) DisplayName() string {
+	if p.CustomName != "" {
+		return p.CustomName
+	}
+	return p.Name
+}
+
 func (c *Client) GetPlatforms() ([]Platform, error) {
 	var platforms []Platform
 	err := c.doRequest("GET", endpointPlatforms, nil, nil, &platforms)
@@ -34,4 +43,23 @@ func (c *Client) GetPlatform(id int) (Platform, error) {
 	path := fmt.Sprintf(endpointPlatformByID, id)
 	err := c.doRequest("GET", path, nil, nil, &platform)
 	return platform, err
+}
+
+// DisambiguatePlatformNames sets each platform's Name field to its display name
+// (preferring CustomName if set), and appends the FSSlug when multiple platforms
+// share the same display name (e.g., "Arcade" becomes "Arcade (fbneo)")
+func DisambiguatePlatformNames(platforms []Platform) {
+	// First pass: set Name to DisplayName and count occurrences
+	nameCounts := make(map[string]int)
+	for i := range platforms {
+		platforms[i].Name = platforms[i].DisplayName()
+		nameCounts[platforms[i].Name]++
+	}
+
+	// Second pass: append FSSlug to names that appear more than once
+	for i := range platforms {
+		if nameCounts[platforms[i].Name] > 1 {
+			platforms[i].Name = fmt.Sprintf("%s (%s)", platforms[i].Name, platforms[i].FSSlug)
+		}
+	}
 }

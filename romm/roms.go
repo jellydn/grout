@@ -27,6 +27,7 @@ type Rom struct {
 	GameListID          any    `json:"gamelist_id,omitempty"`
 	PlatformID          int    `json:"platform_id,omitempty"`
 	PlatformSlug        string `json:"platform_slug,omitempty"`
+	PlatformFSSlug      string `json:"platform_fs_slug,omitempty"`
 	PlatformCustomName  string `json:"platform_custom_name,omitempty"`
 	PlatformDisplayName string `json:"platform_display_name,omitempty"`
 	FsName              string `json:"fs_name,omitempty"`
@@ -187,14 +188,14 @@ func (r Rom) GetGamePage(host Host) string {
 }
 
 func (r Rom) GetLocalPath(resolver PlatformDirResolver) string {
-	if r.PlatformSlug == "" {
+	if r.PlatformFSSlug == "" {
 		return ""
 	}
 
 	platform := Platform{
-		ID:   r.PlatformID,
-		Slug: r.PlatformSlug,
-		Name: r.PlatformDisplayName,
+		ID:     r.PlatformID,
+		FSSlug: r.PlatformFSSlug,
+		Name:   r.PlatformDisplayName,
 	}
 
 	romDirectory := resolver.GetPlatformRomDirectory(platform)

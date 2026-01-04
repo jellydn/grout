@@ -12,7 +12,7 @@ import (
 )
 
 type EmulatorSelectionInput struct {
-	PlatformSlug         string
+	PlatformFSSlug       string
 	PlatformName         string
 	EmulatorChoices      []EmulatorChoice
 	LastSelectedIndex    int

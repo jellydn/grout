@@ -154,10 +154,10 @@ func SortPlatformsByOrder(platforms []romm.Platform, order []string) []romm.Plat
 		return SortPlatformsAlphabetically(platforms)
 	}
 
-	// Create a map of slug to platform for quick lookup
+	// Create a map of fs_slug to platform for quick lookup
 	platformMap := make(map[string]romm.Platform)
 	for _, p := range platforms {
-		platformMap[p.Slug] = p
+		platformMap[p.FSSlug] = p
 	}
 
 	// Create result slice with platforms in saved order
@@ -165,17 +165,17 @@ func SortPlatformsByOrder(platforms []romm.Platform, order []string) []romm.Plat
 	usedSlugs := make(map[string]bool)
 
 	// Add platforms in saved order
-	for _, slug := range order {
-		if platform, exists := platformMap[slug]; exists {
+	for _, fsSlug := range order {
+		if platform, exists := platformMap[fsSlug]; exists {
 			result = append(result, platform)
-			usedSlugs[slug] = true
+			usedSlugs[fsSlug] = true
 		}
 	}
 
 	// Add any new platforms that aren't in the saved order (alphabetically)
 	var newPlatforms []romm.Platform
 	for _, p := range platforms {
-		if !usedSlugs[p.Slug] {
+		if !usedSlugs[p.FSSlug] {
 			newPlatforms = append(newPlatforms, p)
 		}
 	}
@@ -207,9 +207,9 @@ func PrunePlatformOrder(order []string, mappings map[string]DirectoryMapping) []
 	}
 
 	pruned := make([]string, 0, len(order))
-	for _, slug := range order {
-		if _, exists := mappings[slug]; exists {
-			pruned = append(pruned, slug)
+	for _, fsSlug := range order {
+		if _, exists := mappings[fsSlug]; exists {
+			pruned = append(pruned, fsSlug)
 		}
 	}
 
@@ -236,15 +236,17 @@ func GetMappedPlatforms(host romm.Host, mappings map[string]DirectoryMapping, ti
 		return nil, fmt.Errorf("failed to get platforms from RomM: %w", err)
 	}
 
+	romm.DisambiguatePlatformNames(rommPlatforms)
+
 	var platforms []romm.Platform
 
 	for _, platform := range rommPlatforms {
-		_, exists := mappings[platform.Slug]
+		_, exists := mappings[platform.FSSlug]
 		if exists {
 			platforms = append(platforms, romm.Platform{
-				Name: platform.Name,
-				ID:   platform.ID,
-				Slug: platform.Slug,
+				Name:   platform.Name,
+				ID:     platform.ID,
+				FSSlug: platform.FSSlug,
 			})
 		}
 	}
@@ -252,19 +254,23 @@ func GetMappedPlatforms(host romm.Host, mappings map[string]DirectoryMapping, ti
 	return platforms, nil
 }
 
+// To decouple a circular dependency
 func (c Config) GetApiTimeout() time.Duration    { return c.ApiTimeout }
 func (c Config) GetShowCollections() bool        { return c.ShowRegularCollections }
 func (c Config) GetShowSmartCollections() bool   { return c.ShowSmartCollections }
 func (c Config) GetShowVirtualCollections() bool { return c.ShowVirtualCollections }
 
 func (c Config) GetPlatformRomDirectory(platform romm.Platform) string {
-	rp := c.DirectoryMappings[platform.Slug].RelativePath
-	return cfw.GetPlatformRomDirectory(rp, platform.Slug)
+	rp := platform.FSSlug
+	if mapping, ok := c.DirectoryMappings[platform.FSSlug]; ok && mapping.RelativePath != "" {
+		rp = mapping.RelativePath
+	}
+	return cfw.GetPlatformRomDirectory(rp, platform.FSSlug)
 }
 
 func (c Config) GetArtDirectory(platform romm.Platform) string {
 	romDir := c.GetPlatformRomDirectory(platform)
-	return cfw.GetArtDirectory(romDir, platform.Slug, platform.Name)
+	return cfw.GetArtDirectory(romDir, platform.FSSlug, platform.Name)
 }
 
 func (c Config) ShowCollections(host romm.Host) bool {

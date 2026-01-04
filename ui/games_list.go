@@ -3,6 +3,7 @@ package ui
 import (
 	"errors"
 	"fmt"
+	"grout/artwork"
 	"grout/cache"
 	"grout/constants"
 	"grout/internal"
@@ -74,7 +75,7 @@ func (s *GameListScreen) Draw(input GameListInput) (ScreenResult[GameListOutput]
 		hasBIOS = loaded.hasBIOS
 
 		if input.Config.ShowBoxArt {
-			go utils.SyncArtworkInBackground(input.Host, games)
+			go artwork.SyncInBackground(input.Host, games)
 		}
 	}
 
@@ -107,7 +108,7 @@ func (s *GameListScreen) Draw(input GameListInput) (ScreenResult[GameListOutput]
 		originalCount := len(displayGames)
 		filteredGames := make([]romm.Rom, 0, len(displayGames))
 		for _, game := range displayGames {
-			if _, hasMapping := input.Config.DirectoryMappings[game.PlatformSlug]; hasMapping {
+			if _, hasMapping := input.Config.DirectoryMappings[game.PlatformFSSlug]; hasMapping {
 				filteredGames = append(filteredGames, game)
 			}
 		}
@@ -121,7 +122,7 @@ func (s *GameListScreen) Draw(input GameListInput) (ScreenResult[GameListOutput]
 				if input.Config.DownloadedGames == "mark" && displayGames[i].IsDownloaded(*input.Config) {
 					prefix = gabaconst.Download + " "
 				}
-				displayGames[i].DisplayName = fmt.Sprintf("%s[%s] %s", prefix, displayGames[i].PlatformSlug, displayGames[i].DisplayName)
+				displayGames[i].DisplayName = fmt.Sprintf("%s[%s] %s", prefix, displayGames[i].PlatformFSSlug, displayGames[i].DisplayName)
 			}
 		} else {
 			displayName = fmt.Sprintf("%s - %s", input.Collection.Name, input.Platform.Name)
@@ -172,7 +173,7 @@ func (s *GameListScreen) Draw(input GameListInput) (ScreenResult[GameListOutput]
 	for i, game := range displayGames {
 		imageFilename := ""
 		if input.Config.ShowBoxArt {
-			imageFilename = cache.GetArtworkCachePath(game.PlatformSlug, game.ID)
+			imageFilename = artwork.GetCachePath(game.PlatformFSSlug, game.ID)
 		}
 		menuItems[i] = gaba.MenuItem{
 			Text:          game.DisplayName,

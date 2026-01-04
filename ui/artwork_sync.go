@@ -2,11 +2,10 @@ package ui
 
 import (
 	"fmt"
-	"grout/cache"
+	"grout/artwork"
 	"grout/internal"
 	"grout/internal/imageutil"
 	"grout/romm"
-	"grout/utils"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -52,11 +51,12 @@ func (s *ArtworkSyncScreen) draw(input ArtworkSyncInput) {
 		)
 		return
 	}
+	romm.DisambiguatePlatformNames(platforms)
 
 	// Filter to only mapped platforms
 	var mappedPlatforms []romm.Platform
 	for _, p := range platforms {
-		if _, exists := input.Config.DirectoryMappings[p.Slug]; exists {
+		if _, exists := input.Config.DirectoryMappings[p.FSSlug]; exists {
 			mappedPlatforms = append(mappedPlatforms, p)
 		}
 	}
@@ -90,11 +90,11 @@ func (s *ArtworkSyncScreen) draw(input ArtworkSyncInput) {
 				}
 
 				// Get missing artwork
-				missing := utils.GetMissingArtwork(roms.Items)
+				missing := artwork.GetMissing(roms.Items)
 				allNeedingArtwork = append(allNeedingArtwork, missing...)
 
 				// Check for outdated artwork via ETag
-				outdated := utils.GetOutdatedArtwork(roms.Items, input.Host)
+				outdated := artwork.GetOutdated(roms.Items, input.Host)
 				allNeedingArtwork = append(allNeedingArtwork, outdated...)
 				return nil, nil
 			},
@@ -116,16 +116,16 @@ func (s *ArtworkSyncScreen) draw(input ArtworkSyncInput) {
 
 	baseURL := input.Host.URL()
 	for _, rom := range allNeedingArtwork {
-		coverPath := utils.GetArtworkCoverPath(rom)
+		coverPath := artwork.GetCoverPath(rom)
 		if coverPath == "" {
 			continue
 		}
 
 		downloadURL := strings.ReplaceAll(baseURL+coverPath, " ", "%20")
-		cachePath := cache.GetArtworkCachePath(rom.PlatformSlug, rom.ID)
+		cachePath := artwork.GetCachePath(rom.PlatformFSSlug, rom.ID)
 
 		// Ensure directory exists
-		cache.EnsureArtworkCacheDir(rom.PlatformSlug)
+		artwork.EnsureCacheDir(rom.PlatformFSSlug)
 
 		downloads = append(downloads, gaba.Download{
 			URL:         downloadURL,

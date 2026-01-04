@@ -89,12 +89,12 @@ func GetBIOSDirectory() string {
 	return ""
 }
 
-func GetBIOSFilePaths(relativePath string, platformSlug string) []string {
+func GetBIOSFilePaths(relativePath string, platformFSSlug string) []string {
 	biosDir := GetBIOSDirectory()
 	c := GetCFW()
 
 	if c == NextUI {
-		tags, ok := NextUISaveDirectories[platformSlug]
+		tags, ok := NextUISaveDirectories[platformFSSlug]
 		if ok && len(tags) > 0 {
 			paths := make([]string, 0, len(tags))
 			filename := filepath.Base(relativePath)
@@ -138,21 +138,21 @@ func EmulatorFolderMap(c CFW) map[string][]string {
 	}
 }
 
-func EmulatorFoldersForSlug(slug string) []string {
+func EmulatorFoldersForFSSlug(fsSlug string) []string {
 	saveDirectoriesMap := EmulatorFolderMap(GetCFW())
 	if saveDirectoriesMap == nil {
 		return nil
 	}
-	return saveDirectoriesMap[slug]
+	return saveDirectoriesMap[fsSlug]
 }
 
-func RomMSlugToCFW(slug string) string {
+func RomMFSSlugToCFW(fsSlug string) string {
 	cfwPlatformMap := GetPlatformMap(GetCFW())
 	if cfwPlatformMap == nil {
-		return strings.ToLower(slug)
+		return strings.ToLower(fsSlug)
 	}
 
-	if value, ok := cfwPlatformMap[slug]; ok {
+	if value, ok := cfwPlatformMap[fsSlug]; ok {
 		if len(value) > 0 {
 			return value[0]
 		}
@@ -160,7 +160,7 @@ func RomMSlugToCFW(slug string) string {
 		return ""
 	}
 
-	return strings.ToLower(slug)
+	return strings.ToLower(fsSlug)
 }
 
 func getBasePath(cfw CFW) string {
@@ -220,17 +220,17 @@ func BaseSavePath() string {
 
 // GetPlatformRomDirectory returns the ROM directory for a platform.
 // relativePath is the configured relative path from directory mappings.
-// platformSlug is used as fallback if relativePath is empty.
-func GetPlatformRomDirectory(relativePath, platformSlug string) string {
+// platformFSSlug is used as fallback if relativePath is empty.
+func GetPlatformRomDirectory(relativePath, platformFSSlug string) string {
 	rp := relativePath
 	if rp == "" {
-		rp = RomMSlugToCFW(platformSlug)
+		rp = RomMFSSlugToCFW(platformFSSlug)
 	}
 	return filepath.Join(GetRomDirectory(), rp)
 }
 
 // GetArtDirectory returns the artwork directory for a platform.
-func GetArtDirectory(romDir string, platformSlug, platformName string) string {
+func GetArtDirectory(romDir string, platformFSSlug, platformName string) string {
 	switch GetCFW() {
 	case NextUI:
 		return filepath.Join(romDir, ".media")
@@ -239,7 +239,7 @@ func GetArtDirectory(romDir string, platformSlug, platformName string) string {
 	case Spruce:
 		return filepath.Join(romDir, "Imgs")
 	case MuOS:
-		systemName, exists := MuOSArtDirectory[platformSlug]
+		systemName, exists := MuOSArtDirectory[platformFSSlug]
 		if !exists {
 			systemName = platformName
 		}

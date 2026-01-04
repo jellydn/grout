@@ -125,7 +125,7 @@ func (s *PlatformSelectionScreen) Draw(input PlatformSelectionInput) (ScreenResu
 			for i := 0; i < len(input.Platforms); i++ {
 				originalPlatform := input.Platforms[i]
 				returnedPlatform := sel.Items[i+startIndex].Metadata.(romm.Platform)
-				if originalPlatform.Slug != returnedPlatform.Slug {
+				if originalPlatform.FSSlug != returnedPlatform.FSSlug {
 					platformsReordered = true
 					break
 				}
@@ -157,7 +157,7 @@ func (s *PlatformSelectionScreen) Draw(input PlatformSelectionInput) (ScreenResu
 		output.LastSelectedIndex = sel.Selected[0]
 		output.LastSelectedPosition = sel.VisiblePosition
 
-		if platform.Slug == "collections" {
+		if platform.FSSlug == "collections" {
 			return withCode(output, constants.ExitCodeCollections), nil
 		}
 

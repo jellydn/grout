@@ -2,6 +2,7 @@ package ui
 
 import (
 	"errors"
+	"grout/artwork"
 	"grout/cache"
 	"grout/constants"
 	"grout/internal"
@@ -114,7 +115,7 @@ func (s *AdvancedSettingsScreen) buildMenuItems(config *internal.Config) []gaba.
 			Item:    gaba.MenuItem{Text: i18n.Localize(&goi18n.Message{ID: "settings_clear_cache", Other: "Clear Cache"}, nil)},
 			Options: []gaba.Option{{Type: gaba.OptionTypeClickable}},
 			Visible: func() bool {
-				return cache.HasArtworkCache() || cache.HasGamesCache()
+				return artwork.HasCache() || cache.HasGamesCache()
 			},
 		},
 		{

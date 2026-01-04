@@ -12,8 +12,8 @@ import (
 	"strings"
 )
 
-func SaveBIOSFile(biosFile constants.BIOSFile, platformSlug string, data []byte) error {
-	filePaths := cfw.GetBIOSFilePaths(biosFile.RelativePath, platformSlug)
+func SaveBIOSFile(biosFile constants.BIOSFile, platformFSSlug string, data []byte) error {
+	filePaths := cfw.GetBIOSFilePaths(biosFile.RelativePath, platformFSSlug)
 
 	for _, filePath := range filePaths {
 		dir := filepath.Dir(filePath)
@@ -41,8 +41,8 @@ func VerifyBIOSFileMD5(data []byte, expectedMD5 string) (bool, string) {
 	return actualMD5 == expectedMD5, actualMD5
 }
 
-func GetBIOSFileInfo(biosFile constants.BIOSFile, platformSlug string) (exists bool, size int64, md5Hash string, err error) {
-	filePaths := cfw.GetBIOSFilePaths(biosFile.RelativePath, platformSlug)
+func GetBIOSFileInfo(biosFile constants.BIOSFile, platformFSSlug string) (exists bool, size int64, md5Hash string, err error) {
+	filePaths := cfw.GetBIOSFilePaths(biosFile.RelativePath, platformFSSlug)
 
 	for _, filePath := range filePaths {
 		info, err := os.Stat(filePath)
@@ -72,10 +72,10 @@ func GetBIOSFileInfo(biosFile constants.BIOSFile, platformSlug string) (exists b
 	return false, 0, "", nil
 }
 
-func GetBIOSFilesForPlatform(platformSlug string) []constants.BIOSFile {
+func GetBIOSFilesForPlatform(platformFSSlug string) []constants.BIOSFile {
 	var biosFiles []constants.BIOSFile
 
-	coreNames, ok := constants.PlatformToLibretroCores[platformSlug]
+	coreNames, ok := constants.PlatformToLibretroCores[platformFSSlug]
 	if !ok {
 		return biosFiles
 	}
@@ -117,13 +117,13 @@ type BIOSFileStatus struct {
 	ExpectedMD5 string
 }
 
-func CheckBIOSFileStatus(biosFile constants.BIOSFile, platformSlug string) BIOSFileStatus {
+func CheckBIOSFileStatus(biosFile constants.BIOSFile, platformFSSlug string) BIOSFileStatus {
 	status := BIOSFileStatus{
 		File:        biosFile,
 		ExpectedMD5: biosFile.MD5Hash,
 	}
 
-	exists, size, actualMD5, err := GetBIOSFileInfo(biosFile, platformSlug)
+	exists, size, actualMD5, err := GetBIOSFileInfo(biosFile, platformFSSlug)
 	if err != nil {
 		status.Status = BIOSStatusMissing
 		return status

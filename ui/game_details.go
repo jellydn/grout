@@ -3,7 +3,7 @@ package ui
 import (
 	"errors"
 	"fmt"
-	"grout/cache"
+	"grout/artwork"
 	"grout/internal"
 	"grout/internal/imageutil"
 	"grout/internal/stringutil"
@@ -205,8 +205,8 @@ func (s *GameDetailsScreen) getCoverImagePath(host romm.Host, game romm.Rom) str
 	logger := gaba.GetLogger()
 
 	// First, check if artwork is in the cache
-	if cache.ArtworkExists(game.PlatformSlug, game.ID) {
-		cachePath := cache.GetArtworkCachePath(game.PlatformSlug, game.ID)
+	if artwork.Exists(game.PlatformFSSlug, game.ID) {
+		cachePath := artwork.GetCachePath(game.PlatformFSSlug, game.ID)
 		logger.Debug("Using cached artwork for game details", "game", game.Name)
 		return cachePath
 	}
@@ -228,8 +228,8 @@ func (s *GameDetailsScreen) getCoverImagePath(host romm.Host, game romm.Rom) str
 
 	// Cache the artwork for future use and return cache path
 	if imageData != nil {
-		if err := cache.EnsureArtworkCacheDir(game.PlatformSlug); err == nil {
-			cachePath := cache.GetArtworkCachePath(game.PlatformSlug, game.ID)
+		if err := artwork.EnsureCacheDir(game.PlatformFSSlug); err == nil {
+			cachePath := artwork.GetCachePath(game.PlatformFSSlug, game.ID)
 			if err := os.WriteFile(cachePath, imageData, 0644); err == nil {
 				imageutil.ProcessArtImage(cachePath)
 				return cachePath
