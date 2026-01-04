@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"grout/cache"
+	"grout/internal"
 	"grout/internal/imageutil"
 	"grout/romm"
 	"grout/utils"
@@ -16,7 +17,7 @@ import (
 )
 
 type ArtworkSyncInput struct {
-	Config utils.Config
+	Config internal.Config
 	Host   romm.Host
 }
 
@@ -28,7 +29,7 @@ func NewArtworkSyncScreen() *ArtworkSyncScreen {
 	return &ArtworkSyncScreen{}
 }
 
-func (s *ArtworkSyncScreen) Execute(config utils.Config, host romm.Host) ArtworkSyncOutput {
+func (s *ArtworkSyncScreen) Execute(config internal.Config, host romm.Host) ArtworkSyncOutput {
 	s.draw(ArtworkSyncInput{
 		Config: config,
 		Host:   host,

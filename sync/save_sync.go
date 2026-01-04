@@ -3,10 +3,10 @@ package sync
 import (
 	"fmt"
 	"grout/cache"
+	"grout/internal"
 	"grout/internal/fileutil"
 	"grout/internal/stringutil"
 	"grout/romm"
-	"grout/utils"
 	"os"
 	"path/filepath"
 	"strings"
@@ -48,7 +48,7 @@ type UnmatchedSave struct {
 	Slug     string
 }
 
-func (s *SaveSync) Execute(host romm.Host, config *utils.Config) SyncResult {
+func (s *SaveSync) Execute(host romm.Host, config *internal.Config) SyncResult {
 	logger := gaba.GetLogger()
 
 	// Strip file extension from ROM name for cleaner display
@@ -98,7 +98,7 @@ func (s *SaveSync) Execute(host romm.Host, config *utils.Config) SyncResult {
 	return result
 }
 
-func (s *SaveSync) download(host romm.Host, config *utils.Config) (string, error) {
+func (s *SaveSync) download(host romm.Host, config *internal.Config) (string, error) {
 	logger := gaba.GetLogger()
 	if config == nil {
 		return "", fmt.Errorf("config is nil")
@@ -149,7 +149,7 @@ func (s *SaveSync) download(host romm.Host, config *utils.Config) (string, error
 	return destPath, nil
 }
 
-func (s *SaveSync) upload(host romm.Host, config *utils.Config) (string, error) {
+func (s *SaveSync) upload(host romm.Host, config *internal.Config) (string, error) {
 	if s.Local == nil {
 		return "", fmt.Errorf("cannot upload: no local save file")
 	}
@@ -215,11 +215,11 @@ func lookupRomID(romFile *LocalRomFile, romsByFilename map[string]romm.Rom) (int
 	return 0, ""
 }
 
-func FindSaveSyncs(host romm.Host, config *utils.Config) ([]SaveSync, []UnmatchedSave, error) {
+func FindSaveSyncs(host romm.Host, config *internal.Config) ([]SaveSync, []UnmatchedSave, error) {
 	return FindSaveSyncsFromScan(host, config, ScanRoms())
 }
 
-func FindSaveSyncsFromScan(host romm.Host, config *utils.Config, scanLocal LocalRomScan) ([]SaveSync, []UnmatchedSave, error) {
+func FindSaveSyncsFromScan(host romm.Host, config *internal.Config, scanLocal LocalRomScan) ([]SaveSync, []UnmatchedSave, error) {
 	logger := gaba.GetLogger()
 	if config == nil {
 		return nil, nil, fmt.Errorf("config is nil")

@@ -2,6 +2,7 @@ package ui
 
 import (
 	"errors"
+	"grout/internal"
 	"grout/utils"
 
 	gaba "github.com/BrandonKowalski/gabagool/v2/pkg/gabagool"
@@ -10,7 +11,7 @@ import (
 )
 
 type CollectionsSettingsInput struct {
-	Config *utils.Config
+	Config *internal.Config
 }
 
 type CollectionsSettingsOutput struct{}
@@ -52,7 +53,7 @@ func (s *CollectionsSettingsScreen) Draw(input CollectionsSettingsInput) (Screen
 
 	s.applySettings(config, result.Items)
 
-	err = utils.SaveConfig(config)
+	err = internal.SaveConfig(config)
 	if err != nil {
 		gaba.GetLogger().Error("Error saving collections settings", "error", err)
 		return withCode(output, gaba.ExitCodeError), err
@@ -61,7 +62,7 @@ func (s *CollectionsSettingsScreen) Draw(input CollectionsSettingsInput) (Screen
 	return success(output), nil
 }
 
-func (s *CollectionsSettingsScreen) buildMenuItems(config *utils.Config) []gaba.ItemWithOptions {
+func (s *CollectionsSettingsScreen) buildMenuItems(config *internal.Config) []gaba.ItemWithOptions {
 	return []gaba.ItemWithOptions{
 		{
 			Item: gaba.MenuItem{Text: i18n.Localize(&goi18n.Message{ID: "settings_show_collections", Other: "Collections"}, nil)},
@@ -69,7 +70,7 @@ func (s *CollectionsSettingsScreen) buildMenuItems(config *utils.Config) []gaba.
 				{DisplayName: i18n.Localize(&goi18n.Message{ID: "common_show", Other: "Show"}, nil), Value: true},
 				{DisplayName: i18n.Localize(&goi18n.Message{ID: "common_hide", Other: "Hide"}, nil), Value: false},
 			},
-			SelectedOption: boolToIndex(!config.ShowCollections),
+			SelectedOption: boolToIndex(!config.ShowRegularCollections),
 		},
 		{
 			Item: gaba.MenuItem{Text: i18n.Localize(&goi18n.Message{ID: "settings_show_smart_collections", Other: "Smart Collections"}, nil)},
@@ -98,14 +99,14 @@ func (s *CollectionsSettingsScreen) buildMenuItems(config *utils.Config) []gaba.
 	}
 }
 
-func (s *CollectionsSettingsScreen) applySettings(config *utils.Config, items []gaba.ItemWithOptions) {
+func (s *CollectionsSettingsScreen) applySettings(config *internal.Config, items []gaba.ItemWithOptions) {
 	for _, item := range items {
 		selectedText := item.Item.Text
 
 		switch selectedText {
 		case i18n.Localize(&goi18n.Message{ID: "settings_show_collections", Other: "Collections"}, nil):
 			if val, ok := item.Options[item.SelectedOption].Value.(bool); ok {
-				config.ShowCollections = val
+				config.ShowRegularCollections = val
 			}
 
 		case i18n.Localize(&goi18n.Message{ID: "settings_show_smart_collections", Other: "Smart Collections"}, nil):

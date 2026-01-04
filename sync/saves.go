@@ -3,8 +3,8 @@ package sync
 import (
 	"fmt"
 	"grout/cfw"
+	"grout/internal"
 	"grout/internal/fileutil"
-	"grout/utils"
 	"os"
 	"path/filepath"
 	"strings"
@@ -43,7 +43,7 @@ func (lc LocalSave) backup() error {
 	return fileutil.CopyFile(lc.Path, dest)
 }
 
-func ResolveSavePath(slug string, gameID int, config *utils.Config) (string, error) {
+func ResolveSavePath(slug string, gameID int, config *internal.Config) (string, error) {
 	logger := gaba.GetLogger()
 	logger.Debug("ResolveSavePath called", "slug", slug, "gameID", gameID)
 	basePath := cfw.BaseSavePath()
@@ -127,7 +127,7 @@ func findSaveFiles(slug string) []LocalSave {
 			sd := filepath.Join(basePath, folder)
 			result := scanResult{path: sd, saves: []LocalSave{}}
 
-			if _, err := os.Stat(sd); os.IsNotExist(err) {
+			if !fileutil.FileExists(sd) {
 				resultChan <- result
 				return
 			}

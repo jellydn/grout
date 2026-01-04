@@ -2,6 +2,7 @@ package cache
 
 import (
 	"encoding/json"
+	"grout/internal/fileutil"
 	"grout/romm"
 	"os"
 	"path/filepath"
@@ -110,7 +111,7 @@ func CheckCacheFreshness(host romm.Host, config Config, cacheKey string, query r
 	}
 
 	cachePath := getCacheFilePath(cacheKey)
-	if _, err := os.Stat(cachePath); err == nil {
+	if fileutil.FileExists(cachePath) {
 		logger.Debug("Cache not yet validated but exists locally, assuming fresh", "key", cacheKey)
 		return true, nil
 	}
@@ -135,7 +136,7 @@ func checkCacheFreshnessInternal(host romm.Host, config Config, cacheKey string,
 	}
 
 	cachePath := getCacheFilePath(cacheKey)
-	if _, err := os.Stat(cachePath); os.IsNotExist(err) {
+	if !fileutil.FileExists(cachePath) {
 		logger.Debug("Cache file not found", "key", cacheKey)
 		return false, nil
 	}
@@ -285,7 +286,7 @@ func saveCollectionToCache(cacheKey string, games []romm.Rom, updatedAt time.Tim
 func ClearGamesCache() error {
 	cacheDir := GetGamesCacheDir()
 
-	if _, err := os.Stat(cacheDir); os.IsNotExist(err) {
+	if !fileutil.FileExists(cacheDir) {
 		return nil
 	}
 

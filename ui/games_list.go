@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"grout/cache"
 	"grout/constants"
+	"grout/internal"
+	"grout/internal/stringutil"
 	"grout/romm"
 	"grout/utils"
 	"slices"
@@ -26,7 +28,7 @@ const (
 )
 
 type GameListInput struct {
-	Config               *utils.Config
+	Config               *internal.Config
 	Host                 romm.Host
 	Platform             romm.Platform
 	Collection           romm.Collection
@@ -86,12 +88,12 @@ func (s *GameListScreen) Draw(input GameListInput) (ScreenResult[GameListOutput]
 		LastSelectedPosition: input.LastSelectedPosition,
 	}
 
-	displayGames := utils.PrepareRomNames(games, *input.Config)
+	displayGames := stringutil.PrepareRomNames(games)
 
 	if input.Config.DownloadedGames == "filter" {
 		filteredGames := make([]romm.Rom, 0, len(displayGames))
 		for _, game := range displayGames {
-			if !utils.IsGameDownloadedLocally(game, *input.Config) {
+			if !game.IsDownloaded(*input.Config) {
 				filteredGames = append(filteredGames, game)
 			}
 		}
@@ -116,7 +118,7 @@ func (s *GameListScreen) Draw(input GameListInput) (ScreenResult[GameListOutput]
 		if input.Platform.ID == 0 {
 			for i := range displayGames {
 				prefix := ""
-				if input.Config.DownloadedGames == "mark" && utils.IsGameDownloadedLocally(displayGames[i], *input.Config) {
+				if input.Config.DownloadedGames == "mark" && displayGames[i].IsDownloaded(*input.Config) {
 					prefix = gabaconst.Download + " "
 				}
 				displayGames[i].DisplayName = fmt.Sprintf("%s[%s] %s", prefix, displayGames[i].PlatformSlug, displayGames[i].DisplayName)
@@ -125,7 +127,7 @@ func (s *GameListScreen) Draw(input GameListInput) (ScreenResult[GameListOutput]
 			displayName = fmt.Sprintf("%s - %s", input.Collection.Name, input.Platform.Name)
 			if input.Config.DownloadedGames == "mark" {
 				for i := range displayGames {
-					if utils.IsGameDownloadedLocally(displayGames[i], *input.Config) {
+					if displayGames[i].IsDownloaded(*input.Config) {
 						displayGames[i].DisplayName = fmt.Sprintf("%s %s", gabaconst.Download, displayGames[i].DisplayName)
 					}
 				}
@@ -134,7 +136,7 @@ func (s *GameListScreen) Draw(input GameListInput) (ScreenResult[GameListOutput]
 	} else {
 		if input.Config.DownloadedGames == "mark" {
 			for i := range displayGames {
-				if utils.IsGameDownloadedLocally(displayGames[i], *input.Config) {
+				if displayGames[i].IsDownloaded(*input.Config) {
 					displayGames[i].DisplayName = fmt.Sprintf("%s %s", gabaconst.Download, displayGames[i].DisplayName)
 				}
 			}
@@ -190,7 +192,7 @@ func (s *GameListScreen) Draw(input GameListInput) (ScreenResult[GameListOutput]
 	options.SelectAllButton = gabaconst.VirtualButtonR1
 	options.HelpButton = gabaconst.VirtualButtonMenu
 
-	if hasBIOS && !utils.IsKidModeEnabled() {
+	if hasBIOS && !internal.IsKidModeEnabled() {
 		options.SecondaryActionButton = gabaconst.VirtualButtonY
 	}
 
@@ -202,7 +204,7 @@ func (s *GameListScreen) Draw(input GameListInput) (ScreenResult[GameListOutput]
 		{ButtonName: i18n.Localize(&goi18n.Message{ID: "button_menu", Other: "Menu"}, nil), HelpText: i18n.Localize(&goi18n.Message{ID: "button_help", Other: "Help"}, nil)},
 	}
 
-	if hasBIOS && !utils.IsKidModeEnabled() {
+	if hasBIOS && !internal.IsKidModeEnabled() {
 		footerItems = append(footerItems, gaba.FooterHelpItem{ButtonName: "Y", HelpText: i18n.Localize(&goi18n.Message{ID: "button_bios", Other: "BIOS"}, nil)})
 	}
 
@@ -485,7 +487,7 @@ func (s *GameListScreen) showErrorMessage(err error) {
 	)
 }
 
-func fetchList(config *utils.Config, host romm.Host, queryID int, fetchType fetchType) ([]romm.Rom, error) {
+func fetchList(config *internal.Config, host romm.Host, queryID int, fetchType fetchType) ([]romm.Rom, error) {
 	logger := gaba.GetLogger()
 
 	// Build query for cache key and freshness check

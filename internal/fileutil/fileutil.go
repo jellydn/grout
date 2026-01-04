@@ -33,7 +33,6 @@ func (pw *progressWriter) Write(p []byte) (int, error) {
 	return n, err
 }
 
-// TempDir returns a temp directory in the current working directory.
 func TempDir() string {
 	wd, err := os.Getwd()
 	if err != nil {
@@ -42,7 +41,6 @@ func TempDir() string {
 	return filepath.Join(wd, ".tmp")
 }
 
-// CopyFile copies a file from src to dest, creating directories as needed.
 func CopyFile(src, dest string) error {
 	sourceFile, err := os.Open(src)
 	if err != nil {
@@ -73,12 +71,10 @@ func CopyFile(src, dest string) error {
 	return nil
 }
 
-// DeleteFile removes a file and returns true if successful.
 func DeleteFile(path string) error {
 	return os.Remove(path)
 }
 
-// Unzip extracts a zip file to destDir with optional progress reporting.
 func Unzip(zipPath string, destDir string, progress *atomic.Float64) error {
 	reader, err := zip.OpenReader(zipPath)
 	if err != nil {
@@ -133,6 +129,11 @@ func Unzip(zipPath string, destDir string, progress *atomic.Float64) error {
 	return nil
 }
 
+func FileExists(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil
+}
+
 func extractFile(file *zip.File, destPath string, buffer []byte, totalBytes uint64, extractedBytes *uint64, progress *atomic.Float64) error {
 	srcFile, err := file.Open()
 	if err != nil {
@@ -164,7 +165,6 @@ func extractFile(file *zip.File, destPath string, buffer []byte, totalBytes uint
 	return bufWriter.Flush()
 }
 
-// FilterVisibleFiles returns non-directory entries that don't start with "."
 func FilterVisibleFiles(entries []os.DirEntry) []os.DirEntry {
 	result := make([]os.DirEntry, 0, len(entries))
 	for _, entry := range entries {
@@ -175,8 +175,7 @@ func FilterVisibleFiles(entries []os.DirEntry) []os.DirEntry {
 	return result
 }
 
-// FilterVisibleDirectories returns directory entries that don't start with "."
-func FilterVisibleDirectories(entries []os.DirEntry) []os.DirEntry {
+func FilterHiddenDirectories(entries []os.DirEntry) []os.DirEntry {
 	result := make([]os.DirEntry, 0, len(entries))
 	for _, entry := range entries {
 		if entry.IsDir() && !strings.HasPrefix(entry.Name(), ".") {

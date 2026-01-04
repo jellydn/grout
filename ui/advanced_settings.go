@@ -4,6 +4,7 @@ import (
 	"errors"
 	"grout/cache"
 	"grout/constants"
+	"grout/internal"
 	"grout/romm"
 	"grout/utils"
 	"time"
@@ -14,7 +15,7 @@ import (
 )
 
 type AdvancedSettingsInput struct {
-	Config                *utils.Config
+	Config                *internal.Config
 	Host                  romm.Host
 	LastSelectedIndex     int
 	LastVisibleStartIndex int
@@ -90,7 +91,7 @@ func (s *AdvancedSettingsScreen) Draw(input AdvancedSettingsInput) (ScreenResult
 
 	s.applySettings(config, result.Items)
 
-	err = utils.SaveConfig(config)
+	err = internal.SaveConfig(config)
 	if err != nil {
 		gaba.GetLogger().Error("Error saving advanced settings", "error", err)
 		return withCode(output, gaba.ExitCodeError), err
@@ -99,7 +100,7 @@ func (s *AdvancedSettingsScreen) Draw(input AdvancedSettingsInput) (ScreenResult
 	return success(output), nil
 }
 
-func (s *AdvancedSettingsScreen) buildMenuItems(config *utils.Config) []gaba.ItemWithOptions {
+func (s *AdvancedSettingsScreen) buildMenuItems(config *internal.Config) []gaba.ItemWithOptions {
 	return []gaba.ItemWithOptions{
 		{
 			Item:    gaba.MenuItem{Text: i18n.Localize(&goi18n.Message{ID: "settings_edit_mappings", Other: "Directory Mappings"}, nil)},
@@ -165,7 +166,7 @@ func (s *AdvancedSettingsScreen) buildMenuItems(config *utils.Config) []gaba.Ite
 	}
 }
 
-func (s *AdvancedSettingsScreen) applySettings(config *utils.Config, items []gaba.ItemWithOptions) {
+func (s *AdvancedSettingsScreen) applySettings(config *internal.Config, items []gaba.ItemWithOptions) {
 	for _, item := range items {
 		selectedText := item.Item.Text
 
@@ -188,7 +189,7 @@ func (s *AdvancedSettingsScreen) applySettings(config *utils.Config, items []gab
 		case i18n.Localize(&goi18n.Message{ID: "settings_kid_mode", Other: "Kid Mode"}, nil):
 			if val, ok := item.Options[item.SelectedOption].Value.(bool); ok {
 				config.KidMode = val
-				utils.SetKidMode(val)
+				internal.SetKidMode(val)
 			}
 		}
 	}

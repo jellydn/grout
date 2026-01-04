@@ -1,9 +1,9 @@
 package ui
 
 import (
+	"grout/internal"
 	"grout/romm"
 	"grout/sync"
-	"grout/utils"
 	"time"
 
 	gaba "github.com/BrandonKowalski/gabagool/v2/pkg/gabagool"
@@ -13,7 +13,7 @@ import (
 )
 
 type SaveSyncInput struct {
-	Config *utils.Config
+	Config *internal.Config
 	Host   romm.Host
 }
 

@@ -1,8 +1,7 @@
-package utils
+package update
 
 import (
 	"grout/cfw"
-	"grout/update"
 	"sync/atomic"
 
 	gaba "github.com/BrandonKowalski/gabagool/v2/pkg/gabagool"
@@ -16,7 +15,7 @@ type AutoUpdate struct {
 	running         atomic.Bool
 	updateAvailable atomic.Bool
 	done            chan struct{}
-	updateInfo      *update.Info
+	updateInfo      *Info
 }
 
 func NewAutoUpdate(c cfw.CFW) *AutoUpdate {
@@ -47,7 +46,7 @@ func (a *AutoUpdate) UpdateAvailable() bool {
 	return a.updateAvailable.Load()
 }
 
-func (a *AutoUpdate) UpdateInfo() *update.Info {
+func (a *AutoUpdate) UpdateInfo() *Info {
 	return a.updateInfo
 }
 
@@ -60,7 +59,7 @@ func (a *AutoUpdate) run() {
 
 	logger.Debug("AutoUpdate: Checking for updates in background")
 
-	info, err := update.CheckForUpdate(a.cfwType)
+	info, err := CheckForUpdate(a.cfwType)
 	if err != nil {
 		logger.Debug("AutoUpdate: Failed to check for updates", "error", err)
 		return

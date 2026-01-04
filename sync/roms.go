@@ -2,9 +2,10 @@ package sync
 
 import (
 	"grout/cfw"
+	"grout/internal"
 	"grout/internal/fileutil"
+	"grout/internal/stringutil"
 	"grout/romm"
-	"grout/utils"
 	"os"
 	"path/filepath"
 	"slices"
@@ -83,7 +84,7 @@ func ScanRoms() LocalRomScan {
 	baseRomDir := cfw.GetRomDirectory()
 	logger.Debug("Starting ROM scan", "baseDir", baseRomDir)
 
-	config, _ := utils.LoadConfig()
+	config, _ := internal.LoadConfig()
 
 	result = scanRomsByPlatform(baseRomDir, platformMap, config, currentCFW)
 
@@ -106,7 +107,7 @@ func buildSaveFileMap(slug string) map[string]*LocalSave {
 	return saveFileMap
 }
 
-func scanRomsByPlatform(baseRomDir string, platformMap map[string][]string, config *utils.Config, currentCFW cfw.CFW) map[string][]LocalRomFile {
+func scanRomsByPlatform(baseRomDir string, platformMap map[string][]string, config *internal.Config, currentCFW cfw.CFW) map[string][]LocalRomFile {
 	logger := gaba.GetLogger()
 	result := make(map[string][]LocalRomFile)
 
@@ -123,7 +124,7 @@ func scanRomsByPlatform(baseRomDir string, platformMap map[string][]string, conf
 			}
 
 			dirName := entry.Name()
-			tag := utils.ParseTag(dirName)
+			tag := stringutil.ParseTag(dirName)
 			if tag == "" {
 				logger.Debug("No tag found in directory", "dir", dirName)
 				continue
@@ -132,7 +133,7 @@ func scanRomsByPlatform(baseRomDir string, platformMap map[string][]string, conf
 			for slug, cfwDirs := range platformMap {
 				matched := false
 				for _, cfwDir := range cfwDirs {
-					cfwTag := utils.ParseTag(cfwDir)
+					cfwTag := stringutil.ParseTag(cfwDir)
 					if cfwTag == tag {
 						matched = true
 						break
@@ -142,7 +143,7 @@ func scanRomsByPlatform(baseRomDir string, platformMap map[string][]string, conf
 				if !matched {
 					if config != nil {
 						if mapping, ok := config.DirectoryMappings[slug]; ok {
-							if utils.ParseTag(mapping.RelativePath) == tag {
+							if stringutil.ParseTag(mapping.RelativePath) == tag {
 								matched = true
 							}
 						}
@@ -194,7 +195,7 @@ func scanRomsByPlatform(baseRomDir string, platformMap map[string][]string, conf
 
 				romDir := filepath.Join(baseRomDir, romFolderName)
 
-				if _, err := os.Stat(romDir); os.IsNotExist(err) {
+				if !fileutil.FileExists(romDir) {
 					resultChan <- platformResult{slug: s, roms: nil}
 					return
 				}

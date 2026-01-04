@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"grout/constants"
+	"grout/internal"
 	"grout/romm"
 	"grout/utils"
 	"slices"
@@ -17,7 +18,7 @@ import (
 )
 
 type CollectionSelectionInput struct {
-	Config               *utils.Config
+	Config               *internal.Config
 	Host                 romm.Host
 	SearchFilter         string
 	LastSelectedIndex    int
@@ -53,7 +54,7 @@ func (s *CollectionSelectionScreen) Draw(input CollectionSelectionInput) (Screen
 	var virtualCollections []romm.VirtualCollection
 
 	// Fetch regular collections if enabled
-	if input.Config.ShowCollections {
+	if input.Config.ShowRegularCollections {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
@@ -103,7 +104,7 @@ func (s *CollectionSelectionScreen) Draw(input CollectionSelectionInput) (Screen
 	// Combine enabled collections based on current config
 	var collections []romm.Collection
 
-	if input.Config.ShowCollections {
+	if input.Config.ShowRegularCollections {
 		collections = append(collections, regularCollections...)
 	}
 

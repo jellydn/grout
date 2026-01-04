@@ -1,8 +1,8 @@
 package sync
 
 import (
+	"grout/internal"
 	"grout/romm"
-	"grout/utils"
 	"sync/atomic"
 
 	gaba "github.com/BrandonKowalski/gabagool/v2/pkg/gabagool"
@@ -11,14 +11,14 @@ import (
 
 type AutoSync struct {
 	host       romm.Host
-	config     *utils.Config
+	config     *internal.Config
 	icon       *gaba.DynamicStatusBarIcon
 	running    atomic.Bool
 	done       chan struct{}
 	showButton atomic.Bool
 }
 
-func NewAutoSync(host romm.Host, config *utils.Config) *AutoSync {
+func NewAutoSync(host romm.Host, config *internal.Config) *AutoSync {
 	return &AutoSync{
 		host:   host,
 		config: config,

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"grout/cache"
+	"grout/internal"
 	"grout/romm"
 	"grout/utils"
 	"slices"
@@ -16,7 +17,7 @@ import (
 )
 
 type CollectionPlatformSelectionInput struct {
-	Config               *utils.Config
+	Config               *internal.Config
 	Host                 romm.Host
 	Collection           romm.Collection
 	CachedGames          []romm.Rom

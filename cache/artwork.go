@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"grout/internal/fileutil"
 	"image/png"
 	"os"
 	"path/filepath"
@@ -20,7 +21,7 @@ func GetArtworkCacheDir() string {
 func ClearArtworkCache() error {
 	cacheDir := GetArtworkCacheDir()
 
-	if _, err := os.Stat(cacheDir); os.IsNotExist(err) {
+	if !fileutil.FileExists(cacheDir) {
 		return nil
 	}
 
@@ -43,9 +44,7 @@ func GetArtworkCachePath(platformSlug string, romID int) string {
 }
 
 func ArtworkExists(platformSlug string, romID int) bool {
-	path := GetArtworkCachePath(platformSlug, romID)
-	_, err := os.Stat(path)
-	return err == nil
+	return fileutil.FileExists(GetArtworkCachePath(platformSlug, romID))
 }
 
 func EnsureArtworkCacheDir(platformSlug string) error {

@@ -2,12 +2,18 @@ package romm
 
 import (
 	"fmt"
+	"grout/internal/fileutil"
 	"net/url"
+	"path/filepath"
 	"strconv"
 	"time"
 
 	"github.com/sonh/qs"
 )
+
+type PlatformDirResolver interface {
+	GetPlatformRomDirectory(Platform) string
+}
 
 type PaginatedRoms struct {
 	Items  []Rom `json:"items"`
@@ -118,12 +124,6 @@ func (q GetRomsQuery) Valid() bool {
 	return q.Page > 0 || q.Limit > 0 || q.PlatformID > 0 || q.CollectionID > 0 || q.SmartCollectionID > 0 || q.VirtualCollectionID != "" || q.Search != "" || q.OrderBy != "" || q.OrderDir != ""
 }
 
-func (c *Client) GetRoms(query GetRomsQuery) (PaginatedRoms, error) {
-	var result PaginatedRoms
-	err := c.doRequest("GET", endpointRoms, query, nil, &result)
-	return result, err
-}
-
 type GetRomByHashQuery struct {
 	CrcHash  string `qs:"crc_hash,omitempty"`
 	Md5Hash  string `qs:"md5_hash,omitempty"`
@@ -134,24 +134,6 @@ func (q GetRomByHashQuery) Valid() bool {
 	return q.CrcHash != "" || q.Md5Hash != "" || q.Sha1Hash != ""
 }
 
-func (c *Client) GetRomByHash(query GetRomByHashQuery) (Rom, error) {
-	var rom Rom
-	err := c.doRequest("GET", endpointRomsByHash, query, nil, &rom)
-	return rom, err
-}
-
-func (r Rom) GetGamePage(host Host) string {
-	u, _ := url.JoinPath(host.URL(), "rom", strconv.Itoa(r.ID))
-	return u
-}
-
-func (c *Client) GetRom(id int) (Rom, error) {
-	var rom Rom
-	path := fmt.Sprintf(endpointRomByID, id)
-	err := c.doRequest("GET", path, nil, nil, &rom)
-	return rom, err
-}
-
 type DownloadRomsQuery struct {
 	RomIDs string `qs:"rom_ids"`
 }
@@ -160,6 +142,22 @@ func (q DownloadRomsQuery) Valid() bool {
 	return q.RomIDs != ""
 }
 
+func (c *Client) GetRoms(query GetRomsQuery) (PaginatedRoms, error) {
+	var result PaginatedRoms
+	err := c.doRequest("GET", endpointRoms, query, nil, &result)
+	return result, err
+}
+func (c *Client) GetRomByHash(query GetRomByHashQuery) (Rom, error) {
+	var rom Rom
+	err := c.doRequest("GET", endpointRomsByHash, query, nil, &rom)
+	return rom, err
+}
+func (c *Client) GetRom(id int) (Rom, error) {
+	var rom Rom
+	path := fmt.Sprintf(endpointRomByID, id)
+	err := c.doRequest("GET", path, nil, nil, &rom)
+	return rom, err
+}
 func (c *Client) DownloadRoms(romIDs []int) ([]byte, error) {
 	if len(romIDs) == 0 {
 		return c.doRequestRaw("GET", endpointRomsDownload, nil)
@@ -181,4 +179,39 @@ func (c *Client) DownloadRoms(romIDs []int) ([]byte, error) {
 
 	path := endpointRomsDownload + "?" + values.Encode()
 	return c.doRequestRaw("GET", path, nil)
+}
+
+func (r Rom) GetGamePage(host Host) string {
+	u, _ := url.JoinPath(host.URL(), "rom", strconv.Itoa(r.ID))
+	return u
+}
+
+func (r Rom) GetLocalPath(resolver PlatformDirResolver) string {
+	if r.PlatformSlug == "" {
+		return ""
+	}
+
+	platform := Platform{
+		ID:   r.PlatformID,
+		Slug: r.PlatformSlug,
+		Name: r.PlatformDisplayName,
+	}
+
+	romDirectory := resolver.GetPlatformRomDirectory(platform)
+
+	if r.HasMultipleFiles {
+		return filepath.Join(romDirectory, r.FsNameNoExt+".m3u")
+	} else if len(r.Files) > 0 {
+		return filepath.Join(romDirectory, r.Files[0].FileName)
+	}
+
+	return ""
+}
+
+func (r Rom) IsDownloaded(resolver PlatformDirResolver) bool {
+	path := r.GetLocalPath(resolver)
+	if path == "" {
+		return false
+	}
+	return fileutil.FileExists(path)
 }

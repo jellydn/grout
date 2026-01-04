@@ -3,6 +3,7 @@ package ui
 import (
 	"errors"
 	"grout/cfw"
+	"grout/internal"
 	"grout/romm"
 	"grout/utils"
 	"os"
@@ -15,12 +16,12 @@ import (
 )
 
 type GameOptionsInput struct {
-	Config *utils.Config
+	Config *internal.Config
 	Game   romm.Rom
 }
 
 type GameOptionsOutput struct {
-	Config *utils.Config
+	Config *internal.Config
 }
 
 type GameOptionsScreen struct{}
@@ -63,7 +64,7 @@ func (s *GameOptionsScreen) Draw(input GameOptionsInput) (ScreenResult[GameOptio
 
 	s.applySettings(config, input.Game, result.Items)
 
-	err = utils.SaveConfig(config)
+	err = internal.SaveConfig(config)
 	if err != nil {
 		gaba.GetLogger().Error("Error saving game options", "error", err)
 		return withCode(output, gaba.ExitCodeError), err
@@ -72,7 +73,7 @@ func (s *GameOptionsScreen) Draw(input GameOptionsInput) (ScreenResult[GameOptio
 	return success(output), nil
 }
 
-func (s *GameOptionsScreen) buildMenuItems(config *utils.Config, game romm.Rom) []gaba.ItemWithOptions {
+func (s *GameOptionsScreen) buildMenuItems(config *internal.Config, game romm.Rom) []gaba.ItemWithOptions {
 	items := make([]gaba.ItemWithOptions, 0)
 
 	// Save Directory option
@@ -117,7 +118,7 @@ func (s *GameOptionsScreen) buildMenuItems(config *utils.Config, game romm.Rom) 
 	return items
 }
 
-func (s *GameOptionsScreen) applySettings(config *utils.Config, game romm.Rom, items []gaba.ItemWithOptions) {
+func (s *GameOptionsScreen) applySettings(config *internal.Config, game romm.Rom, items []gaba.ItemWithOptions) {
 	logger := gaba.GetLogger()
 
 	for _, item := range items {

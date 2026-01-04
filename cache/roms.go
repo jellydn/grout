@@ -2,6 +2,7 @@ package cache
 
 import (
 	"encoding/json"
+	"grout/internal/fileutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -166,7 +167,7 @@ func StoreRomID(slug, filename string, romID int, romName string) {
 func ClearRomCache() error {
 	cacheDir := GetRomCacheDir()
 
-	if _, err := os.Stat(cacheDir); os.IsNotExist(err) {
+	if !fileutil.FileExists(cacheDir) {
 		return nil
 	}
 

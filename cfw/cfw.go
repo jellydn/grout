@@ -1,6 +1,7 @@
 package cfw
 
 import (
+	"grout/internal/fileutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -176,7 +177,7 @@ func getBasePath(cfw CFW) string {
 		// TODO verify if this actually works
 		// Hack to see if there is actually content
 		sd2InfoDir := filepath.Join(sd2, "MUOS", "info")
-		if _, err := os.Stat(sd2InfoDir); err == nil {
+		if fileutil.FileExists(sd2InfoDir) {
 			gaba.GetLogger().Debug("Using MUOS Base Path", "path", sd2)
 			return sd2
 		}

@@ -8,8 +8,6 @@ import (
 	"path/filepath"
 )
 
-// LoadJSONMap loads a JSON file from the embedded FS or an override file.
-// overridePrefix is prepended to the path when checking for override files.
 func LoadJSONMap[K comparable, V any](fs embed.FS, path string, overridePrefix string) (map[K]V, error) {
 	var data []byte
 	var err error
@@ -34,7 +32,6 @@ func LoadJSONMap[K comparable, V any](fs embed.FS, path string, overridePrefix s
 	return result, nil
 }
 
-// MustLoadJSONMap loads a JSON file and panics on error.
 func MustLoadJSONMap[K comparable, V any](fs embed.FS, path string, overridePrefix string) map[K]V {
 	result, err := LoadJSONMap[K, V](fs, path, overridePrefix)
 	if err != nil {

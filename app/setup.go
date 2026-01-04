@@ -4,10 +4,12 @@ import (
 	"errors"
 	"grout/cfw"
 	"grout/cfw/muos"
+	"grout/internal"
+	"grout/internal/environment"
+	"grout/internal/fileutil"
 	"grout/resources"
 	"grout/romm"
 	"grout/ui"
-	"grout/utils"
 	"log"
 	"log/slog"
 	"os"
@@ -21,7 +23,7 @@ import (
 )
 
 type SetupResult struct {
-	Config    *utils.Config
+	Config    *internal.Config
 	Platforms []romm.Platform
 }
 
@@ -29,10 +31,10 @@ func setup() SetupResult {
 	currentCFW := cfw.GetCFW()
 	gaba.SetLogFilename("grout.log")
 
-	if currentCFW == cfw.MuOS && !utils.IsDevelopment() {
+	if currentCFW == cfw.MuOS && !environment.IsDevelopment() {
 		if cwd, err := os.Getwd(); err == nil {
 			cwdMappingPath := filepath.Join(cwd, "input_mapping.json")
-			if _, err := os.Stat(cwdMappingPath); err == nil {
+			if fileutil.FileExists(cwdMappingPath) {
 				os.Setenv("INPUT_MAPPING_PATH", cwdMappingPath)
 			} else {
 				mappingBytes, err := muos.GetInputMappingBytes()
@@ -59,8 +61,8 @@ func setup() SetupResult {
 	}, gaba.ChordOptions{
 		Window: time.Millisecond * 1500,
 		OnTrigger: func() {
-			if utils.IsKidModeEnabled() {
-				utils.SetKidMode(false)
+			if internal.IsKidModeEnabled() {
+				internal.SetKidMode(false)
 				gaba.GetLogger().Info("Kid Mode unlocked for this session")
 			}
 		},
@@ -79,7 +81,7 @@ func setup() SetupResult {
 		log.Fatalf("Failed to initialize i18n: %v", err)
 	}
 
-	config, err := utils.LoadConfig()
+	config, err := internal.LoadConfig()
 	isFirstLaunch := err != nil || (len(config.Hosts) == 0 && config.Language == "")
 
 	if isFirstLaunch {
@@ -97,8 +99,8 @@ func setup() SetupResult {
 		}
 
 		if config == nil {
-			config = &utils.Config{
-				ShowCollections: true,
+			config = &internal.Config{
+				ShowRegularCollections: true,
 			}
 		}
 		config.Language = selectedLanguage
@@ -115,7 +117,7 @@ func setup() SetupResult {
 		}
 		logger.Debug("Login successful, saving configuration")
 		config.Hosts = loginConfig.Hosts
-		utils.SaveConfig(config)
+		internal.SaveConfig(config)
 	}
 
 	if config.LogLevel != "" {
@@ -128,9 +130,9 @@ func setup() SetupResult {
 		}
 	}
 
-	utils.InitKidMode(config)
+	internal.InitKidMode(config)
 
-	if utils.IsKidModeEnabled() {
+	if internal.IsKidModeEnabled() {
 		splashBytes, _ := resources.GetSplashImageBytes()
 		gaba.ProcessMessage("", gaba.ProcessMessageOptions{
 			ImageBytes:   splashBytes,
@@ -140,7 +142,7 @@ func setup() SetupResult {
 		}, func() (interface{}, error) {
 			for i := 0; i < 20; i++ {
 				time.Sleep(100 * time.Millisecond)
-				if !utils.IsKidModeEnabled() {
+				if !internal.IsKidModeEnabled() {
 					break
 				}
 			}
@@ -163,7 +165,7 @@ func setup() SetupResult {
 
 		if err == nil && result.ExitCode == gaba.ExitCodeSuccess {
 			config.DirectoryMappings = result.Value.Mappings
-			utils.SaveConfig(config)
+			internal.SaveConfig(config)
 		}
 	}
 
@@ -181,13 +183,13 @@ func setup() SetupResult {
 			ImageHeight: 540,
 		}, func() (interface{}, error) {
 			var err error
-			platforms, err = utils.GetMappedPlatforms(config.Hosts[0], config.DirectoryMappings, config.ApiTimeout)
+			platforms, err = internal.GetMappedPlatforms(config.Hosts[0], config.DirectoryMappings, config.ApiTimeout)
 			if err != nil {
 				loadErr = err
 				return nil, err
 			}
 			loadErr = nil
-			platforms = utils.SortPlatformsByOrder(platforms, config.PlatformOrder)
+			platforms = internal.SortPlatformsByOrder(platforms, config.PlatformOrder)
 			return nil, nil
 		})
 

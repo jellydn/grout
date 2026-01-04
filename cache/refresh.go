@@ -1,8 +1,8 @@
 package cache
 
 import (
+	"grout/internal/fileutil"
 	"grout/romm"
-	"os"
 	"sync"
 
 	gaba "github.com/BrandonKowalski/gabagool/v2/pkg/gabagool"
@@ -287,7 +287,7 @@ func (c *Refresh) validateAndPrefetchCollection(collection romm.Collection) {
 	}
 
 	cachePath := getCacheFilePath(cacheKey)
-	if _, err := os.Stat(cachePath); os.IsNotExist(err) {
+	if !fileutil.FileExists(cachePath) {
 		logger.Debug("Refresh: Cache file missing for collection, prefetching", "collection", collection.Name)
 		c.prefetchCollection(collection, cacheKey)
 		return

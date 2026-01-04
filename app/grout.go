@@ -2,7 +2,6 @@ package main
 
 import (
 	"grout/cfw"
-	"grout/utils"
 	"os"
 
 	gaba "github.com/BrandonKowalski/gabagool/v2/pkg/gabagool"
@@ -23,7 +22,7 @@ func main() {
 
 	currentCFW := cfw.GetCFW()
 	quitOnBack := len(config.Hosts) == 1
-	showCollections := utils.ShowCollections(config, config.Hosts[0])
+	showCollections := config.ShowCollections(config.Hosts[0])
 
 	fsm := buildFSM(config, currentCFW, platforms, quitOnBack, showCollections)
 

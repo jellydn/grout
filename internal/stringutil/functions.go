@@ -1,15 +1,30 @@
-package utils
+package stringutil
 
 import (
 	"fmt"
-	"os"
+	"grout/constants"
+	"grout/romm"
 	"path/filepath"
 	"slices"
 	"strings"
-
-	"grout/constants"
-	"grout/romm"
 )
+
+func StripExtension(filename string) string {
+	return strings.TrimSuffix(filename, filepath.Ext(filename))
+}
+
+func FormatBytes(bytes int64) string {
+	const unit int64 = 1024
+	if bytes < unit {
+		return fmt.Sprintf("%d B", bytes)
+	}
+	div, exp := unit, 0
+	for n := bytes / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	return fmt.Sprintf("%.1f %cB", float64(bytes)/float64(div), "KMGTPE"[exp])
+}
 
 func ParseTag(input string) string {
 	cleaned := filepath.Clean(input)
@@ -71,8 +86,7 @@ func nameCleaner(name string, stripTag bool) (string, string) {
 	return cleaned, foundTag
 }
 
-// PrepareRomNames cleans and sorts ROM names for display.
-func PrepareRomNames(games []romm.Rom, config Config) []romm.Rom {
+func PrepareRomNames(games []romm.Rom) []romm.Rom {
 	for i := range games {
 		regions := strings.Join(games[i].Regions, ", ")
 
@@ -91,33 +105,4 @@ func PrepareRomNames(games []romm.Rom, config Config) []romm.Rom {
 	})
 
 	return games
-}
-
-// IsGameDownloadedLocally checks if a game's ROM file exists locally.
-func IsGameDownloadedLocally(game romm.Rom, config Config) bool {
-	if game.PlatformSlug == "" {
-		return false
-	}
-
-	platform := romm.Platform{
-		ID:   game.PlatformID,
-		Slug: game.PlatformSlug,
-		Name: game.PlatformDisplayName,
-	}
-
-	romDirectory := GetPlatformRomDirectory(config, platform)
-
-	if game.HasMultipleFiles {
-		m3uPath := filepath.Join(romDirectory, game.FsNameNoExt+".m3u")
-		if _, err := os.Stat(m3uPath); err == nil {
-			return true
-		}
-	} else if len(game.Files) > 0 {
-		romPath := filepath.Join(romDirectory, game.Files[0].FileName)
-		if _, err := os.Stat(romPath); err == nil {
-			return true
-		}
-	}
-
-	return false
 }

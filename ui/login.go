@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"grout/constants"
-	"grout/utils"
+	"grout/internal"
 	"os"
 	"strconv"
 	"strings"
@@ -24,7 +24,7 @@ type loginInput struct {
 
 type loginOutput struct {
 	Host   romm.Host
-	Config *utils.Config
+	Config *internal.Config
 }
 
 type loginAttemptResult struct {
@@ -171,7 +171,7 @@ func (s *LoginScreen) draw(input loginInput) (ScreenResult[loginOutput], error) 
 	return success(loginOutput{Host: newHost}), nil
 }
 
-func LoginFlow(existingHost romm.Host) (*utils.Config, error) {
+func LoginFlow(existingHost romm.Host) (*internal.Config, error) {
 	screen := newLoginScreen()
 
 	for {
@@ -193,7 +193,7 @@ func LoginFlow(existingHost romm.Host) (*utils.Config, error) {
 		loginResult := attemptLogin(host)
 
 		if loginResult.Success {
-			config := &utils.Config{
+			config := &internal.Config{
 				Hosts: []romm.Host{host},
 			}
 			return config, nil

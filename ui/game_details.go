@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"grout/cache"
+	"grout/internal"
 	"grout/internal/imageutil"
 	"grout/internal/stringutil"
 	"io"
@@ -14,7 +15,6 @@ import (
 
 	groutConstants "grout/constants"
 	"grout/romm"
-	"grout/utils"
 
 	gaba "github.com/BrandonKowalski/gabagool/v2/pkg/gabagool"
 	"github.com/BrandonKowalski/gabagool/v2/pkg/gabagool/constants"
@@ -23,7 +23,7 @@ import (
 )
 
 type GameDetailsInput struct {
-	Config   *utils.Config
+	Config   *internal.Config
 	Host     romm.Host
 	Platform romm.Platform
 	Game     romm.Rom
@@ -54,7 +54,7 @@ func (s *GameDetailsScreen) Draw(input GameDetailsInput) (ScreenResult[GameDetai
 	options.Sections = sections
 	options.ShowThemeBackground = false
 	options.ShowScrollbar = true
-	if !utils.IsKidModeEnabled() {
+	if !internal.IsKidModeEnabled() {
 		options.ActionButton = constants.VirtualButtonX
 		options.EnableAction = true
 	}
@@ -62,7 +62,7 @@ func (s *GameDetailsScreen) Draw(input GameDetailsInput) (ScreenResult[GameDetai
 	footerItems := []gaba.FooterHelpItem{
 		{ButtonName: "B", HelpText: i18n.Localize(&goi18n.Message{ID: "button_back", Other: "Back"}, nil)},
 	}
-	if !utils.IsKidModeEnabled() {
+	if !internal.IsKidModeEnabled() {
 		footerItems = append(footerItems, gaba.FooterHelpItem{ButtonName: "X", HelpText: i18n.Localize(&goi18n.Message{ID: "button_options", Other: "Options"}, nil)})
 	}
 	footerItems = append(footerItems, gaba.FooterHelpItem{ButtonName: "A", HelpText: i18n.Localize(&goi18n.Message{ID: "button_download", Other: "Download"}, nil)})

@@ -1,8 +1,9 @@
-package utils
+package internal
 
 import (
 	"encoding/json"
 	"fmt"
+	"grout/cfw"
 	"grout/romm"
 	"os"
 	"sync/atomic"
@@ -23,7 +24,7 @@ type Config struct {
 	DownloadArt            bool                        `json:"download_art,omitempty"`
 	ShowBoxArt             bool                        `json:"show_box_art,omitempty"`
 	UnzipDownloads         bool                        `json:"unzip_downloads,omitempty"`
-	ShowCollections        bool                        `json:"show_collections"`
+	ShowRegularCollections bool                        `json:"show_collections"`
 	ShowSmartCollections   bool                        `json:"show_smart_collections"`
 	ShowVirtualCollections bool                        `json:"show_virtual_collections"`
 	DownloadedGames        string                      `json:"downloaded_games,omitempty"`
@@ -58,7 +59,7 @@ func (c Config) ToLoggable() any {
 		"show_box_art":            c.ShowBoxArt,
 		"save_directory_mappings": c.SaveDirectoryMappings,
 		"game_save_overrides":     c.GameSaveOverrides,
-		"collections":             c.ShowCollections,
+		"collections":             c.ShowRegularCollections,
 		"smart_collections":       c.ShowSmartCollections,
 		"virtual_collections":     c.ShowVirtualCollections,
 		"downloaded_games_action": c.DownloadedGames,
@@ -189,7 +190,6 @@ func SortPlatformsAlphabetically(platforms []romm.Platform) []romm.Platform {
 	sorted := make([]romm.Platform, len(platforms))
 	copy(sorted, platforms)
 
-	// Simple bubble sort by name
 	for i := 0; i < len(sorted); i++ {
 		for j := i + 1; j < len(sorted); j++ {
 			if sorted[i].Name > sorted[j].Name {
@@ -201,8 +201,6 @@ func SortPlatformsAlphabetically(platforms []romm.Platform) []romm.Platform {
 	return sorted
 }
 
-// PrunePlatformOrder removes platform slugs from the order that are no longer in the directory mappings.
-// This ensures the platform order stays synchronized with available platforms.
 func PrunePlatformOrder(order []string, mappings map[string]DirectoryMapping) []string {
 	if len(order) == 0 {
 		return order
@@ -254,37 +252,43 @@ func GetMappedPlatforms(host romm.Host, mappings map[string]DirectoryMapping, ti
 	return platforms, nil
 }
 
-// Config interface methods for cache package
-func (c *Config) GetApiTimeout() time.Duration    { return c.ApiTimeout }
-func (c *Config) GetShowCollections() bool        { return c.ShowCollections }
-func (c *Config) GetShowSmartCollections() bool   { return c.ShowSmartCollections }
-func (c *Config) GetShowVirtualCollections() bool { return c.ShowVirtualCollections }
+func (c Config) GetApiTimeout() time.Duration    { return c.ApiTimeout }
+func (c Config) GetShowCollections() bool        { return c.ShowRegularCollections }
+func (c Config) GetShowSmartCollections() bool   { return c.ShowSmartCollections }
+func (c Config) GetShowVirtualCollections() bool { return c.ShowVirtualCollections }
 
-func ShowCollections(config *Config, host romm.Host) bool {
-	if config == nil {
+func (c Config) GetPlatformRomDirectory(platform romm.Platform) string {
+	rp := c.DirectoryMappings[platform.Slug].RelativePath
+	return cfw.GetPlatformRomDirectory(rp, platform.Slug)
+}
+
+func (c Config) GetArtDirectory(platform romm.Platform) string {
+	romDir := c.GetPlatformRomDirectory(platform)
+	return cfw.GetArtDirectory(romDir, platform.Slug, platform.Name)
+}
+
+func (c Config) ShowCollections(host romm.Host) bool {
+	if !c.ShowRegularCollections && !c.ShowSmartCollections && !c.ShowVirtualCollections {
 		return false
 	}
-	if !config.ShowCollections && !config.ShowSmartCollections && !config.ShowVirtualCollections {
-		return false
-	}
 
-	rc := romm.NewClientFromHost(host, config.ApiTimeout)
+	rc := romm.NewClientFromHost(host, c.ApiTimeout)
 
-	if config.ShowCollections {
+	if c.ShowRegularCollections {
 		col, err := rc.GetCollections()
 		if err == nil && len(col) > 0 {
 			return true
 		}
 	}
 
-	if config.ShowSmartCollections {
+	if c.ShowSmartCollections {
 		smartCol, err := rc.GetSmartCollections()
 		if err == nil && len(smartCol) > 0 {
 			return true
 		}
 	}
 
-	if config.ShowVirtualCollections {
+	if c.ShowVirtualCollections {
 		virtualCol, err := rc.GetVirtualCollections()
 		if err == nil && len(virtualCol) > 0 {
 			return true

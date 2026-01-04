@@ -4,6 +4,7 @@ import (
 	"errors"
 	"grout/cfw"
 	"grout/constants"
+	"grout/internal"
 	"grout/romm"
 	"grout/utils"
 	"sync/atomic"
@@ -19,7 +20,7 @@ type settingsVisibility struct {
 }
 
 type SettingsInput struct {
-	Config                *utils.Config
+	Config                *internal.Config
 	CFW                   cfw.CFW
 	Host                  romm.Host
 	LastSelectedIndex     int
@@ -27,7 +28,7 @@ type SettingsInput struct {
 }
 
 type SettingsOutput struct {
-	Config                     *utils.Config
+	Config                     *internal.Config
 	GeneralSettingsClicked     bool
 	InfoClicked                bool
 	CollectionsSettingsClicked bool
@@ -139,7 +140,7 @@ func (s *SettingsScreen) Draw(input SettingsInput) (ScreenResult[SettingsOutput]
 	return success(output), nil
 }
 
-func (s *SettingsScreen) buildMenuItems(config *utils.Config, visibility *settingsVisibility) []gaba.ItemWithOptions {
+func (s *SettingsScreen) buildMenuItems(config *internal.Config, visibility *settingsVisibility) []gaba.ItemWithOptions {
 	items := make([]gaba.ItemWithOptions, 0, len(settingsOrder))
 	for _, settingType := range settingsOrder {
 		items = append(items, s.buildMenuItem(settingType, config, visibility))
@@ -147,7 +148,7 @@ func (s *SettingsScreen) buildMenuItems(config *utils.Config, visibility *settin
 	return items
 }
 
-func (s *SettingsScreen) buildMenuItem(settingType SettingType, config *utils.Config, visibility *settingsVisibility) gaba.ItemWithOptions {
+func (s *SettingsScreen) buildMenuItem(settingType SettingType, config *internal.Config, visibility *settingsVisibility) gaba.ItemWithOptions {
 	switch settingType {
 	case SettingGeneralSettings:
 		return gaba.ItemWithOptions{
@@ -213,7 +214,7 @@ func (s *SettingsScreen) buildMenuItem(settingType SettingType, config *utils.Co
 	}
 }
 
-func (s *SettingsScreen) applySettings(config *utils.Config, items []gaba.ItemWithOptions) {
+func (s *SettingsScreen) applySettings(config *internal.Config, items []gaba.ItemWithOptions) {
 	for _, item := range items {
 		text := item.Item.Text
 		switch text {

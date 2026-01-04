@@ -6,6 +6,7 @@ import (
 	"grout/cache"
 	"grout/cfw"
 	"grout/constants"
+	"grout/internal"
 	"grout/internal/fileutil"
 	"grout/internal/imageutil"
 	"grout/romm"
@@ -28,7 +29,7 @@ import (
 )
 
 type downloadInput struct {
-	Config        utils.Config
+	Config        internal.Config
 	Host          romm.Host
 	Platform      romm.Platform
 	SelectedGames []romm.Rom
@@ -55,7 +56,7 @@ func NewDownloadScreen() *DownloadScreen {
 	return &DownloadScreen{}
 }
 
-func (s *DownloadScreen) Execute(config utils.Config, host romm.Host, platform romm.Platform, selectedGames []romm.Rom, allGames []romm.Rom, searchFilter string) downloadOutput {
+func (s *DownloadScreen) Execute(config internal.Config, host romm.Host, platform romm.Platform, selectedGames []romm.Rom, allGames []romm.Rom, searchFilter string) downloadOutput {
 	result, err := s.draw(downloadInput{
 		Config:        config,
 		Host:          host,
@@ -110,7 +111,7 @@ func (s *DownloadScreen) draw(input downloadInput) (ScreenResult[downloadOutput]
 		// Clean up any partial downloads when cancelled
 		if errors.Is(err, gaba.ErrCancelled) {
 			for _, d := range downloads {
-				utils.DeleteFile(d.Location)
+				fileutil.DeleteFile(d.Location)
 			}
 		}
 
@@ -129,7 +130,7 @@ func (s *DownloadScreen) draw(input downloadInput) (ScreenResult[downloadOutput]
 				return de.Download.DisplayName == g.DisplayName
 			})
 			if failedMatch {
-				utils.DeleteFile(g.Location)
+				fileutil.DeleteFile(g.Location)
 			}
 		}
 	}
@@ -160,7 +161,7 @@ func (s *DownloadScreen) draw(input downloadInput) (ScreenResult[downloadOutput]
 		}
 
 		tmpZipPath := filepath.Join(fileutil.TempDir(), fmt.Sprintf("grout_multirom_%d.zip", g.ID))
-		romDirectory := utils.GetPlatformRomDirectory(input.Config, gamePlatform)
+		romDirectory := input.Config.GetPlatformRomDirectory(gamePlatform)
 		extractDir := filepath.Join(romDirectory, g.FsNameNoExt)
 
 		progress := &atomic.Float64{}
@@ -225,7 +226,7 @@ func (s *DownloadScreen) draw(input downloadInput) (ScreenResult[downloadOutput]
 			}
 
 			if len(g.Files) > 0 && strings.ToLower(filepath.Ext(g.Files[0].FileName)) == ".zip" {
-				romDirectory := utils.GetPlatformRomDirectory(input.Config, gamePlatform)
+				romDirectory := input.Config.GetPlatformRomDirectory(gamePlatform)
 				zipPath := filepath.Join(romDirectory, g.Files[0].FileName)
 
 				progress := &atomic.Float64{}
@@ -307,7 +308,7 @@ func (s *DownloadScreen) draw(input downloadInput) (ScreenResult[downloadOutput]
 	return success(output), nil
 }
 
-func (s *DownloadScreen) buildDownloads(config utils.Config, host romm.Host, platform romm.Platform, games []romm.Rom) ([]gaba.Download, []artDownload) {
+func (s *DownloadScreen) buildDownloads(config internal.Config, host romm.Host, platform romm.Platform, games []romm.Rom) ([]gaba.Download, []artDownload) {
 	downloads := make([]gaba.Download, 0, len(games))
 	artDownloads := make([]artDownload, 0, len(games))
 
@@ -321,7 +322,7 @@ func (s *DownloadScreen) buildDownloads(config utils.Config, host romm.Host, pla
 			}
 		}
 
-		romDirectory := utils.GetPlatformRomDirectory(config, gamePlatform)
+		romDirectory := config.GetPlatformRomDirectory(gamePlatform)
 		downloadLocation := ""
 
 		sourceURL := ""
@@ -343,7 +344,7 @@ func (s *DownloadScreen) buildDownloads(config utils.Config, host romm.Host, pla
 		})
 
 		if config.DownloadArt && (g.PathCoverLarge != "" || g.PathCoverSmall != "" || g.URLCover != "") {
-			artDir := utils.GetArtDirectory(config, gamePlatform)
+			artDir := config.GetArtDirectory(gamePlatform)
 			artFileName := g.FsNameNoExt + ".png"
 			artLocation := filepath.Join(artDir, artFileName)
 

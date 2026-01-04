@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"grout/internal"
 	"grout/internal/fileutil"
 	"os"
 	"path/filepath"
@@ -19,7 +20,7 @@ import (
 )
 
 type BIOSDownloadInput struct {
-	Config   utils.Config
+	Config   internal.Config
 	Host     romm.Host
 	Platform romm.Platform
 }
@@ -34,7 +35,7 @@ func NewBIOSDownloadScreen() *BIOSDownloadScreen {
 	return &BIOSDownloadScreen{}
 }
 
-func (s *BIOSDownloadScreen) Execute(config utils.Config, host romm.Host, platform romm.Platform) BIOSDownloadOutput {
+func (s *BIOSDownloadScreen) Execute(config internal.Config, host romm.Host, platform romm.Platform) BIOSDownloadOutput {
 	result, err := s.draw(BIOSDownloadInput{
 		Config:   config,
 		Host:     host,
@@ -170,8 +171,7 @@ func (s *BIOSDownloadScreen) draw(input BIOSDownloadInput) (ScreenResult[BIOSDow
 				expectedPath = filepath.Join(biosDir, fw.FilePath, fw.FileName)
 			}
 
-			_, err := os.Stat(expectedPath)
-			fileExists := err == nil
+			fileExists := fileutil.FileExists(expectedPath)
 
 			var statusText string
 			if fileExists {

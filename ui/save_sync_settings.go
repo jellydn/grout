@@ -3,6 +3,7 @@ package ui
 import (
 	"errors"
 	"grout/cfw"
+	"grout/internal"
 	"grout/utils"
 	"sort"
 
@@ -12,12 +13,12 @@ import (
 )
 
 type SaveSyncSettingsInput struct {
-	Config *utils.Config
+	Config *internal.Config
 	CFW    cfw.CFW
 }
 
 type SaveSyncSettingsOutput struct {
-	Config *utils.Config
+	Config *internal.Config
 }
 
 type SaveSyncSettingsScreen struct{}
@@ -62,7 +63,7 @@ func (s *SaveSyncSettingsScreen) Draw(input SaveSyncSettingsInput) (ScreenResult
 
 	s.applySettings(config, result.Items)
 
-	err = utils.SaveConfig(config)
+	err = internal.SaveConfig(config)
 	if err != nil {
 		gaba.GetLogger().Error("Error saving save sync settings", "error", err)
 		return withCode(output, gaba.ExitCodeError), err
@@ -71,7 +72,7 @@ func (s *SaveSyncSettingsScreen) Draw(input SaveSyncSettingsInput) (ScreenResult
 	return success(output), nil
 }
 
-func (s *SaveSyncSettingsScreen) buildMenuItems(config *utils.Config) []gaba.ItemWithOptions {
+func (s *SaveSyncSettingsScreen) buildMenuItems(config *internal.Config) []gaba.ItemWithOptions {
 	items := make([]gaba.ItemWithOptions, 0)
 
 	// Get all platform slugs from directory mappings
@@ -126,7 +127,7 @@ func (s *SaveSyncSettingsScreen) buildMenuItems(config *utils.Config) []gaba.Ite
 	return items
 }
 
-func (s *SaveSyncSettingsScreen) applySettings(config *utils.Config, items []gaba.ItemWithOptions) {
+func (s *SaveSyncSettingsScreen) applySettings(config *internal.Config, items []gaba.ItemWithOptions) {
 	if config.SaveDirectoryMappings == nil {
 		config.SaveDirectoryMappings = make(map[string]string)
 	}

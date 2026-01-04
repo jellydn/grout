@@ -6,18 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"grout/internal/fileutil"
-
 	gaba "github.com/BrandonKowalski/gabagool/v2/pkg/gabagool"
 )
-
-func DeleteFile(path string) bool {
-	if err := fileutil.DeleteFile(path); err != nil {
-		gaba.GetLogger().Error("Issue removing file", "path", path, "error", err)
-		return false
-	}
-	return true
-}
 
 func OrganizeMultiFileRomForMuOS(extractDir, romDirectory, gameName string) error {
 	logger := gaba.GetLogger()
