@@ -1,7 +1,7 @@
 # Grout Development Guide
 
 > [!NOTE]
-> These instructions were written with macOS in mind. It should work elsewhere (especially on Linux) but we have
+> These instructions were written with macOS in mind. It should work elsewhere, but we have
 > not personally verified this.
 
 We hang out over in
