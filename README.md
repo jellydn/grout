@@ -50,6 +50,12 @@ For detailed usage instructions and configuration options, see the [User Guide](
 
 ---
 
+## Development
+
+Interested in contributing? Check out the [Development Guide](docs/DEVELOPMENT.md) to get started.
+
+---
+
 ## Need Help? Found a Bug? Have an Idea?
 
 Please [create an issue](https://github.com/rommapp/grout/issues/new/choose) and fill out the template completely.

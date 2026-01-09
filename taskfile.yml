@@ -206,3 +206,13 @@ tasks:
     cmds:
       - task: i18n:extract
       - task: i18n:merge
+
+  lint:
+    desc: Run Go code style checks (fmt, vet, staticcheck)
+    cmds:
+      - echo "Running go fmt..."
+      - go fmt ./...
+      - echo "Running go vet..."
+      - go vet ./...
+      - echo "Running staticcheck..."
+      - staticcheck ./...

@@ -178,6 +178,16 @@ The `i18n` task will:
 3. Output any missing translations to `translations_todo/<lang>.toml`
 4. Simplify the locale files to a clean `key = "value"` format
 
+### Code Quality
+
+```shell
+# Run all linters (fmt, vet, staticcheck)
+task lint
+```
+
+This runs `go fmt`, `go vet`, and `staticcheck` across the codebase. Requires
+[staticcheck](https://staticcheck.dev/) to be installed (`go install honnef.co/go/tools/cmd/staticcheck@latest`).
+
 ### Media Conversion
 
 ```shell
